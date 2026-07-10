@@ -17,6 +17,7 @@ const Home = () => {
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [sortBy, setSortBy] = useState('newest');
 
   // Sync local input state with URL parameter changes (e.g. when user clicks home/logo)
   useEffect(() => {
@@ -400,6 +401,21 @@ const Home = () => {
     return matchesSearch && matchesType && matchesCategory;
   });
 
+  // Client-side sorting for real-time reactivity
+  const sortedListings = [...filteredListings].sort((a, b) => {
+    if (sortBy === 'price_asc') {
+      return (a.price || 0) - (b.price || 0);
+    }
+    if (sortBy === 'price_desc') {
+      return (b.price || 0) - (a.price || 0);
+    }
+    // Default newest (sort by _id or creation order)
+    if (a._id && b._id) {
+      return b._id.localeCompare(a._id);
+    }
+    return 0;
+  });
+
   return (
     <div className="home-page-container">
       {/* Search Header Banner */}
@@ -688,6 +704,87 @@ const Home = () => {
               </button>
             </div>
 
+            {/* Real-time Dynamic Directory Filters */}
+            <div className="glass-panel" style={{ padding: '20px', marginBottom: '24px', borderRadius: '12px', border: '1px solid var(--border-glass)', background: 'rgba(15, 23, 42, 0.4)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', alignItems: 'center' }}>
+                {/* Search query input */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px', fontWeight: '600' }}>SEARCH KEYWORD</label>
+                  <input 
+                    type="text" 
+                    placeholder="Search in these results..." 
+                    value={searchInput} 
+                    onChange={(e) => {
+                      setSearchInput(e.target.value);
+                      const newParams = new URLSearchParams(searchParams);
+                      if (e.target.value) {
+                        newParams.set('query', e.target.value);
+                      } else {
+                        newParams.delete('query');
+                      }
+                      setSearchParams(newParams);
+                    }}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.05)', color: '#fff', outline: 'none' }}
+                  />
+                </div>
+
+                {/* Type Selection */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px', fontWeight: '600' }}>LISTING TYPE</label>
+                  <select 
+                    value={selectedType}
+                    onChange={(e) => {
+                      const newParams = new URLSearchParams(searchParams);
+                      if (e.target.value) {
+                        newParams.set('type', e.target.value);
+                      } else {
+                        newParams.delete('type');
+                      }
+                      setSearchParams(newParams);
+                    }}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: '#1e293b', color: '#fff', outline: 'none' }}
+                  >
+                    <option value="">All Types</option>
+                    <option value="store_product">Stores / Products</option>
+                    <option value="service">Services / Providers</option>
+                    <option value="car">Automotive / Cars</option>
+                    <option value="house">Real Estate / Houses</option>
+                    <option value="job_opening">Jobs / Organizations</option>
+                    <option value="handyman_skill">Handymen / Hire Me</option>
+                  </select>
+                </div>
+
+                {/* Category Selection */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px', fontWeight: '600' }}>CATEGORY</label>
+                  <select 
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: '#1e293b', color: '#fff', outline: 'none' }}
+                  >
+                    <option value="">All Categories</option>
+                    {categories.map((cat) => (
+                      <option key={cat._id || cat.name} value={cat.name}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Sort Order */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px', fontWeight: '600' }}>SORT BY</label>
+                  <select 
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: '#1e293b', color: '#fff', outline: 'none' }}
+                  >
+                    <option value="newest">Newest First</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
             {error && <div className="alert alert-danger">{error}</div>}
 
             {loading ? (
@@ -695,7 +792,7 @@ const Home = () => {
                 <div className="spinner"></div>
                 <p style={{ marginTop: '16px' }}>Searching active directories...</p>
               </div>
-            ) : filteredListings.length === 0 ? (
+            ) : sortedListings.length === 0 ? (
               <div className="glass-panel empty-directory flex-center">
                 <span className="empty-icon">📂</span>
                 <h3>No Active Listings Found</h3>
@@ -704,7 +801,7 @@ const Home = () => {
             ) : (
               <>
                 <div className="row g-4 listings-directory-grid">
-                  {filteredListings.map((item) => (
+                  {sortedListings.map((item) => (
                     <div key={item._id} className="col-12 col-sm-6 col-lg-4 col-xl-3">
                       <ListingCard listing={item} />
                     </div>

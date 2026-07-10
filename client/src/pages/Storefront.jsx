@@ -224,9 +224,17 @@ const Storefront = () => {
   }
 
   if (error || !store) {
+    const isStoreNotFound = error === 'Store not found' || error === 'Storefront does not exist.';
+    const displayMessage = isStoreNotFound 
+      ? 'This store is currently updating their website. We will be right back!' 
+      : (error || 'Storefront does not exist.');
     return (
-      <div className="container storefront-page">
-        <div className="alert alert-danger">{error || 'Storefront does not exist.'}</div>
+      <div className="container storefront-page flex-center" style={{ minHeight: '60vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div className="glass-panel" style={{ padding: '40px 30px', maxWidth: '500px', textAlign: 'center', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.15)', background: 'rgba(15, 23, 42, 0.4)' }}>
+          <span style={{ fontSize: '3rem', display: 'block', marginBottom: '20px' }}>🛠️</span>
+          <h3 style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '10px', color: '#fff' }}>Store Under Maintenance</h3>
+          <p style={{ color: '#94a3b8', fontSize: '1.05rem', lineHeight: '1.6', margin: 0 }}>{displayMessage}</p>
+        </div>
       </div>
     );
   }
