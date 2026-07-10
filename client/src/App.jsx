@@ -13,6 +13,12 @@ import Chatbot from './components/Chatbot';
 // Sub-wrapper component to handle global layout styling
 const AppContent = () => {
   const { t } = useApp();
+
+  const handleUnderConstruction = (e) => {
+    if (e) e.preventDefault();
+    alert("We are working on this feature! It will be available soon.");
+  };
+
   return (
     <>
       <Navbar />
@@ -37,7 +43,9 @@ const AppContent = () => {
             </div>
             <p>{t('footer_brand_desc')}</p>
             <div className="social-links">
-              <span>🌐</span> <span>✉️</span> <span>📞</span>
+              <span onClick={handleUnderConstruction} style={{ cursor: 'pointer' }}>🌐</span>
+              <span onClick={handleUnderConstruction} style={{ cursor: 'pointer' }}>✉️</span>
+              <span onClick={handleUnderConstruction} style={{ cursor: 'pointer' }}>📞</span>
             </div>
           </div>
           <div className="footer-col">
@@ -53,19 +61,19 @@ const AppContent = () => {
           <div className="footer-col">
             <h5>{t('company')}</h5>
             <ul>
-              <li><a href="#about">{t('about_us')}</a></li>
-              <li><a href="#contact">{t('contact_tab')}</a></li>
-              <li><a href="#privacy">{t('privacy_policy')}</a></li>
-              <li><a href="#terms">{t('terms_of_service')}</a></li>
+              <li><a href="#about" onClick={handleUnderConstruction}>{t('about_us')}</a></li>
+              <li><a href="#contact" onClick={handleUnderConstruction}>{t('contact_tab')}</a></li>
+              <li><a href="#privacy" onClick={handleUnderConstruction}>{t('privacy_policy')}</a></li>
+              <li><a href="#terms" onClick={handleUnderConstruction}>{t('terms_of_service')}</a></li>
             </ul>
           </div>
           <div className="footer-col newsletter-col">
             <h5>{t('newsletter')}</h5>
             <p>{t('newsletter_desc')}</p>
-            <div className="newsletter-input-row">
-              <input type="email" placeholder={t('your_email_placeholder')} />
-              <button className="btn-newsletter-send">➔</button>
-            </div>
+            <form onSubmit={handleUnderConstruction} className="newsletter-input-row">
+              <input type="email" placeholder={t('your_email_placeholder')} required />
+              <button type="submit" className="btn-newsletter-send">➔</button>
+            </form>
           </div>
         </div>
         <div className="footer-bottom text-center">
