@@ -1,0 +1,404 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+const AppContext = createContext();
+
+const translations = {
+  en: {
+    // Navbar
+    stores: 'Stores',
+    handymen: 'Hire Me',
+    services: 'Services',
+    organizations: 'Jobs',
+    real_estate: 'Houses',
+    automotive: 'Automotive',
+    used_items: 'Used Items',
+    be_partner: 'Be Our Partner',
+    login: 'Login',
+    logout: 'Logout',
+    dashboard: 'Dashboard',
+    admin_panel: 'Admin Panel',
+    qr_code: '🖨️ QR Code',
+    my_web: '🔗 My Web',
+    
+    // Home Page
+    hero_title: 'Direct-Connect Local Directory',
+    hero_desc: 'Locate local stores, pharmacy items, professional services, tax filing experts, and handymen near you. Contact them instantly via phone or SMS with zero middle-man fees.',
+    search_placeholder: 'What are you looking for? (e.g. prescription, carpenter, jacket...)',
+    search_btn: 'Search',
+    all_categories: 'All Categories',
+    all_listings: 'All Marketplace Listings',
+    active_postings_for: 'Active Postings for "{type}"',
+    contact_for_price: 'Contact for Price',
+    salary_offered: 'Salary Offered',
+    price: 'Price',
+    visit_store: 'Visit Store',
+    call: '📞',
+    sms: '💬',
+    verified: '✓ Verified',
+    no_listings_found: 'No listings match your selection.',
+    
+    // Dashboard page
+    post_marketplace: 'Post to Marketplace',
+    listing_title: 'Listing Title',
+    listing_desc: 'Listing Description',
+    price_val: 'Price / Value Offered ($)',
+    publish_btn: '+ Publish Listing',
+    visit_storefront_btn: '🔗 Visit My Storefront',
+    online_status: 'Online Customer Line Status',
+    status_online: '🟢 Online',
+    status_offline: '🔴 Offline (Vacation Mode)',
+    manage_nav: 'Customize Storefront Navigation',
+    nav_help: 'Add up to 5 custom website references (e.g. Yelp, About Us, Booking portal) directly onto your storefront\'s navigation bar.',
+    link_label: 'LINK LABEL',
+    dest_url: 'DESTINATION URL',
+    add_link: '+ Add Nav Link',
+    my_listings: 'My Marketplace Postings',
+    references_feedback: 'Provider Reference Log & Feedback',
+    no_listings_yet: 'You haven\'t posted any items yet.',
+    no_refs_yet: 'No customer references logged yet.',
+    verified_reviews_desc: 'Below are authenticated client records & star reviews left by visitors who completed service transactions with your business.',
+    
+    // Storefront page
+    catalog_listings: 'Catalog & Active Listings',
+    no_posts_yet: 'No products, services, or job openings posted by this business yet.',
+    no_match_search: 'No listings matched your store search query.',
+    search_in_store: '🔍 Search items in this store...',
+    cust_references: 'Customer References',
+    no_reviews_yet: 'No references posted yet. Be the first to leave feedback!',
+    direct_line: 'Direct Line',
+    submit_ref: 'Submit Reference',
+    rating_score: 'Rating Score (1-5)',
+    comment: 'Comment / Review Message',
+    submit_btn: 'Submit Reference',
+    
+    // Login / Register page
+    create_account: 'Create Professional Account',
+    register_desc: 'Register to list products, advertise skills, and connect directly with local clients.',
+    username: 'Username / Account Handle',
+    email: 'Email Address',
+    phone: 'Phone Number (Direct Client Line)',
+    password: 'Password',
+    account_role: 'Account Role / Purpose',
+    role_individual: 'Individual Seller (used items, personal)',
+    role_handyman: 'Handyman / Home Provider',
+    role_business: 'Local Business / Agency Store',
+    business_type: 'Business Category Type',
+    select_type: 'Select Business Type',
+    store: 'Store / Retail Shop',
+    service: 'Service / Consultant',
+    organization: 'Organization / Company',
+    real_estate_type: 'Real Estate / Housing Broker',
+    automotive_type: 'Automotive / Car Dealer',
+    register_btn: 'Register & Initialize',
+    already_account: 'Already have an account? Login here',
+    login_account: 'Login to Account',
+    no_account: 'New to the platform? Register here',
+
+    // Storefront Tabs & Labels
+    home_tab: 'Home',
+    about_tab: 'About',
+    contact_tab: 'Contact',
+    featured_products: 'Featured Products & Services',
+    about_business: 'About Our Business',
+    location: 'Physical Location',
+    classification: 'Classification',
+    registered_since: 'Registered Since',
+    contact_directly: 'Contact Us Directly',
+    middleman_free: 'We offer direct, middleman-free connection. Reach out via call or SMS text message to request services or check product availability.',
+    phone_line: 'Direct Phone Line',
+    call_now: 'Call Now',
+    send_sms: 'Send SMS',
+    no_posts_featured: 'No products, services, or job openings posted by this business yet.',
+    no_match_catalog: 'No listings matched your store search query.',
+    search_in_catalog: 'Search items in this store...',
+    catalog_active_listings: 'Catalog & Active Listings',
+    skills_tab: 'Skills',
+    used_items_tab: 'Used Items',
+    shop_tab: 'Shop',
+    services_tab: 'Services',
+    job_openings_tab: 'Job Openings',
+    properties_tab: 'Properties',
+    showroom_tab: 'Showroom',
+    catalog_tab: 'Catalog',
+
+    // ListingCard Detail Modal
+    provider: 'Provider',
+    seller: 'Seller',
+    handyman_provider: 'Handyman Provider',
+    individual_seller: 'Individual Seller',
+    requirements: 'Requirements',
+    property: 'Property',
+    bedrooms: 'Bedrooms',
+    bathrooms: 'Bathrooms',
+    model_year: 'Model Year',
+    brand: 'Brand',
+    mileage: 'Mileage',
+    rates: 'Rates',
+    verified_reviews_title: 'Verified Client References & Reviews',
+    no_reviews_modal: 'No references left for this provider yet. Be the first to verify and comment!',
+    unavailable: 'Unavailable',
+
+    // RatingForm verification
+    write_reference: 'Write a Verified Reference',
+    prevent_fake: 'To prevent fake reviews, you must provide your email and phone. Your name and phone will be publicly visible to verify authenticity.',
+    your_name: 'Your Name',
+    email_address: 'Email Address',
+    phone_number: 'Phone Number',
+    select_channel: 'Select Verification Channel',
+    sms_ver: 'SMS Verification',
+    email_ver: 'Email Verification',
+    get_code: 'Get Verification Code',
+    enter_code: 'Enter 4-Digit Code',
+    verify_btn: 'Verify',
+    rating_score_label: 'Rating Score',
+    your_reference_details: 'Your Reference Details',
+    describe_experience: 'Describe your service experience with this provider...',
+    post_reference: 'Post Reference Rating',
+
+    // Footer & Global layout
+    footer_brand_desc: "Connecting you with Ethiopia's finest vendors, artisans, and professionals in one secure ecosystem.",
+    marketplace: 'Marketplace',
+    company: 'Company',
+    about_us: 'About Us',
+    privacy_policy: 'Privacy Policy',
+    terms_of_service: 'Terms of Service',
+    newsletter: 'Newsletter',
+    newsletter_desc: 'Stay updated on new stores and exclusive offers.',
+    your_email_placeholder: 'Your email',
+    footer_copy: '© 2026 Ethizone Marketplace. All rights reserved.',
+
+    // How It Works section
+    how_it_works_title: 'How Ethizone Works',
+    how_it_works_subtitle: 'Connecting global buyers with verified sellers in a seamless, secure ecosystem.',
+    step1_title: '1. Discover',
+    step1_desc: 'Browse through thousands of products, services, vehicles, and jobs across 50+ categories and international borders.',
+    step2_title: '2. Secure Transaction',
+    step2_desc: 'Buy with confidence using our multi-currency secure payment gateway. All transactions are protected and verified.',
+    step3_title: '3. Global Delivery',
+    step3_desc: 'Track your order from the seller\'s doorstep to yours with our integrated international logistics network.',
+    verified_sellers_title: 'Verified Sellers',
+    verified_sellers_desc: 'Rigorous identity checks for every vendor.',
+    secure_payments_title: 'Secure Payments',
+    secure_payments_desc: '256-bit SSL encrypted transactions.',
+    support_title: '24/7 Support',
+    support_desc: 'Global help center in multiple languages.',
+  },
+  am: {
+    // Navbar
+    stores: 'ሱቆች',
+    handymen: 'ቅጠሩኝ',
+    services: 'አገልግሎቶች',
+    organizations: 'ስራዎች',
+    real_estate: 'ቤቶች',
+    automotive: 'መኪናዎች',
+    used_items: 'ያገለገሉ እቃዎች',
+    be_partner: 'አጋር ይሁኑ',
+    login: 'ግባ',
+    logout: 'ውጣ',
+    dashboard: 'ዳሽቦርድ',
+    admin_panel: 'አስተዳዳሪ ፔጅ',
+    qr_code: '🖨️ QR ኮድ',
+    my_web: '🔗 የእኔ ዌብሳይት',
+    
+    // Home Page
+    hero_title: 'ቀጥታ መገናኛ አካባቢያዊ ማውጫ',
+    hero_desc: 'የአከባቢ ሱቆችን፣ የመድኃኒት መሸጫዎችን፣ የሙያ አገልግሎቶችን፣ የግብር አማካሪዎችን እና የቤት ጥገና ባለሙያዎችን በአቅራቢያዎ ያግኙ። ያለምንም አማላጅ ክፍያ በስልክ ወይም በፅሁፍ መልእክት ያግኙዋቸው።',
+    search_placeholder: 'ምን መፈለግ ይፈልጋሉ? (ምሳሌ፡ መድኃኒት፣ አናፂ፣ ጃኬት...)',
+    search_btn: 'ፈልግ',
+    all_categories: 'ሁሉም ዘርፎች',
+    all_listings: 'ሁሉም የሽያጭ ማስታወቂያዎች',
+    active_postings_for: 'ለ "{type}" የተለጠፉ ንቁ ማስታወቂያዎች',
+    contact_for_price: 'ለዋጋው ያነጋግሩ',
+    salary_offered: 'የሚከፈል ደመወዝ',
+    price: 'ዋጋ',
+    visit_store: 'ሱቁን ይጎብኙ',
+    call: '📞',
+    sms: '💬',
+    verified: '✓ የተረጋገጠ',
+    no_listings_found: 'ምንም ማስታወቂያዎች አልተገኙም።',
+    
+    // Dashboard page
+    post_marketplace: 'ማስታወቂያ ይለጥፉ',
+    listing_title: 'የማስታወቂያው ርዕስ',
+    listing_desc: 'የማስታወቂያው ዝርዝር መግለጫ',
+    price_val: 'ዋጋ ($)',
+    publish_btn: '+ ማስታወቂያውን ፍጠር',
+    visit_storefront_btn: '🔗 ሱቄን ጎብኝ',
+    online_status: 'የመስመር ላይ የደንበኛ ስልክ ሁኔታ',
+    status_online: '🟢 ክፍት ነው',
+    status_offline: '🔴 ዝግ ነው (እረፍት ላይ)',
+    manage_nav: 'የሱቅዎን ምናሌ ያብጁ',
+    nav_help: 'እስከ 5 የሚደርሱ የውጭ ዌብሳይት ሊንኮችን (ምሳሌ፡ Yelp፣ ስለ እኛ፣ የቀጠሮ ማስያዣ) በሱቅዎ ምናሌ ላይ በቀጥታ ያክሉ።',
+    link_label: 'የሊንኩ ስም',
+    dest_url: 'የዌብሳይት አድራሻ (URL)',
+    add_link: '+ ሊንኩን ጨምር',
+    my_listings: 'የእኔ የሽያጭ ማስታወቂያዎች',
+    references_feedback: 'የደንበኛ ምስክርነቶች እና አስተያየቶች',
+    no_listings_yet: 'እስካሁን ምንም ማስታወቂያ አልለጠፉም።',
+    no_refs_yet: 'እስካሁን ምንም የደንበኛ አስተያየት የለም።',
+    verified_reviews_desc: 'ከድርጅትዎ ጋር የአገልግሎት ግንኙነት ያደረጉ ደንበኞች የሰጡት አስተያየት እና ባለኮከብ ደረጃዎች ከዚህ በታች ቀርበዋል።',
+    
+    // Storefront page
+    catalog_listings: 'የማስታወቂያዎች ዝርዝር',
+    no_posts_yet: 'ይህ ድርጅት እስካሁን ምንም ምርት፣ አገልግሎት ወይም የስራ ቅጥር ማስታወቂያ አልለጠፈም።',
+    no_match_search: 'ከፍለጋዎ ጋር የሚዛመድ ማስታወቂያ አልተገኘም።',
+    search_in_store: '🔍 በዚህ ሱቅ ውስጥ ምርቶችን ፈልግ...',
+    cust_references: 'የደንበኞች ምስክርነት',
+    no_reviews_yet: 'ምንም ምስክርነት እስካሁን አልተለጠፈም። የመጀመሪያውን አስተያየት ይስጡ!',
+    direct_line: 'ቀጥታ ስልክ መስመር',
+    submit_ref: 'ምስክርነት አስገባ',
+    rating_score: 'ደረጃ (ከ1-5 ኮከብ)',
+    comment: 'የአስተያየት መልእክት',
+    submit_btn: 'አስተያየት አስገባ',
+    
+    // Login / Register page
+    create_account: 'የባለሙያ አካውንት ይፍጠሩ',
+    register_desc: 'ምርቶችዎን ለመዘርዘር፣ ክህሎትዎን ለማስተዋወቅ እና ከአከባቢዎ ደንበኞች ጋር በቀጥታ ለመገናኘት ይመዝገቡ።',
+    username: 'የተጠቃሚ ስም',
+    email: 'ኢሜይል አድራሻ',
+    phone: 'የስልክ ቁጥር (ደንበኞች የሚደውሉበት)',
+    password: 'የይለፍ ቃል',
+    account_role: 'የአካውንት አይነት / ዓላማ',
+    role_individual: 'ግለሰብ ሻጭ (ያገለገሉ እቃዎች፣ የቤት እቃዎች)',
+    role_handyman: 'ባለሙያ / የቤት አገልግሎት ሰጪ (አናፂ፣ ቧንቧ ሠራተኛ)',
+    role_business: 'አካባቢያዊ ንግድ / የሱቅ ባለቤት',
+    business_type: 'የንግድ ዘርፍ አይነት',
+    select_type: 'የንግድ አይነት ይምረጡ',
+    store: 'ሱቅ / የችርቻሮ መሸጫ',
+    service: 'አገልግሎት / አማካሪ',
+    organization: 'ድርጅት / ኩባንያ',
+    real_estate_type: 'ቤትና መሬት አከራይ / ሻጭ',
+    automotive_type: 'መኪና አከራይ / ሻጭ',
+    register_btn: 'ይመዝገቡ',
+    already_account: 'አካውንት አለዎት? እዚህ ይግቡ',
+    login_account: 'ወደ አካውንትዎ ይግቡ',
+    no_account: 'አዲስ ተጠቃሚ ነዎት? እዚህ ይመዝገቡ',
+
+    // Storefront Tabs & Labels
+    home_tab: 'መነሻ',
+    about_tab: 'ስለ እኛ',
+    contact_tab: 'ግንኙነት',
+    featured_products: 'የተመረጡ ምርቶች እና አገልግሎቶች',
+    about_business: 'ስለ ድርጅታችን',
+    location: 'አድራሻ',
+    classification: 'ምድብ',
+    registered_since: 'ከተመዘገበበት ጊዜ',
+    contact_directly: 'በቀጥታ ያግኙን',
+    middleman_free: 'ያለ አማላጅ በቀጥታ መገናኘት የሚያስችል ሲስተም አዘጋጅተናል። አገልግሎቶችን ለመጠየቅ ወይም የእቃዎችን መኖር ለማረጋገጥ በስልክ ወይም በፅሁፍ መልእክት ያግኙን።',
+    phone_line: 'ቀጥታ ስልክ መስመር',
+    call_now: 'አሁን ይደውሉ',
+    send_sms: 'ፅሁፍ ላክ',
+    no_posts_featured: 'ይህ ድርጅት እስካሁን ምንም ምርት፣ አገልግሎት ወይም የስራ ቅጥር ማስታወቂያ አልለጠፈም።',
+    no_match_catalog: 'ከፍለጋዎ ጋር የሚዛመድ ማስታወቂያ አልተገኘም።',
+    search_in_catalog: 'በዚህ ሱቅ ውስጥ ፈልግ...',
+    catalog_active_listings: 'የማስታወቂያዎች ዝርዝር',
+    skills_tab: 'ሙያ',
+    used_items_tab: 'ያገለገሉ እቃዎች',
+    shop_tab: 'ሱቅ',
+    services_tab: 'አገልግሎቶች',
+    job_openings_tab: 'የስራ ቅጥሮች',
+    properties_tab: 'ቤትና መሬት',
+    showroom_tab: 'መኪናዎች',
+    catalog_tab: 'ዝርዝር',
+
+    // ListingCard Detail Modal
+    provider: 'አቅራቢ',
+    seller: 'ሻጭ',
+    handyman_provider: 'የቤት አገልግሎት ሰጪ',
+    individual_seller: 'ግለሰብ ሻጭ',
+    requirements: 'መመዘኛዎች',
+    property: 'ንብረት',
+    bedrooms: 'መኝታ ቤቶች',
+    bathrooms: 'መታጠቢያ ቤቶች',
+    model_year: 'የተመረተበት ዓመት',
+    brand: 'ብራንድ',
+    mileage: 'ኪሎሜትር',
+    rates: 'ዋጋ',
+    verified_reviews_title: 'የተረጋገጡ የደንበኞች ምስክርነቶች እና ደረጃዎች',
+    no_reviews_modal: 'እስካሁን ምንም አስተያየት የለም። የመጀመሪያውን አስተያየት በመስጠት ይረዱ!',
+    unavailable: 'አይገኝም',
+
+    // RatingForm verification
+    write_reference: 'የተረጋገጠ ምስክርነት ይጻፉ',
+    prevent_fake: 'ሐሰተኛ አስተያየቶችን ለመከላከል ኢሜይልዎን እና ስልክ ቁጥርዎን ማስገባት አለብዎት። ትክክለኛነቱን ለማረጋገጥ ስምዎ እና ስልክዎ ለህዝብ ይታያል።',
+    your_name: 'ስምዎ',
+    email_address: 'ኢሜይል አድራሻ',
+    phone_number: 'ስልክ ቁጥር',
+    select_channel: 'የማረጋገጫ መስመር ይምረጡ',
+    sms_ver: 'በፅሁፍ መልእክት (SMS)',
+    email_ver: 'በኢሜይል',
+    get_code: 'የማረጋገጫ ኮድ አግኝ',
+    enter_code: 'ባለ 4 ዲጂት ኮድ ያስገቡ',
+    verify_btn: 'አረጋግጥ',
+    rating_score_label: 'ደረጃ',
+    your_reference_details: 'የምስክርነትዎ ዝርዝር አስተያየት',
+    describe_experience: 'ከዚህ አገልግሎት ሰጪ ጋር የነበረዎትን ልምድ ያብራሩ...',
+    post_reference: 'ምስክርነቱን ይለጥፉ',
+
+    // Footer & Global layout
+    footer_brand_desc: 'ከኢትዮጵያ ምርጥ ነጋዴዎች፣ ባለሙያዎች እና የእጅ ጥበብ ባለሙያዎች ጋር በአንድ አስተማማኝ ስርዓት ውስጥ እናገናኝዎታለን።',
+    marketplace: 'የሽያጭ ቦታ',
+    company: 'ኩባንያ',
+    about_us: 'ስለ እኛ',
+    privacy_policy: 'የግላዊነት ፖሊሲ',
+    terms_of_service: 'የአገልግሎት ውሎች',
+    newsletter: 'ጋዜጣ',
+    newsletter_desc: 'ስለ አዳዲስ መደብሮች እና ልዩ ቅናሾች መረጃ ያግኙ።',
+    your_email_placeholder: 'የእርስዎ ኢሜይል',
+    footer_copy: '© 2026 ኢትዮዞን ማርኬትፕሌስ። መብቱ በህግ የተጠበቀ ነው።',
+
+    // How It Works section
+    how_it_works_title: 'ኢትዮዞን እንዴት ይሰራል?',
+    how_it_works_subtitle: 'ዓለም አቀፍ ገዢዎችን ከተረጋገጡ ሻጮች ጋር ያለምንም እንከን በደህንነት ያገናኛል።',
+    step1_title: '1. መፈለግ',
+    step1_desc: 'በሺዎች የሚቆጠሩ ምርቶችን፣ አገልግሎቶችን፣ መኪናዎችን እና ስራዎችን ከ50 በላይ በሆኑ ምድቦች እና በሀገር አቀፍ ደረጃ ያስሱ።',
+    step2_title: '2. አስተማማኝ ክፍያ',
+    step2_desc: 'በእኛ አስተማማኝ የክፍያ አማራጭ በመጠቀም በልበ ሙሉነት ይግዙ። ሁሉም የክፍያ ስራዎች የተጠበቁ እና የተረጋገጡ ናቸው።',
+    step3_title: '3. ቀጥተኛ ግንኙነት',
+    step3_desc: 'ያለምንም አማላጅ ምርቶችን ከሻጩ በቀጥታ በስልክ ወይም በፅሁፍ መልእክት ያግኙ።',
+    verified_sellers_title: 'የተረጋገጡ ሻጮች',
+    verified_sellers_desc: 'ለእያንዳንዱ ሻጭ ጥብቅ የማንነት ማረጋገጫ ይደረጋል።',
+    secure_payments_title: 'አስተማማኝ ክፍያዎች',
+    secure_payments_desc: 'በከፍተኛ የደህንነት ስርዓት የተጠበቁ የክፍያ ግብይቶች።',
+    support_title: '24/7 ድጋፍ',
+    support_desc: 'በተለያዩ ቋንቋዎች የሚሰጥ ዓለም አቀፍ የደንበኛ እገዛ።',
+  }
+};
+
+export const AppProvider = ({ children }) => {
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  const [language, setLanguage] = useState(localStorage.getItem('language') || 'en');
+
+  useEffect(() => {
+    localStorage.setItem('theme', theme);
+    if (theme === 'light') {
+      document.body.classList.add('light-theme');
+    } else {
+      document.body.classList.remove('light-theme');
+    }
+  }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem('language', language);
+  }, [language]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === 'en' ? 'am' : 'en');
+  };
+
+  const t = (key) => {
+    return translations[language][key] || key;
+  };
+
+  return (
+    <AppContext.Provider value={{ theme, language, toggleTheme, toggleLanguage, t }}>
+      {children}
+    </AppContext.Provider>
+  );
+};
+
+export const useApp = () => useContext(AppContext);
