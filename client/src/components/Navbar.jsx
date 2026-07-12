@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import QrModal from './QrModal';
+import ThemeToggle from './ThemeToggle';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -102,9 +103,10 @@ const Navbar = () => {
   };
 
   return (
-    <div className="header-wrapper">
+    <>
+      <div className="header-wrapper">
       <div className="navbar-top-banner" style={{ background: '#0d5c3a', color: '#ffffff', textAlign: 'center', padding: '8px 10px', fontSize: '0.82rem', fontWeight: '700', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-        📢 Ethizone: ALL Buyers are Sellers ⇄ All Sellers are Buyers 📢
+        📢 {t('top_banner_slogan')} 📢
       </div>
       <nav className="glass-navbar">
         <div className="container nav-container" style={{ position: 'relative' }}>
@@ -113,7 +115,7 @@ const Navbar = () => {
             <img src="/logo.png" alt="Ultimate Master Logo" style={{ height: '112px', objectFit: 'contain' }} />
           </Link>
           <span className="logo-motto" style={{ fontSize: '0.66rem', color: 'var(--accent-secondary)', fontStyle: 'italic', fontWeight: 600, marginTop: '2px', paddingLeft: '4px', letterSpacing: '0.02em' }}>
-            "All Buyers Are Sellers"
+            {t('logo_motto_slogan')}
           </span>
         </div>
 
@@ -165,35 +167,24 @@ const Navbar = () => {
           </div>
         )}
 
-        {/* Hamburger Toggle Icon for Mobile */}
-        <button 
-          className="mobile-menu-toggle"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle navigation menu"
-        >
-          {mobileMenuOpen ? '✕' : '☰'}
-        </button>
-
-        {/* Right Desktop Nav Links */}
-        <div className="nav-links desktop-only">
+        {/* Always Visible Actions (Language & Theme Toggle) */}
+        <div className="nav-global-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto', marginRight: '10px' }}>
           {/* Language Toggle Button */}
           <button 
             onClick={toggleLanguage} 
             className="btn-navbar-tool btn-lang"
             title="Switch Language / ቋንቋ ቀይር"
+            style={{ fontSize: '0.8rem', padding: '6px 10px', height: '34px', minWidth: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
             {language === 'en' ? 'አማ' : 'EN'}
           </button>
           
           {/* Dark / Light Toggle Button */}
-          <button 
-            onClick={toggleTheme} 
-            className="btn-navbar-tool btn-theme"
-            title="Toggle Light/Dark Mode"
-          >
-            {theme === 'dark' ? '☀️' : '🌙'}
-          </button>
+          <ThemeToggle />
+        </div>
 
+        {/* Right Nav Links */}
+        <div className="nav-links">
           {token && !isPublicStorefront ? (
             <>
               {user.role === 'super_admin' && (
@@ -293,127 +284,6 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Collapsible Mobile Dropdown Drawer */}
-        {mobileMenuOpen && (
-          <div className="mobile-menu-drawer glass-panel">
-            {/* Category Filters for Mobile */}
-            {showFilters && (
-              <div className="mobile-drawer-filters" style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderBottom: '1px solid var(--border-glass)', paddingBottom: '16px', marginBottom: '8px' }}>
-                <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Categories / ማውጫዎች</span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  <button
-                    onClick={() => { handleTypeSelect('store_product'); setMobileMenuOpen(false); }}
-                    className={`filter-badge ${selectedType === 'store_product' ? 'active' : ''}`}
-                    style={{ width: 'fit-content' }}
-                  >
-                    {t('stores')}
-                  </button>
-                  <button
-                    onClick={() => { handleTypeSelect('handyman_skill'); setMobileMenuOpen(false); }}
-                    className={`filter-badge ${selectedType === 'handyman_skill' ? 'active' : ''}`}
-                    style={{ width: 'fit-content' }}
-                  >
-                    {t('handymen')}
-                  </button>
-                  <button
-                    onClick={() => { handleTypeSelect('service'); setMobileMenuOpen(false); }}
-                    className={`filter-badge ${selectedType === 'service' ? 'active' : ''}`}
-                    style={{ width: 'fit-content' }}
-                  >
-                    {t('services')}
-                  </button>
-                  <button
-                    onClick={() => { handleTypeSelect('job_opening'); setMobileMenuOpen(false); }}
-                    className={`filter-badge ${selectedType === 'job_opening' ? 'active' : ''}`}
-                    style={{ width: 'fit-content' }}
-                  >
-                    {t('organizations')}
-                  </button>
-                  <button
-                    onClick={() => { handleTypeSelect('house'); setMobileMenuOpen(false); }}
-                    className={`filter-badge ${selectedType === 'house' ? 'active' : ''}`}
-                    style={{ width: 'fit-content' }}
-                  >
-                    {t('real_estate')}
-                  </button>
-                  <button
-                    onClick={() => { handleTypeSelect('car'); setMobileMenuOpen(false); }}
-                    className={`filter-badge ${selectedType === 'car' ? 'active' : ''}`}
-                    style={{ width: 'fit-content' }}
-                  >
-                    {t('automotive')}
-                  </button>
-                  <button
-                    onClick={() => { handleTypeSelect('personal_item'); setMobileMenuOpen(false); }}
-                    className={`filter-badge ${selectedType === 'personal_item' ? 'active' : ''}`}
-                    style={{ width: 'fit-content' }}
-                  >
-                    {t('used_items')}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Theme & Language Switchers Row */}
-            <div className="mobile-drawer-tools-row" style={{ display: 'flex', gap: '12px', justifyContent: 'center', borderBottom: '1px solid var(--border-glass)', paddingBottom: '16px', marginBottom: '8px' }}>
-              <button 
-                onClick={() => { toggleTheme(); setMobileMenuOpen(false); }} 
-                className="btn-navbar-tool btn-theme"
-                style={{ padding: '8px 24px', fontSize: '1.1rem' }}
-              >
-                {theme === 'dark' ? '☀️' : '🌙'}
-              </button>
-              <button 
-                onClick={() => { toggleLanguage(); setMobileMenuOpen(false); }} 
-                className="btn-navbar-tool btn-lang"
-                style={{ padding: '8px 24px', fontSize: '1.1rem' }}
-              >
-                {language === 'en' ? 'አማ' : 'EN'}
-              </button>
-            </div>
-
-            {/* Nav Pages links */}
-            {token ? (
-              <>
-                {user.role === 'super_admin' && (
-                  <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="nav-link admin-badge text-center">{t('admin_panel')}</Link>
-                )}
-                {user.role === 'business' && (
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', width: '100%' }}>
-                    <button onClick={() => { setQrOpen(true); setMobileMenuOpen(false); }} className="btn btn-secondary w-full text-center" style={{ padding: '8px 12px', fontSize: '0.85rem' }}>🖨️ QR Code</button>
-                    <a 
-                      href={`/store/${(user.storeName || '').toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')}`} 
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="btn btn-primary w-full text-center" 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      style={{ padding: '8px 12px', fontSize: '0.85rem', textDecoration: 'none', display: 'block' }}
-                    >
-                      Visit Storefront
-                    </a>
-                  </div>
-                )}
-                <Link to={getDashboardLink()} onClick={() => setMobileMenuOpen(false)} className="nav-link text-center">{t('dashboard')}</Link>
-                <div style={{ padding: '8px 0', borderTop: '1px solid var(--border-glass)', marginBottom: '8px', width: '100%', textAlign: 'center' }}>
-                  <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                    Logged in as <strong>{user.username}</strong> <span style={{ fontSize: '0.72rem', opacity: 0.8 }}>({user.role === 'business' ? user.businessType : user.role})</span>
-                  </span>
-                </div>
-                <button 
-                  onClick={() => { handleLogout(); setMobileMenuOpen(false); }} 
-                  className="btn btn-secondary w-full"
-                >
-                  {t('logout')}
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="nav-link text-center">{t('login')}</Link>
-                <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="btn btn-primary w-full text-center">{t('be_partner')}</Link>
-              </>
-            )}
-          </div>
-        )}
         {qrOpen && (
           <QrModal 
             isOpen={qrOpen}
@@ -708,10 +578,119 @@ const Navbar = () => {
           .navbar-center-filters {
             display: none; /* Hide main categories search filters bar in mobile top nav */
           }
+          .navbar-top-banner {
+            display: none !important;
+          }
+          .logo-motto {
+            display: none !important;
+          }
+          .mobile-bottom-tabbar {
+            display: flex !important;
+          }
         }
+        
+        .mobile-bottom-tabbar {
+          display: none;
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: var(--bg-navbar);
+          backdrop-filter: var(--blur-glass);
+          -webkit-backdrop-filter: var(--blur-glass);
+          border-top: 1px solid var(--border-glass);
+          z-index: 1000;
+          padding: 8px 4px;
+          padding-bottom: env(safe-area-inset-bottom, 8px);
+          overflow-x: auto;
+          gap: 4px;
+          box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .mobile-bottom-tabbar::-webkit-scrollbar {
+          display: none;
+        }
+        
+        .mobile-tab-btn {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: none;
+          border: none;
+          color: var(--text-secondary);
+          min-width: 72px;
+          padding: 4px;
+          gap: 2px;
+          transition: color 0.2s;
+        }
+        
+        .mobile-tab-btn.active {
+          color: var(--accent-primary);
+        }
+        
+        .mobile-tab-btn span.material-symbols-outlined {
+          font-size: 1.4rem;
+        }
+        
+        .mobile-tab-btn span.tab-label {
+          font-size: 0.65rem;
+          font-weight: 600;
+          white-space: nowrap;
+        }
+        
       `}</style>
-    </nav>
-    </div>
+      </nav>
+      </div>
+
+      {/* Mobile Bottom Tabbar */}
+      {showFilters && (
+        <div className="mobile-bottom-tabbar d-lg-none">
+          <button
+            onClick={() => { handleTypeSelect('store_product'); setMobileMenuOpen(false); }}
+            className={`mobile-tab-btn ${selectedType === 'store_product' ? 'active' : ''}`}
+          >
+            <span style={{ fontSize: '1.4rem' }}>🛒</span>
+          </button>
+          <button
+            onClick={() => { handleTypeSelect('handyman_skill'); setMobileMenuOpen(false); }}
+            className={`mobile-tab-btn ${selectedType === 'handyman_skill' ? 'active' : ''}`}
+          >
+            <span style={{ fontSize: '1.4rem' }}>🛠️</span>
+          </button>
+          <button
+            onClick={() => { handleTypeSelect('service'); setMobileMenuOpen(false); }}
+            className={`mobile-tab-btn ${selectedType === 'service' ? 'active' : ''}`}
+          >
+            <span style={{ fontSize: '1.4rem' }}>💼</span>
+          </button>
+          <button
+            onClick={() => { handleTypeSelect('job_opening'); setMobileMenuOpen(false); }}
+            className={`mobile-tab-btn ${selectedType === 'job_opening' ? 'active' : ''}`}
+          >
+            <span style={{ fontSize: '1.4rem' }}>🏢</span>
+          </button>
+          <button
+            onClick={() => { handleTypeSelect('house'); setMobileMenuOpen(false); }}
+            className={`mobile-tab-btn ${selectedType === 'house' ? 'active' : ''}`}
+          >
+            <span style={{ fontSize: '1.4rem' }}>🏠</span>
+          </button>
+          <button
+            onClick={() => { handleTypeSelect('car'); setMobileMenuOpen(false); }}
+            className={`mobile-tab-btn ${selectedType === 'car' ? 'active' : ''}`}
+          >
+            <span style={{ fontSize: '1.4rem' }}>🚗</span>
+          </button>
+          <button
+            onClick={() => { handleTypeSelect('personal_item'); setMobileMenuOpen(false); }}
+            className={`mobile-tab-btn ${selectedType === 'personal_item' ? 'active' : ''}`}
+          >
+            <span style={{ fontSize: '1.4rem' }}>📦</span>
+          </button>
+        </div>
+      )}
+    </>
   );
 };
 

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import ListingCard from '../components/ListingCard';
+import FilterButton from '../components/FilterButton';
 
 const Home = () => {
   const [listings, setListings] = useState([]);
@@ -18,6 +19,43 @@ const Home = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [sortBy, setSortBy] = useState('newest');
+
+  // Mobile sidebar open state
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // Real Estate / Houses filters
+  const [propertyStatus, setPropertyStatus] = useState('All');
+  const [propertyTypeFilter, setPropertyTypeFilter] = useState('All');
+  const [minBeds, setMinBeds] = useState(0);
+  const [minBaths, setMinBaths] = useState(0);
+  const [locationFilter, setLocationFilter] = useState('');
+  const [nearMe, setNearMe] = useState(false);
+  const [radius, setRadius] = useState(50);
+
+  // Automotive / Cars filters
+  const [carStatus, setCarStatus] = useState('All');
+  const [brandFilter, setBrandFilter] = useState('All');
+  const [minYear, setMinYear] = useState('All');
+  const [transmissionFilter, setTransmissionFilter] = useState('All');
+  const [fuelType, setFuelType] = useState('All');
+
+  // Jobs filters
+  const [jobType, setJobType] = useState('All');
+  const [workModel, setWorkModel] = useState('All');
+  const [minSalary, setMinSalary] = useState(0);
+
+  // Professional Services filters
+  const [pricingModel, setPricingModel] = useState('All');
+  const [minExp, setMinExp] = useState(0);
+
+  // Hire Me / Handymen filters
+  const [availabilityFilter, setAvailabilityFilter] = useState('All');
+  const [minRating, setMinRating] = useState(0);
+
+  // Marketplace / Used Items filters
+  const [priceRange, setPriceRange] = useState(1000);
+  const [selectedLocations, setSelectedLocations] = useState([]);
+  const [storeType, setStoreType] = useState('All');
 
   // Sync local input state with URL parameter changes (e.g. when user clicks home/logo)
   useEffect(() => {
@@ -398,7 +436,102 @@ const Home = () => {
     const matchesType = !selectedType || item.type === selectedType;
     const matchesCategory = !selectedCategory || item.category === selectedCategory;
 
-    return matchesSearch && matchesType && matchesCategory;
+    if (!matchesSearch || !matchesType || !matchesCategory) return false;
+
+    // Apply specific filters based on item type
+    if (item.type === 'house') {
+      const meta = item.metadata || {};
+      if (propertyStatus !== 'All' && item.category !== propertyStatus) return false;
+      if (propertyTypeFilter !== 'All') {
+        const typeStr = meta.propertyType || '';
+        if (typeStr.toLowerCase() !== propertyTypeFilter.toLowerCase()) return false;
+      }
+      const bedsCount = parseInt(meta.bedrooms) || 0;
+      if (bedsCount < minBeds) return false;
+      const bathsCount = parseInt(meta.bathrooms) || 0;
+      if (bathsCount < minBaths) return false;
+      if (priceRange < 1000 && item.price && item.price > priceRange) return false;
+      if (locationFilter) {
+        const loc = (item.description || '') + ' ' + (item.title || '') + ' ' + (item.category || '');
+        if (!loc.toLowerCase().includes(locationFilter.toLowerCase())) return false;
+      }
+    }
+
+    if (item.type === 'car') {
+      const meta = item.metadata || {};
+      if (carStatus !== 'All' && item.category !== carStatus) return false;
+      if (brandFilter !== 'All') {
+        const make = meta.make || '';
+        if (make.toLowerCase() !== brandFilter.toLowerCase()) return false;
+      }
+      if (minYear !== 'All') {
+        const yearNum = parseInt(meta.year) || 0;
+        const targetYear = parseInt(minYear.replace('+', '')) || 0;
+        if (yearNum < targetYear) return false;
+      }
+      if (transmissionFilter !== 'All') {
+        const trans = meta.transmission || '';
+        if (trans.toLowerCase() !== transmissionFilter.toLowerCase()) return false;
+      }
+      if (fuelType !== 'All') {
+        const fuel = meta.fuelType || '';
+        if (fuel.toLowerCase() !== fuelType.toLowerCase()) return false;
+      }
+      if (priceRange < 1000 && item.price && item.price > priceRange) return false;
+    }
+
+    if (item.type === 'job_opening') {
+      if (jobType !== 'All') {
+        const typeStr = item.category || '';
+        if (typeStr.toLowerCase() !== jobType.toLowerCase()) return false;
+      }
+      if (workModel !== 'All') {
+        const modelStr = item.description || '';
+        if (!modelStr.toLowerCase().includes(workModel.toLowerCase())) return false;
+      }
+      if (minSalary > 0 && item.price && item.price < minSalary) return false;
+      if (locationFilter) {
+        const loc = (item.description || '') + ' ' + (item.title || '');
+        if (!loc.toLowerCase().includes(locationFilter.toLowerCase())) return false;
+      }
+    }
+
+    if (item.type === 'service') {
+      if (pricingModel !== 'All') {
+        const priceModelStr = item.description || '';
+        if (!priceModelStr.toLowerCase().includes(pricingModel.toLowerCase())) return false;
+      }
+      if (minExp > 0) {
+        const desc = (item.description || '').toLowerCase();
+        const expMatch = desc.match(/(\d+)\s*yrs|years/i);
+        if (expMatch) {
+          const exp = parseInt(expMatch[1]);
+          if (exp < minExp) return false;
+        }
+      }
+      if (locationFilter) {
+        const loc = (item.description || '') + ' ' + (item.title || '');
+        if (!loc.toLowerCase().includes(locationFilter.toLowerCase())) return false;
+      }
+    }
+
+    if (item.type === 'handyman_skill') {
+      if (availabilityFilter !== 'All') {
+        const availStr = item.description || '';
+        if (!availStr.toLowerCase().includes(availabilityFilter.toLowerCase())) return false;
+      }
+      if (minRating > 0) {
+        const itemRating = parseFloat(item.rating) || 5.0;
+        if (itemRating < minRating) return false;
+      }
+    }
+
+    if (item.type === 'store_product' || item.type === 'personal_item') {
+      if (priceRange < 1000 && item.price && item.price > priceRange) return false;
+      if (storeType !== 'All' && item.category !== storeType) return false;
+    }
+
+    return true;
   });
 
   // Client-side sorting for real-time reactivity
@@ -458,7 +591,6 @@ const Home = () => {
           {/* Slogan Banner */}
           <section className="motto-banner">
             <div className="container">
-              <span className="motto-num">99</span>
               <h2 className="motto-text">"ALL Buyers are Sellers"</h2>
               <a href="#manifesto" className="motto-link">MANIFESTO LINK</a>
             </div>
@@ -468,14 +600,13 @@ const Home = () => {
           <section className="quick-explore container">
             <h3 className="section-title-centered">Explore Ethizone</h3>
             <div className="explore-pills-row">
-              <button onClick={() => handleTypeSelect('store_product')} className="explore-pill">🛍️ Marketplace</button>
-              <button onClick={() => handleTypeSelect('service')} className="explore-pill">🗂️ Categories</button>
-              <button onClick={() => handleTypeSelect('car')} className="explore-pill">🚗 Cars</button>
-              <button onClick={() => handleTypeSelect('house')} className="explore-pill">🏠 Houses</button>
-              <button onClick={() => handleTypeSelect('store_product')} className="explore-pill">🏬 Stores</button>
-              <button onClick={() => handleTypeSelect('job_opening')} className="explore-pill">💼 Jobs</button>
-              <button onClick={() => handleTypeSelect('handyman_skill')} className="explore-pill">🛠️ Hire Me</button>
-              <button onClick={() => handleTypeSelect('service')} className="explore-pill">🗃️ Services</button>
+              <button onClick={() => handleTypeSelect('store_product')} className="explore-pill">🏬 {t('stores')}</button>
+              <button onClick={() => handleTypeSelect('handyman_skill')} className="explore-pill">🛠️ {t('handymen')}</button>
+              <button onClick={() => handleTypeSelect('service')} className="explore-pill">🗃️ {t('services')}</button>
+              <button onClick={() => handleTypeSelect('job_opening')} className="explore-pill">💼 {t('organizations')}</button>
+              <button onClick={() => handleTypeSelect('house')} className="explore-pill">🏠 {t('real_estate')}</button>
+              <button onClick={() => handleTypeSelect('car')} className="explore-pill">🚗 {t('automotive')}</button>
+              <button onClick={() => handleTypeSelect('personal_item')} className="explore-pill">📦 {t('used_items')}</button>
             </div>
           </section>
 
@@ -487,39 +618,39 @@ const Home = () => {
             </div>
             <div className="grid-categories">
               {/* Left Large Card */}
-              <div className="cat-card-large" onClick={() => handleTypeSelect('store_product')}>
+              <div className="cat-card-large" onClick={() => handleTypeSelect('personal_item')}>
                 <div className="cat-img-wrapper">
-                  <img src="https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=800&q=80" alt="Marketplace" />
+                  <img src="https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=800&q=80" alt="Used Items" />
                   <div className="cat-overlay">
                     <span className="cat-badge-tag">ACTIVE</span>
-                    <h4>Marketplace</h4>
+                    <h4>{t('used_items')}</h4>
                   </div>
                 </div>
               </div>
               {/* Right 4-card Grid */}
               <div className="cat-grid-small">
                 <div className="cat-card-small" onClick={() => handleTypeSelect('car')}>
-                  <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=400&q=80" alt="Cars" />
+                  <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=400&q=80" alt="Automotive" />
                   <div className="cat-overlay-small">
-                    <h4>Cars</h4>
+                    <h4>{t('automotive')}</h4>
                   </div>
                 </div>
                 <div className="cat-card-small" onClick={() => handleTypeSelect('house')}>
-                  <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80" alt="Houses" />
+                  <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80" alt="Real Estate" />
                   <div className="cat-overlay-small">
-                    <h4>Houses</h4>
+                    <h4>{t('real_estate')}</h4>
                   </div>
                 </div>
                 <div className="cat-card-small" onClick={() => handleTypeSelect('job_opening')}>
                   <img src="https://images.unsplash.com/photo-1521737711867-e3b90473bd58?auto=format&fit=crop&w=400&q=80" alt="Jobs" />
                   <div className="cat-overlay-small">
-                    <h4>Jobs</h4>
+                    <h4>{t('organizations')}</h4>
                   </div>
                 </div>
                 <div className="cat-card-small" onClick={() => handleTypeSelect('service')}>
                   <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80" alt="Services" />
                   <div className="cat-overlay-small">
-                    <h4>Services</h4>
+                    <h4>{t('services')}</h4>
                   </div>
                 </div>
               </div>
@@ -682,157 +813,784 @@ const Home = () => {
       ) : (
         /* Regular Directory Listing View when filters are active */
         <div className="container directory-page-content" style={{ padding: '40px 0' }}>
-          <main className="directory-main">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid var(--border-glass)', paddingBottom: '12px' }}>
-              <h2 className="directory-title" style={{ border: 0, margin: 0, padding: 0 }}>
-                {selectedType 
-                  ? t('active_postings_for').replace('{type}', t(selectedType.replace('store_product', 'stores').replace('handyman_skill', 'handymen').replace('service', 'services').replace('job_opening', 'organizations').replace('house', 'real_estate').replace('car', 'automotive').replace('personal_item', 'used_items')))
-                  : t('all_listings')}
-                {selectedCategory && ` in ${selectedCategory}`}
-              </h2>
-              <button 
-                onClick={() => {
-                  const newParams = new URLSearchParams(searchParams);
-                  newParams.delete('type');
-                  setSearchParams(newParams);
-                  setSelectedCategory('');
-                  setSearchQuery('');
-                }} 
-                className="btn btn-secondary btn-sm"
-              >
-                ← Back to Home
-              </button>
-            </div>
-
-            {/* Real-time Dynamic Directory Filters */}
-            <div className="glass-panel" style={{ padding: '20px', marginBottom: '24px', borderRadius: '12px', border: '1px solid var(--border-glass)', background: 'rgba(15, 23, 42, 0.4)' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', alignItems: 'center' }}>
-                {/* Search query input */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px', fontWeight: '600' }}>SEARCH KEYWORD</label>
-                  <input 
-                    type="text" 
-                    placeholder="Search in these results..." 
-                    value={searchInput} 
-                    onChange={(e) => {
-                      setSearchInput(e.target.value);
-                      const newParams = new URLSearchParams(searchParams);
-                      if (e.target.value) {
-                        newParams.set('query', e.target.value);
-                      } else {
-                        newParams.delete('query');
-                      }
-                      setSearchParams(newParams);
-                    }}
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.05)', color: '#fff', outline: 'none' }}
-                  />
-                </div>
-
-                {/* Type Selection */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px', fontWeight: '600' }}>LISTING TYPE</label>
-                  <select 
-                    value={selectedType}
-                    onChange={(e) => {
-                      const newParams = new URLSearchParams(searchParams);
-                      if (e.target.value) {
-                        newParams.set('type', e.target.value);
-                      } else {
-                        newParams.delete('type');
-                      }
-                      setSearchParams(newParams);
-                    }}
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: '#1e293b', color: '#fff', outline: 'none' }}
-                  >
-                    <option value="">All Types</option>
-                    <option value="store_product">Stores / Products</option>
-                    <option value="service">Services / Providers</option>
-                    <option value="car">Automotive / Cars</option>
-                    <option value="house">Real Estate / Houses</option>
-                    <option value="job_opening">Jobs / Organizations</option>
-                    <option value="handyman_skill">Handymen / Hire Me</option>
-                  </select>
-                </div>
-
-                {/* Category Selection */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px', fontWeight: '600' }}>CATEGORY</label>
-                  <select 
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: '#1e293b', color: '#fff', outline: 'none' }}
-                  >
-                    <option value="">All Categories</option>
-                    {categories.map((cat) => (
-                      <option key={cat._id || cat.name} value={cat.name}>{cat.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Sort Order */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px', fontWeight: '600' }}>SORT BY</label>
-                  <select 
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: '#1e293b', color: '#fff', outline: 'none' }}
-                  >
-                    <option value="newest">Newest First</option>
-                    <option value="price_asc">Price: Low to High</option>
-                    <option value="price_desc">Price: High to Low</option>
-                  </select>
-                </div>
+          
+          {/* Mobile Filter Toggle Bar */}
+          <div className="d-lg-none mb-3">
+            <button
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className="w-100 d-flex justify-content-between align-items-center py-3 px-3 rounded-3 border-0 transition-all filter-toggle-bar shadow-sm"
+              style={{
+                background: isFilterOpen ? 'var(--accent-primary)' : 'var(--bg-card)',
+                color: isFilterOpen ? '#ffffff' : 'var(--text-main)',
+                border: '1px solid var(--border-glass)'
+              }}
+            >
+              <div className="d-flex align-items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="21" x2="14" y1="4" y2="4" />
+                  <line x1="10" x2="3" y1="4" y2="4" />
+                  <line x1="21" x2="12" y1="12" y2="12" />
+                  <line x1="8" x2="3" y1="12" y2="12" />
+                  <line x1="21" x2="16" y1="20" y2="20" />
+                  <line x1="12" x2="3" y1="20" y2="20" />
+                  <line x1="14" x2="14" y1="2" y2="6" />
+                  <line x1="8" x2="8" y1="10" y2="14" />
+                  <line x1="12" x2="12" y1="18" y2="22" />
+                </svg>
+                <span className="fw-semibold">{t('filters')}</span>
               </div>
-            </div>
-
-            {error && <div className="alert alert-danger">{error}</div>}
-
-            {loading ? (
-              <div className="loading-container flex-center">
-                <div className="spinner"></div>
-                <p style={{ marginTop: '16px' }}>Searching active directories...</p>
+              <div className="d-flex align-items-center gap-2">
+                <span style={{ fontSize: '0.8rem', opacity: 0.9 }}>{sortedListings.length} listings</span>
+                <span className="material-symbols-outlined transition-all" style={{ transform: isFilterOpen ? 'rotate(180deg)' : 'rotate(0)' }}>
+                  expand_more
+                </span>
               </div>
-            ) : sortedListings.length === 0 ? (
-              <div className="glass-panel empty-directory flex-center">
-                <span className="empty-icon">📂</span>
-                <h3>No Active Listings Found</h3>
-                <p>Try refining your search keyword or selecting a different category/type filter.</p>
-              </div>
-            ) : (
-              <>
-                <div className="row g-4 listings-directory-grid">
-                  {sortedListings.map((item) => (
-                    <div key={item._id} className="col-12 col-sm-6 col-lg-4 col-xl-3">
-                      <ListingCard listing={item} />
+            </button>
+          </div>
+
+
+
+          <div className="row">
+            {/* Sidebar Column */}
+            <aside className={`col-12 col-lg-3 ${isFilterOpen ? 'd-block' : 'd-none d-lg-block'} mb-4`}>
+              <div className="filter-sidebar-card" style={{ minWidth: '240px' }}>
+                
+                {/* Dynamically render the filter fields matching the selected type */}
+                {selectedType === 'house' && (
+                  <div className="space-y-4">
+                    <h2 className="fs-4 fw-bold pb-2 border-bottom">{t('filters')}</h2>
+                    
+                    {/* Status */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('status')}</h4>
+                      {[
+                        { value: 'All', key: 'all' },
+                        { value: 'Residential Homes', key: 'res_homes' },
+                        { value: 'Rental Apartments', key: 'rent_apts' },
+                        { value: 'Commercial Real Estate', key: 'comm_re' },
+                        { value: 'Land & Lots', key: 'land_lots' }
+                      ].map((item) => (
+                        <label key={item.value} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                          <input
+                            type="radio"
+                            name="propertyStatus"
+                            className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                            checked={propertyStatus === item.value}
+                            onChange={() => setPropertyStatus(item.value)}
+                          />
+                          <span>{t(item.key)}</span>
+                        </label>
+                      ))}
                     </div>
-                  ))}
-                </div>
 
-                {/* Pagination Controls */}
-                {totalPages > 1 && (
-                  <div className="pagination-wrapper flex-center" style={{ marginTop: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px' }}>
-                    <button 
-                      onClick={() => fetchListings(currentPage - 1)} 
-                      disabled={currentPage === 1}
-                      className="btn btn-secondary btn-pagination"
-                    >
-                      ◀ Prev
-                    </button>
-                    <span className="pagination-info">
-                      Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
-                    </span>
-                    <button 
-                      onClick={() => fetchListings(currentPage + 1)} 
-                      disabled={currentPage === totalPages}
-                      className="btn btn-secondary btn-pagination"
-                    >
-                      Next ▶
-                    </button>
+                    {/* Property Type */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('property_type')}</h4>
+                      {[
+                        { value: 'All', key: 'all' },
+                        { value: 'House', key: 'house' },
+                        { value: 'Apartment', key: 'apartment' },
+                        { value: 'Penthouse', key: 'penthouse' },
+                        { value: 'Office', key: 'office' },
+                        { value: 'Land', key: 'land' }
+                      ].map((item) => (
+                        <label key={item.value} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                          <input
+                            type="radio"
+                            name="propertyTypeFilter"
+                            className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                            checked={propertyTypeFilter === item.value}
+                            onChange={() => setPropertyTypeFilter(item.value)}
+                          />
+                          <span>{t(item.key)}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Bedrooms */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('bedrooms_filter')}</h4>
+                      <div className="d-flex flex-wrap gap-2">
+                        {[0, 1, 2, 3, 4].map((num) => (
+                          <button
+                            key={num}
+                            onClick={() => setMinBeds(num)}
+                            className={`btn btn-sm px-3 rounded-pill fw-semibold ${minBeds === num ? 'btn-success bg-success' : 'btn-light border'}`}
+                            style={minBeds === num ? { backgroundColor: '#0f5132', borderColor: '#0f5132', color: '#fff' } : {}}
+                          >
+                            {num === 0 ? t('all') : `${num}+`}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Bathrooms */}
+                    <div className="mt-3 pb-3 border-bottom">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('bathrooms_filter')}</h4>
+                      <div className="d-flex flex-wrap gap-2">
+                        {[0, 1, 2, 3].map((num) => (
+                          <button
+                            key={num}
+                            onClick={() => setMinBaths(num)}
+                            className={`btn btn-sm px-3 rounded-pill fw-semibold ${minBaths === num ? 'btn-success bg-success' : 'btn-light border'}`}
+                            style={minBaths === num ? { backgroundColor: '#0f5132', borderColor: '#0f5132', color: '#fff' } : {}}
+                          >
+                            {num === 0 ? t('all') : `${num}+`}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Price Range */}
+                    <div className="mt-3 pb-3 border-bottom">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('max_price')}</h4>
+                      <input
+                        type="range"
+                        className="w-100 cursor-pointer"
+                        min="0"
+                        max="5000000"
+                        step="50000"
+                        value={priceRange}
+                        onChange={(e) => setPriceRange(parseInt(e.target.value))}
+                        style={{ accentColor: '#0f5132' }}
+                      />
+                      <div className="d-flex justify-content-between mt-1 text-xs font-semibold text-secondary" style={{ fontSize: '0.8rem' }}>
+                        <span>$0</span>
+                        <span>${priceRange >= 1000000 ? `${(priceRange / 1000000).toFixed(1)}M` : `${(priceRange / 1000).toFixed(0)}k`}</span>
+                      </div>
+                    </div>
+
+                    {/* Location Input (Full width, no duplicate label, city/town placeholder) */}
+                    <div className="mt-3">
+                      <input
+                        type="text"
+                        placeholder={t('location_placeholder')}
+                        className="filter-location-input"
+                        value={locationFilter}
+                        onChange={(e) => setLocationFilter(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="pt-3">
+                      <button
+                        onClick={() => {
+                          setPropertyStatus('All');
+                          setPropertyTypeFilter('All');
+                          setMinBeds(0);
+                          setMinBaths(0);
+                          setPriceRange(5000000);
+                          setLocationFilter('');
+                          setSearchQuery('');
+                        }}
+                        className="btn btn-light border w-100 py-2 rounded-3 fw-semibold transition-all"
+                      >
+                        {t('reset_filters')}
+                      </button>
+                    </div>
                   </div>
                 )}
-              </>
-            )}
-          </main>
+
+                {selectedType === 'car' && (
+                  <div className="space-y-4">
+                    <h2 className="fs-4 fw-bold pb-2 border-bottom">{t('filters')}</h2>
+
+                    {/* Brand */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('brand')}</h4>
+                      {[
+                        { value: 'All', key: 'all' },
+                        { value: 'Tesla' },
+                        { value: 'BMW' },
+                        { value: 'Ford' },
+                        { value: 'Porsche' },
+                        { value: 'Honda' },
+                        { value: 'Toyota' }
+                      ].map((item) => (
+                        <label key={item.value} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                          <input
+                            type="radio"
+                            name="brandFilter"
+                            className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                            checked={brandFilter === item.value}
+                            onChange={() => setBrandFilter(item.value)}
+                          />
+                          <span>{item.key ? t(item.key) : item.value}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Min Year */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('min_year_filter')}</h4>
+                      <div className="d-flex flex-wrap gap-2">
+                        {[
+                          { value: 'All', key: 'all' },
+                          { value: '2023+' },
+                          { value: '2022+' },
+                          { value: '2021+' },
+                          { value: '2020+' }
+                        ].map((item) => (
+                          <button
+                            key={item.value}
+                            onClick={() => setMinYear(item.value)}
+                            className={`btn btn-sm px-3 rounded-pill fw-semibold ${minYear === item.value ? 'btn-success bg-success' : 'btn-light border'}`}
+                            style={minYear === item.value ? { backgroundColor: '#0f5132', borderColor: '#0f5132', color: '#fff' } : {}}
+                          >
+                            {item.key ? t(item.key) : item.value}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Transmission */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('transmission')}</h4>
+                      {[
+                        { value: 'All', key: 'all' },
+                        { value: 'Automatic', key: 'automatic' },
+                        { value: 'Manual', key: 'manual' }
+                      ].map((item) => (
+                        <label key={item.value} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                          <input
+                            type="radio"
+                            name="transmissionFilter"
+                            className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                            checked={transmissionFilter === item.value}
+                            onChange={() => setTransmissionFilter(item.value)}
+                          />
+                          <span>{t(item.key)}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Fuel Type */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('fuel_type')}</h4>
+                      {[
+                        { value: 'All', key: 'all' },
+                        { value: 'Gasoline', key: 'gasoline' },
+                        { value: 'Diesel', key: 'diesel' },
+                        { value: 'Electric', key: 'electric' },
+                        { value: 'Hybrid', key: 'hybrid' }
+                      ].map((item) => (
+                        <label key={item.value} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                          <input
+                            type="radio"
+                            name="fuelType"
+                            className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                            checked={fuelType === item.value}
+                            onChange={() => setFuelType(item.value)}
+                          />
+                          <span>{t(item.key)}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Max Price */}
+                    <div className="mt-3 pb-3 border-bottom">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('max_price')}</h4>
+                      <input
+                        type="range"
+                        className="w-100 cursor-pointer"
+                        min="0"
+                        max="150000"
+                        step="5000"
+                        value={priceRange}
+                        onChange={(e) => setPriceRange(parseInt(e.target.value))}
+                        style={{ accentColor: '#0f5132' }}
+                      />
+                      <div className="d-flex justify-content-between mt-1 text-xs font-semibold text-secondary" style={{ fontSize: '0.8rem' }}>
+                        <span>$0</span>
+                        <span>${(priceRange / 1000).toFixed(0)}k</span>
+                      </div>
+                    </div>
+
+                    {/* Location Input (Full width, no duplicate label, city/town placeholder) */}
+                    <div className="mt-3">
+                      <input
+                        type="text"
+                        placeholder={t('location_placeholder')}
+                        className="filter-location-input"
+                        value={locationFilter}
+                        onChange={(e) => setLocationFilter(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="pt-4 border-top">
+                      <button
+                        onClick={() => {
+                          setCarStatus('All');
+                          setBrandFilter('All');
+                          setMinYear('All');
+                          setTransmissionFilter('All');
+                          setFuelType('All');
+                          setPriceRange(150000);
+                          setLocationFilter('');
+                          setSearchQuery('');
+                        }}
+                        className="btn btn-light border w-100 py-2 rounded-3 fw-semibold transition-all"
+                      >
+                        {t('reset_filters')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {selectedType === 'job_opening' && (
+                  <div className="space-y-4">
+                    <h2 className="fs-4 fw-bold pb-2 border-bottom">{t('filters')}</h2>
+
+                    {/* Job Type */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('job_type')}</h4>
+                      {[
+                        { value: 'All', key: 'all' },
+                        { value: 'Full-Time', key: 'full_time' },
+                        { value: 'Part-Time', key: 'part_time' },
+                        { value: 'Contract', key: 'contract' },
+                        { value: 'Freelance', key: 'freelance' },
+                        { value: 'Internship', key: 'internship' }
+                      ].map((item) => (
+                        <label key={item.value} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                          <input
+                            type="radio"
+                            name="jobType"
+                            className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                            checked={jobType === item.value}
+                            onChange={() => setJobType(item.value)}
+                          />
+                          <span>{t(item.key)}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Work Model */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('work_model')}</h4>
+                      {[
+                        { value: 'All', key: 'all' },
+                        { value: 'On-site', key: 'onsite' },
+                        { value: 'Hybrid', key: 'hybrid' },
+                        { value: 'Remote', key: 'remote' }
+                      ].map((item) => (
+                        <label key={item.value} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                          <input
+                            type="radio"
+                            name="workModel"
+                            className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                            checked={workModel === item.value}
+                            onChange={() => setWorkModel(item.value)}
+                          />
+                          <span>{t(item.key)}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Minimum Salary */}
+                    <div className="mt-3 pb-3 border-bottom">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('min_salary')}</h4>
+                      <input
+                        type="range"
+                        className="w-100 cursor-pointer"
+                        min="0"
+                        max="200000"
+                        step="10000"
+                        value={minSalary}
+                        onChange={(e) => setMinSalary(parseInt(e.target.value))}
+                        style={{ accentColor: '#0f5132' }}
+                      />
+                      <div className="d-flex justify-content-between mt-1 text-xs font-semibold text-secondary" style={{ fontSize: '0.8rem' }}>
+                        <span>$0</span>
+                        {minSalary > 0 && <span style={{ color: '#0f5132' }}>${(minSalary / 1000).toFixed(0)}k</span>}
+                        <span>$200k+</span>
+                      </div>
+                    </div>
+
+                    {/* Location Input (Full width, no duplicate label, city/town placeholder) */}
+                    <div className="mt-3">
+                      <input
+                        type="text"
+                        placeholder={t('location_placeholder')}
+                        className="filter-location-input"
+                        value={locationFilter}
+                        onChange={(e) => setLocationFilter(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="pt-3">
+                      <button
+                        onClick={() => {
+                          setJobType('All');
+                          setWorkModel('All');
+                          setMinSalary(0);
+                          setLocationFilter('');
+                          setSearchQuery('');
+                        }}
+                        className="btn btn-light border w-100 py-2 rounded-3 fw-semibold transition-all"
+                      >
+                        {t('reset_filters')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {selectedType === 'service' && (
+                  <div className="space-y-4">
+                    <h2 className="fs-4 fw-bold pb-2 border-bottom">{t('filters')}</h2>
+
+                    {/* Pricing Model */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('pricing_model')}</h4>
+                      {[
+                        { value: 'All', key: 'all' },
+                        { value: 'Hourly Rate', key: 'hourly_rate' },
+                        { value: 'Fixed Price per Project', key: 'fixed_price' },
+                        { value: 'Contact for Quote', key: 'contact_quote' }
+                      ].map((item) => (
+                        <label key={item.value} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                          <input
+                            type="radio"
+                            name="pricingModel"
+                            className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                            checked={pricingModel === item.value}
+                            onChange={() => setPricingModel(item.value)}
+                          />
+                          <span>{t(item.key)}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Experience */}
+                    <div className="mt-3 pb-3 border-bottom">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('min_experience')}</h4>
+                      <input
+                        type="range"
+                        className="w-100 cursor-pointer"
+                        min="0"
+                        max="15"
+                        value={minExp}
+                        onChange={(e) => setMinExp(parseInt(e.target.value))}
+                        style={{ accentColor: '#0f5132' }}
+                      />
+                      <div className="d-flex justify-content-between mt-1 text-xs font-semibold text-secondary" style={{ fontSize: '0.8rem' }}>
+                        <span>0 Yrs</span>
+                        {minExp > 0 && <span style={{ color: '#0f5132' }}>{minExp} Yrs</span>}
+                        <span>15+ Yrs</span>
+                      </div>
+                    </div>
+
+                    {/* Location Input (Full width, no duplicate label, city/town placeholder) */}
+                    <div className="mt-3">
+                      <input
+                        type="text"
+                        placeholder={t('location_placeholder')}
+                        className="filter-location-input"
+                        value={locationFilter}
+                        onChange={(e) => setLocationFilter(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="pt-4 border-top">
+                      <button
+                        onClick={() => {
+                          setPricingModel('All');
+                          setMinExp(0);
+                          setLocationFilter('');
+                          setSearchQuery('');
+                        }}
+                        className="btn btn-light border w-100 py-2 rounded-3 fw-semibold transition-all"
+                      >
+                        {t('reset_filters')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {selectedType === 'handyman_skill' && (
+                  <div className="space-y-4">
+                    <h2 className="fs-4 fw-bold pb-2 border-bottom">{t('filters')}</h2>
+
+                    {/* Availability */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('availability')}</h4>
+                      {[
+                        { value: 'All', key: 'all' },
+                        { value: 'Available Today', key: 'avail_today' },
+                        { value: 'Available Tomorrow', key: 'avail_tomorrow' },
+                        { value: 'Available This Week', key: 'avail_this_week' }
+                      ].map((item) => (
+                        <label key={item.value} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                          <input
+                            type="radio"
+                            name="availability"
+                            className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                            checked={availabilityFilter === item.value}
+                            onChange={() => setAvailabilityFilter(item.value)}
+                          />
+                          <span>{t(item.key)}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Minimum Rating */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('min_rating')}</h4>
+                      {[
+                        { label: t('any_rating'), val: 0 },
+                        { label: '4.5 & up', val: 4.5 },
+                        { label: '4.0 & up', val: 4.0 },
+                        { label: '3.0 & up', val: 3.0 }
+                      ].map((r) => (
+                        <label key={r.val} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                          <input
+                            type="radio"
+                            name="minRating"
+                            className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                            checked={minRating === r.val}
+                            onChange={() => setMinRating(r.val)}
+                          />
+                          <span className="d-flex align-items-center gap-1">
+                            {r.label}
+                            {r.val > 0 && <span className="text-warning">⭐</span>}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Location Input (Full width, no duplicate label, city/town placeholder) */}
+                    <div className="mt-3">
+                      <input
+                        type="text"
+                        placeholder={t('location_placeholder')}
+                        className="filter-location-input"
+                        value={locationFilter}
+                        onChange={(e) => setLocationFilter(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="pt-4 border-top">
+                      <button
+                        onClick={() => {
+                          setAvailabilityFilter('All');
+                          setMinRating(0);
+                          setLocationFilter('');
+                          setSearchQuery('');
+                        }}
+                        className="btn btn-light border w-100 py-2 rounded-3 fw-semibold transition-all"
+                      >
+                        {t('reset_filters')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Marketplace / Used Items filters (Default fallback when store_product/personal_item or no specific filter selected) */}
+                {(selectedType === 'store_product' || selectedType === 'personal_item' || !selectedType) && (
+                  <div className="space-y-4">
+                    <h2 className="fs-4 fw-bold pb-2 border-bottom">{t('filters')}</h2>
+
+                    {/* Category */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('category')}</h4>
+                      {[
+                        { value: 'All', key: 'all' },
+                        { value: 'Boutique', key: 'boutique' },
+                        { value: 'Pharmacy', key: 'pharmacy' },
+                        { value: 'Liquor Store', key: 'liquor_store' },
+                        { value: 'Grocery Store', key: 'grocery_store' },
+                        { value: 'Electronics Shop', key: 'electronics_shop' },
+                        { value: 'Bookstore', key: 'bookstore' }
+                      ].map((item) => (
+                        <label key={item.value} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                          <input
+                            type="radio"
+                            name="storeCategory"
+                            className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                            checked={(item.value === 'All' && !selectedCategory) || selectedCategory === item.value}
+                            onChange={() => setSelectedCategory(item.value === 'All' ? '' : item.value)}
+                          />
+                          <span>{t(item.key)}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Store Type */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('store_type_filter')}</h4>
+                      {[
+                        { label: t('all_stores'), value: 'All' },
+                        { label: t('verified_partner'), value: 'Verified Partner' },
+                        { label: t('independent_maker'), value: 'Independent Maker' }
+                      ].map((st) => (
+                        <label key={st.value} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                          <input
+                            type="radio"
+                            name="storeType"
+                            className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                            checked={storeType === st.value}
+                            onChange={() => setStoreType(st.value)}
+                          />
+                          <span>{st.label}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Rating */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('min_rating')}</h4>
+                      {[
+                        { label: t('any_rating'), val: 0 },
+                        { label: '4.5 & up', val: 4.5 },
+                        { label: '4.0 & up', val: 4.0 },
+                        { label: '3.0 & up', val: 3.0 }
+                      ].map((r) => (
+                        <label key={r.val} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                          <input
+                            type="radio"
+                            name="storeRating"
+                            className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                            checked={minRating === r.val}
+                            onChange={() => setMinRating(r.val)}
+                          />
+                          <span className="d-flex align-items-center gap-1">
+                            {r.label}
+                            {r.val > 0 && <span className="text-warning">⭐</span>}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Price Range */}
+                    <div className="mt-3 pb-3 border-bottom">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('price_range')}</h4>
+                      <input
+                        type="range"
+                        className="w-100 cursor-pointer"
+                        min="0"
+                        max="1000"
+                        value={priceRange}
+                        onChange={(e) => setPriceRange(parseInt(e.target.value))}
+                        style={{ accentColor: '#0f5132' }}
+                      />
+                      <div className="d-flex justify-content-between mt-1 text-xs font-semibold text-secondary" style={{ fontSize: '0.8rem' }}>
+                        <span>$0</span>
+                        <span>${priceRange}</span>
+                      </div>
+                    </div>
+
+                    {/* Location Input (Full width, no duplicate label, city/town placeholder) */}
+                    <div className="mt-3">
+                      <input
+                        type="text"
+                        placeholder={t('location_placeholder')}
+                        className="filter-location-input"
+                        value={locationFilter}
+                        onChange={(e) => setLocationFilter(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="pt-3">
+                      <button
+                        onClick={() => {
+                          setPriceRange(1000);
+                          setStoreType('All');
+                          setMinRating(0);
+                          setLocationFilter('');
+                          setSelectedCategory('');
+                          setSearchQuery('');
+                        }}
+                        className="btn btn-light border w-100 py-2 rounded-3 fw-semibold transition-all"
+                      >
+                        {t('reset_filters')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </aside>
+
+            {/* Listings Grid Column */}
+            <main className="col-12 col-lg-9 directory-main">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid var(--border-glass)', paddingBottom: '12px' }}>
+                <h2 className="directory-title" style={{ border: 0, margin: 0, padding: 0 }}>
+                  {selectedType 
+                    ? t('active_postings_for').replace('{type}', t(selectedType.replace('store_product', 'stores').replace('handyman_skill', 'handymen').replace('service', 'services').replace('job_opening', 'organizations').replace('house', 'real_estate').replace('car', 'automotive').replace('personal_item', 'used_items')))
+                    : t('all_listings')}
+                  {selectedCategory && ` in ${selectedCategory}`}
+                </h2>
+                <button 
+                  onClick={() => {
+                    const newParams = new URLSearchParams(searchParams);
+                    newParams.delete('type');
+                    setSearchParams(newParams);
+                    setSelectedCategory('');
+                    setSearchQuery('');
+                  }} 
+                  className="btn btn-secondary btn-sm"
+                >
+                  ← Back to Home
+                </button>
+              </div>
+
+              {error && <div className="alert alert-danger">{error}</div>}
+
+              {loading ? (
+                <div className="loading-container flex-center">
+                  <div className="spinner"></div>
+                  <p style={{ marginTop: '16px' }}>Searching active directories...</p>
+                </div>
+              ) : sortedListings.length === 0 ? (
+                <div className="glass-panel empty-directory flex-center">
+                  <span className="empty-icon">📂</span>
+                  <h3>No Active Listings Found</h3>
+                  <p>Try refining your search keyword or selecting a different category/type filter.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="row g-4 listings-directory-grid">
+                    {sortedListings.map((item) => (
+                      <div key={item._id} className="col-12 col-sm-6 col-lg-4 col-xl-4">
+                        <ListingCard listing={item} />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Pagination Controls */}
+                  {totalPages > 1 && (
+                    <div className="pagination-wrapper flex-center" style={{ marginTop: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px' }}>
+                      <button 
+                        onClick={() => fetchListings(currentPage - 1)} 
+                        disabled={currentPage === 1}
+                        className="btn btn-secondary btn-pagination"
+                      >
+                        ◀ Prev
+                      </button>
+                      <span className="pagination-info">
+                        Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
+                      </span>
+                      <button 
+                        onClick={() => fetchListings(currentPage + 1)} 
+                        disabled={currentPage === totalPages}
+                        className="btn btn-secondary btn-pagination"
+                      >
+                        Next ▶
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </main>
+          </div>
         </div>
       )}
 
@@ -1795,6 +2553,69 @@ const Home = () => {
         }
         .row-dimmed {
           opacity: 0.6;
+        }
+        
+        /* Premium Filter Sidebar Styling - Dynamic Theme Sync */
+        .filter-sidebar-card {
+          background: var(--bg-card);
+          backdrop-filter: var(--blur-glass);
+          -webkit-backdrop-filter: var(--blur-glass);
+          border: 1px solid var(--border-glass);
+          box-shadow: var(--shadow-premium), var(--shadow-inset);
+          border-radius: var(--radius-lg);
+          padding: 24px;
+          color: var(--text-main);
+          transition: var(--transition-smooth);
+        }
+        .filter-sidebar-card h2 {
+          color: var(--text-main) !important;
+        }
+        .filter-sidebar-card h4 {
+          color: var(--text-secondary) !important;
+        }
+        .filter-sidebar-card label, .filter-sidebar-card span {
+          color: var(--text-secondary) !important;
+        }
+        
+        .filter-location-input {
+          width: 100%;
+          border-radius: var(--radius-sm);
+          padding: 10px 14px;
+          border: 1px solid var(--border-glass);
+          background: rgba(255, 255, 255, 0.03);
+          color: var(--text-main);
+          font-size: 0.9rem;
+          outline: none;
+          transition: var(--transition-fast);
+        }
+        body.light-theme .filter-location-input {
+          background: rgba(0, 0, 0, 0.02);
+          border-color: rgba(0, 0, 0, 0.12);
+        }
+        .filter-location-input:focus {
+          border-color: #0f5132;
+        }
+        body.light-theme .filter-location-input:focus {
+          border-color: #0f5132;
+        }
+        
+        /* Pill Filter Toggle Button matching user mockup */
+        .filter-toggle-btn {
+          background-color: #e9ecef !important;
+          color: #1e293b !important;
+          border: 1px solid #dee2e6 !important;
+          transition: background-color 0.2s, border-color 0.2s;
+        }
+        .filter-toggle-btn:hover {
+          background-color: #dee2e6 !important;
+        }
+        body.dark-theme .filter-toggle-btn {
+          background-color: rgba(255, 255, 255, 0.08) !important;
+          color: #ffffff !important;
+          border: 1px solid var(--border-glass) !important;
+        }
+        body.dark-theme .filter-toggle-btn:hover {
+          background-color: rgba(255, 255, 255, 0.15) !important;
         }
       `}</style>
     </div>

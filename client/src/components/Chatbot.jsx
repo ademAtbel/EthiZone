@@ -431,10 +431,16 @@ const Chatbot = () => {
           filter: invert(1) drop-shadow(0 0 10px rgba(0, 0, 0, 0.4)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.25));
         }
 
+        @media (max-width: 992px) {
+          .ai-chatbot-container {
+            bottom: 90px;
+          }
+        }
+
         @media (max-width: 480px) {
           .chatbot-window {
             width: calc(100vw - 32px);
-            height: calc(100vh - 100px);
+            height: calc(100vh - 150px);
             right: -8px;
           }
         }
