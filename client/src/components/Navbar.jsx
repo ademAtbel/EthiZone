@@ -188,7 +188,7 @@ const Navbar = () => {
           {token && !isPublicStorefront ? (
             <>
               {user.role === 'super_admin' && (
-                <Link to="/admin" className="nav-link admin-badge">{t('admin_panel')}</Link>
+                <Link to="/super-admin" className="nav-link admin-badge">Super Admin</Link>
               )}
               {user.role === 'business' && (
                 <div className="store-dashboard-shortcuts" style={{ display: 'inline-flex', gap: '8px', marginRight: '10px' }}>

@@ -199,6 +199,12 @@ const Dashboard = () => {
           socialLinks: userData.socialLinks || []
         });
 
+        // Redirect super_admin to their dedicated panel
+        if (userData.role === 'super_admin') {
+          navigate('/super-admin', { replace: true });
+          return;
+        }
+
         // Redirect business users to their store name dashboard URL slug
         if (userData.role === 'business' && userData.storeName) {
           const storeSlug = userData.storeName.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-');

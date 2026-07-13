@@ -33,3 +33,6 @@ out/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Admin Credentials
+superadmin-credentials.txt

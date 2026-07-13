@@ -10,6 +10,11 @@ const UserSchema = new mongoose.Schema({
     enum: ['individual', 'handyman', 'business', 'super_admin'],
     default: 'individual'
   },
+  status: {
+    type: String,
+    enum: ['active', 'inactive'],
+    default: 'active'
+  },
   
   // Handyman & Business specific attributes
   isOnline: { type: Boolean, default: true }, // For Handyman availability toggle

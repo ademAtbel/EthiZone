@@ -33,7 +33,7 @@ const Login = () => {
       
       // Direct user based on role
       if (data.user.role === 'super_admin') {
-        navigate('/admin');
+        navigate('/super-admin');
       } else {
         navigate('/dashboard');
       }

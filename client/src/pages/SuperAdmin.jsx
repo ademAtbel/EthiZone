@@ -29,17 +29,27 @@ const SuperAdmin = () => {
   const [listingTypeFilter, setListingTypeFilter] = useState('all');
   const [listingStatusFilter, setListingStatusFilter] = useState('all');
 
-  const filteredUsers = users.filter(u => {
-    const searchLower = userSearch.toLowerCase();
-    const matchesSearch = u.username.toLowerCase().includes(searchLower) || 
-                          u.email.toLowerCase().includes(searchLower) ||
-                          u.phone.includes(searchLower);
-    const matchesRole = userRoleFilter === 'all' || u.role === userRoleFilter;
-    const matchesVerify = userVerifyFilter === 'all' || 
-      (userVerifyFilter === 'verified' && u.verificationBadge) ||
-      (userVerifyFilter === 'unverified' && !u.verificationBadge);
-    return matchesSearch && matchesRole && matchesVerify;
-  });
+  const stores = (users || []).filter(u => u.role === 'business' || u.role === 'store');
+  const handymen = (users || []).filter(u => u.role === 'handyman');
+  const individuals = (users || []).filter(u => u.role === 'individual');
+
+  const getTabFilteredData = (dataList) => {
+    return dataList.filter(u => {
+      const searchLower = userSearch.toLowerCase();
+      const matchesSearch = u.username?.toLowerCase().includes(searchLower) || 
+                            u.email?.toLowerCase().includes(searchLower) ||
+                            u.phone?.includes(searchLower) ||
+                            (u.storeName && u.storeName.toLowerCase().includes(searchLower));
+      const matchesVerify = userVerifyFilter === 'all' || 
+        (userVerifyFilter === 'verified' && u.verificationBadge) ||
+        (userVerifyFilter === 'unverified' && !u.verificationBadge);
+      return matchesSearch && matchesVerify;
+    });
+  };
+
+  const filteredStores = getTabFilteredData(stores);
+  const filteredHandymen = getTabFilteredData(handymen);
+  const filteredIndividuals = getTabFilteredData(individuals);
 
   const filteredListings = listings.filter(l => {
     const searchLower = listingSearch.toLowerCase();
@@ -64,7 +74,12 @@ const SuperAdmin = () => {
       const headers = { 'Authorization': `Bearer ${token}` };
       const usersRes = await fetch(`/api/admin/users?page=${page}&limit=20`, { headers });
       const usersData = await usersRes.json();
-      setUsers(usersData);
+      if (Array.isArray(usersData)) {
+        setUsers(usersData);
+      } else {
+        setUsers([]);
+        console.error('API returned non-array for users:', usersData);
+      }
       setUsersPage(page);
       const totalPages = parseInt(usersRes.headers.get('X-Total-Pages')) || 1;
       setUsersTotalPages(totalPages);
@@ -240,12 +255,13 @@ const SuperAdmin = () => {
     }
   };
 
-  const handleDeleteUser = async (id) => {
-    if (!window.confirm('Banning this user will delete their profile, listings, and reference ratings. Proceed?')) return;
+  const handleToggleUserStatus = async (user) => {
+    const action = user.status === 'inactive' ? 'activate' : 'deactivate';
+    if (!window.confirm(`Are you sure you want to ${action} this user?`)) return;
 
     try {
-      const response = await fetch(`/api/admin/users/${id}`, {
-        method: 'DELETE',
+      const response = await fetch(`/api/admin/users/${user._id}/toggle-status`, {
+        method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -253,21 +269,7 @@ const SuperAdmin = () => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
 
-      setUsers(users.filter(u => u._id !== id));
-      
-      // Refresh statistics and listing counts
-      const statsRes = await fetch('/api/admin/stats', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      const statsData = await statsRes.json();
-      setStats(statsData);
-
-      // Refresh listings
-      const listRes = await fetch('/api/admin/listings', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      const listData = await listRes.json();
-      setListings(listData);
+      setUsers(users.map(u => u._id === user._id ? { ...u, status: data.user.status } : u));
       
       alert(data.message);
     } catch (err) {
@@ -316,63 +318,101 @@ const SuperAdmin = () => {
   }
 
   return (
-    <div className="container admin-page">
-      <header className="admin-header">
-        <h1>Platform Governance Console</h1>
-        <p className="admin-sub">Super Admin Management Dashboard</p>
-      </header>
+    <div className="admin-layout" style={{ display: 'flex', minHeight: 'calc(100vh - 70px)' }}>
+      {/* SIDEBAR NAVIGATION */}
+      <aside className="admin-sidebar glass-panel" style={{ width: '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', padding: '32px 20px', borderRight: '1px solid var(--border-glass)', borderRadius: 0, minHeight: '100%', position: 'sticky', top: '70px', alignSelf: 'flex-start', zIndex: 10 }}>
+        <div style={{ marginBottom: '40px', paddingLeft: '8px' }}>
+          <h2 style={{ fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '4px', color: '#fff', letterSpacing: '0.5px' }}>Super Admin</h2>
+          <p style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', margin: 0, fontWeight: 500 }}>Platform Governance</p>
+        </div>
+        
+        <div className="sidebar-nav-links" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <button 
+            onClick={() => setActiveTab('categories')} 
+            className="nav-btn"
+            style={{ textAlign: 'left', padding: '14px 16px', borderRadius: '8px', background: activeTab === 'categories' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'categories' ? '#fff' : 'var(--text-secondary)', border: 'none', cursor: 'pointer', transition: 'all 0.2s', fontWeight: activeTab === 'categories' ? 600 : 400, display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.95rem' }}
+          >
+            <span style={{ fontSize: '1.2rem' }}>🗂️</span> Categories Directory
+          </button>
+          <button 
+            onClick={() => setActiveTab('stores')} 
+            className="nav-btn"
+            style={{ textAlign: 'left', padding: '14px 16px', borderRadius: '8px', background: activeTab === 'stores' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'stores' ? '#fff' : 'var(--text-secondary)', border: 'none', cursor: 'pointer', transition: 'all 0.2s', fontWeight: activeTab === 'stores' ? 600 : 400, display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.95rem' }}
+          >
+            <span style={{ fontSize: '1.2rem' }}>🏬</span> Stores ({stores.length})
+          </button>
+          <button 
+            onClick={() => setActiveTab('handymen')} 
+            className="nav-btn"
+            style={{ textAlign: 'left', padding: '14px 16px', borderRadius: '8px', background: activeTab === 'handymen' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'handymen' ? '#fff' : 'var(--text-secondary)', border: 'none', cursor: 'pointer', transition: 'all 0.2s', fontWeight: activeTab === 'handymen' ? 600 : 400, display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.95rem' }}
+          >
+            <span style={{ fontSize: '1.2rem' }}>🛠️</span> Handymen ({handymen.length})
+          </button>
+          <button 
+            onClick={() => setActiveTab('individuals')} 
+            className="nav-btn"
+            style={{ textAlign: 'left', padding: '14px 16px', borderRadius: '8px', background: activeTab === 'individuals' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'individuals' ? '#fff' : 'var(--text-secondary)', border: 'none', cursor: 'pointer', transition: 'all 0.2s', fontWeight: activeTab === 'individuals' ? 600 : 400, display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.95rem' }}
+          >
+            <span style={{ fontSize: '1.2rem' }}>👤</span> Regular Users ({individuals.length})
+          </button>
+          <button 
+            onClick={() => setActiveTab('listings')} 
+            className="nav-btn"
+            style={{ textAlign: 'left', padding: '14px 16px', borderRadius: '8px', background: activeTab === 'listings' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'listings' ? '#fff' : 'var(--text-secondary)', border: 'none', cursor: 'pointer', transition: 'all 0.2s', fontWeight: activeTab === 'listings' ? 600 : 400, display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.95rem' }}
+          >
+            <span style={{ fontSize: '1.2rem' }}>🗑️</span> Moderation ({listings.length})
+          </button>
+        </div>
+      </aside>
 
-      {/* Analytics Panel */}
-      {stats && (
-        <div className="admin-stats-grid">
-          <div className="glass-panel stat-card">
-            <h4>Total Accounts</h4>
-            <span className="stat-number">{stats.totalUsers}</span>
-            <div className="stat-breakdown">
-              <span>👤 {stats.roles.individual} Indiv.</span>
-              <span>🛠️ {stats.roles.handyman} Handymen</span>
-              <span>🏬 {stats.roles.store} Businesses</span>
+      {/* MAIN CONTENT COLUMN */}
+      <main className="admin-main-area" style={{ flex: 1, padding: '32px 40px', maxWidth: '1400px', overflowX: 'hidden' }}>
+        
+        {/* TOP FILTER BAR */}
+        <div className="admin-top-bar glass-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', marginBottom: '30px', borderRadius: 'var(--radius-lg)', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <span style={{ fontSize: '2rem' }}>👋</span>
+            <div>
+              <h4 style={{ margin: 0, fontSize: '1.1rem', color: '#fff', fontWeight: 600 }}>Welcome back, Super Admin</h4>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>You have full system control.</p>
             </div>
           </div>
-          <div className="glass-panel stat-card">
-            <h4>Marketplace Postings</h4>
-            <span className="stat-number emerald">{stats.totalListings}</span>
-          </div>
-          <div className="glass-panel stat-card">
-            <h4>Directories Categories</h4>
-            <span className="stat-number cyan">{stats.totalCategories}</span>
-          </div>
-          <div className="glass-panel stat-card">
-            <h4>Verified References</h4>
-            <span className="stat-number amber">{stats.totalRatings}</span>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <button className="btn btn-secondary" onClick={() => window.location.reload()} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>🔄</span> Refresh Data
+            </button>
           </div>
         </div>
-      )}
 
-      {/* Tab Navigation */}
-      <div className="admin-tabs">
-        <button 
-          onClick={() => setActiveTab('categories')} 
-          className={`tab-btn ${activeTab === 'categories' ? 'active' : ''}`}
-        >
-          🗂️ Categories Manager
-        </button>
-        <button 
-          onClick={() => setActiveTab('users')} 
-          className={`tab-btn ${activeTab === 'users' ? 'active' : ''}`}
-        >
-          👥 User Directory ({users.length})
-        </button>
-        <button 
-          onClick={() => setActiveTab('listings')} 
-          className={`tab-btn ${activeTab === 'listings' ? 'active' : ''}`}
-        >
-          🗑️ Moderation Listings ({listings.length})
-        </button>
-      </div>
+        {/* Analytics Panel */}
+        {stats && (
+          <div className="admin-stats-grid" style={{ marginBottom: '40px' }}>
+            <div className="glass-panel stat-card">
+              <h4>Total Accounts</h4>
+              <span className="stat-number">{stats.totalUsers}</span>
+              <div className="stat-breakdown">
+                <span>👤 {stats.roles.individual} Indiv.</span>
+                <span>🛠️ {stats.roles.handyman} Handymen</span>
+                <span>🏬 {stats.roles.store} Businesses</span>
+              </div>
+            </div>
+            <div className="glass-panel stat-card">
+              <h4>Marketplace Postings</h4>
+              <span className="stat-number emerald">{stats.totalListings}</span>
+            </div>
+            <div className="glass-panel stat-card">
+              <h4>Directories Categories</h4>
+              <span className="stat-number cyan">{stats.totalCategories}</span>
+            </div>
+            <div className="glass-panel stat-card">
+              <h4>Verified References</h4>
+              <span className="stat-number amber">{stats.totalRatings}</span>
+            </div>
+          </div>
+        )}
 
-      {/* Tab Content */}
-      <div className="admin-content-window">
+        {/* Tab Content Window */}
+        <div className="admin-content-window">
         
         {/* CATEGORIES TAB */}
         {activeTab === 'categories' && (
@@ -467,38 +507,110 @@ const SuperAdmin = () => {
           </div>
         )}
 
-        {/* USERS TAB */}
-        {activeTab === 'users' && (
+        {/* STORES TAB */}
+        {activeTab === 'stores' && (
           <div className="glass-panel admin-tab-content">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
-              <h3 style={{ margin: 0 }}>Registered User & Provider Base</h3>
+              <h3 style={{ margin: 0 }}>Registered Stores & Businesses</h3>
               <span className="badge bg-primary text-white" style={{ fontSize: '0.85rem' }}>
-                Showing {filteredUsers.length} of {users.length} Users
+                Showing {filteredStores.length} of {stores.length} Stores
               </span>
             </div>
 
-            {/* User Multi-Option Filters */}
             <div className="filter-bar" style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap', alignItems: 'center' }}>
               <input 
                 type="text" 
                 className="form-control" 
-                placeholder="🔍 Search username, email, phone..." 
+                placeholder="🔍 Search store name, owner email, phone..." 
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
                 style={{ flex: '1', minWidth: '220px', margin: 0 }}
               />
               <select 
                 className="form-control" 
-                value={userRoleFilter} 
-                onChange={(e) => setUserRoleFilter(e.target.value)}
-                style={{ width: '160px', margin: 0 }}
+                value={userVerifyFilter} 
+                onChange={(e) => setUserVerifyFilter(e.target.value)}
+                style={{ width: '180px', margin: 0 }}
               >
-                <option value="all">All Roles</option>
-                <option value="individual">Individual</option>
-                <option value="handyman">Handyman</option>
-                <option value="business">Business</option>
-                <option value="super_admin">Super Admin</option>
+                <option value="all">All Verification</option>
+                <option value="verified">✓ Verified Only</option>
+                <option value="unverified">❌ Unverified Only</option>
               </select>
+            </div>
+
+            <div className="table-responsive">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Store Name</th>
+                    <th>Business Type</th>
+                    <th>Owner Email</th>
+                    <th>Verified</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredStores.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="text-center" style={{ color: 'var(--text-muted)' }}>No matching stores found.</td>
+                    </tr>
+                  ) : (
+                    filteredStores.map((u) => (
+                    <tr key={u._id}>
+                      <td>
+                        <strong>{u.storeName || 'N/A'}</strong>
+                      </td>
+                      <td>
+                        <span className="badge badge-emerald">{u.category || u.businessType || 'business'}</span>
+                      </td>
+                      <td>{u.email}<br/><small>{u.phone}</small></td>
+                      <td>
+                        <button 
+                          onClick={() => handleToggleVerify(u._id)}
+                          className={`btn btn-sm ${u.verificationBadge ? 'btn-success' : 'btn-secondary'}`}
+                        >
+                          {u.verificationBadge ? '✓ Verified' : '❌ Unverified'}
+                        </button>
+                      </td>
+                      <td>
+                        <a href={`/store/${(u.storeName || '').toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm" style={{ marginRight: '8px' }}>
+                          👁️ View
+                        </a>
+                        <button 
+                          onClick={() => handleToggleUserStatus(u)} 
+                          className={`btn btn-sm ${u.status === 'inactive' ? 'btn-success' : 'btn-danger'}`}
+                        >
+                          {u.status === 'inactive' ? '✅ Activate' : '🚫 Deactivate'}
+                        </button>
+                      </td>
+                    </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* HANDYMEN TAB */}
+        {activeTab === 'handymen' && (
+          <div className="glass-panel admin-tab-content">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+              <h3 style={{ margin: 0 }}>Registered Handymen & Pros</h3>
+              <span className="badge bg-primary text-white" style={{ fontSize: '0.85rem' }}>
+                Showing {filteredHandymen.length} of {handymen.length} Handymen
+              </span>
+            </div>
+
+            <div className="filter-bar" style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <input 
+                type="text" 
+                className="form-control" 
+                placeholder="🔍 Search name, email, phone..." 
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                style={{ flex: '1', minWidth: '220px', margin: 0 }}
+              />
               <select 
                 className="form-control" 
                 value={userVerifyFilter} 
@@ -518,19 +630,18 @@ const SuperAdmin = () => {
                     <th>Name</th>
                     <th>Email</th>
                     <th>Phone</th>
-                    <th>Account Type</th>
-                    <th>Store/Category</th>
+                    <th>Status</th>
                     <th>Verified</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredUsers.length === 0 ? (
+                  {filteredHandymen.length === 0 ? (
                     <tr>
-                      <td colSpan="7" className="text-center" style={{ color: 'var(--text-muted)' }}>No matching users found.</td>
+                      <td colSpan="6" className="text-center" style={{ color: 'var(--text-muted)' }}>No matching handymen found.</td>
                     </tr>
                   ) : (
-                    filteredUsers.map((u) => (
+                    filteredHandymen.map((u) => (
                     <tr key={u._id}>
                       <td>
                         <strong>{u.username}</strong>
@@ -538,36 +649,87 @@ const SuperAdmin = () => {
                       <td>{u.email}</td>
                       <td>{u.phone}</td>
                       <td>
-                        <span className={`badge ${
-                          u.role === 'store' ? 'badge-emerald' : 
-                          u.role === 'handyman' ? 'badge-cyan' : 
-                          u.role === 'super_admin' ? 'badge-amber' : 'badge-indigo'
-                        }`}>
-                          {u.role}
-                        </span>
+                        <span className={`status-dot ${u.isOnline ? 'active' : 'inactive'}`}></span>
+                        {u.isOnline ? 'Online' : 'Offline'}
                       </td>
                       <td>
-                        {u.role === 'store' ? (
-                          <span>{u.storeName || 'Store'} ({u.category || 'N/A'})</span>
-                        ) : '—'}
+                        <button 
+                          onClick={() => handleToggleVerify(u._id)}
+                          className={`btn btn-sm ${u.verificationBadge ? 'btn-success' : 'btn-secondary'}`}
+                        >
+                          {u.verificationBadge ? '✓ Verified' : '❌ Unverified'}
+                        </button>
                       </td>
                       <td>
-                        {(u.role === 'handyman' || u.role === 'store') ? (
-                          <button 
-                            onClick={() => handleToggleVerify(u._id)}
-                            className={`btn btn-sm ${u.verificationBadge ? 'btn-success' : 'btn-secondary'}`}
-                          >
-                            {u.verificationBadge ? '✓ Verified' : '❌ Unverified'}
-                          </button>
-                        ) : 'N/A'}
+                        <button 
+                          onClick={() => handleToggleUserStatus(u)} 
+                          className={`btn btn-sm ${u.status === 'inactive' ? 'btn-success' : 'btn-danger'}`}
+                        >
+                          {u.status === 'inactive' ? '✅ Activate' : '🚫 Deactivate'}
+                        </button>
                       </td>
+                    </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* INDIVIDUALS TAB */}
+        {activeTab === 'individuals' && (
+          <div className="glass-panel admin-tab-content">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+              <h3 style={{ margin: 0 }}>Regular Users Base</h3>
+              <span className="badge bg-primary text-white" style={{ fontSize: '0.85rem' }}>
+                Showing {filteredIndividuals.length} of {individuals.length} Users
+              </span>
+            </div>
+
+            <div className="filter-bar" style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <input 
+                type="text" 
+                className="form-control" 
+                placeholder="🔍 Search username, email, phone..." 
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                style={{ flex: '1', minWidth: '220px', margin: 0 }}
+              />
+            </div>
+
+            <div className="table-responsive">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredIndividuals.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="text-center" style={{ color: 'var(--text-muted)' }}>No matching users found.</td>
+                    </tr>
+                  ) : (
+                    filteredIndividuals.map((u) => (
+                    <tr key={u._id}>
+                      <td>
+                        <strong>{u.username}</strong>
+                      </td>
+                      <td>{u.email}</td>
+                      <td>{u.phone}</td>
+                      <td>{new Date(u.createdAt).toLocaleDateString()}</td>
                       <td>
                         {u.role !== 'super_admin' ? (
                           <button 
-                            onClick={() => handleDeleteUser(u._id)} 
-                            className="btn btn-danger btn-sm"
+                            onClick={() => handleToggleUserStatus(u)} 
+                            className={`btn btn-sm ${u.status === 'inactive' ? 'btn-success' : 'btn-danger'}`}
                           >
-                            🚫 Ban / Delete
+                            {u.status === 'inactive' ? '✅ Activate' : '🚫 Deactivate'}
                           </button>
                         ) : (
                           <span className="owner-tag">Owner</span>
@@ -579,9 +741,11 @@ const SuperAdmin = () => {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
 
-            {/* Users Pagination */}
-            {usersTotalPages > 1 && (
+        {/* Global Users Pagination for all segmented user tabs */}
+        {['stores', 'handymen', 'individuals'].includes(activeTab) && usersTotalPages > 1 && (
               <div className="admin-pagination flex-center" style={{ marginTop: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px' }}>
                 <button 
                   onClick={() => fetchUsers(usersPage - 1)} 
@@ -602,9 +766,6 @@ const SuperAdmin = () => {
                 </button>
               </div>
             )}
-          </div>
-        )}
-
         {/* LISTINGS TAB */}
         {activeTab === 'listings' && (
           <div className="glass-panel admin-tab-content">
@@ -912,6 +1073,8 @@ const SuperAdmin = () => {
           font-size: 0.9rem;
         }
       `}</style>
+      
+      </main>
     </div>
   );
 };

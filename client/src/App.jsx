@@ -8,6 +8,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Storefront from './pages/Storefront';
 import SuperAdmin from './pages/SuperAdmin';
+import Inbox from './pages/Inbox';
 import Chatbot from './components/Chatbot';
 
 // Sub-wrapper component to handle global layout styling
@@ -32,6 +33,8 @@ const AppContent = () => {
           <Route path="/store/:storeName/dashboard" element={<Dashboard />} />
           <Route path="/store/:storeName" element={<Storefront />} />
           <Route path="/admin" element={<SuperAdmin />} />
+          <Route path="/super-admin" element={<SuperAdmin />} />
+          <Route path="/inbox" element={<Inbox />} />
         </Routes>
       </main>
 

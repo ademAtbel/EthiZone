@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 const dotenv = require('dotenv');
 const cluster = require('cluster');
 const os = require('os');
@@ -181,6 +183,7 @@ if (isClustered && cluster.isMaster) {
   const adminRoutes = require('./routes/admin');
   const inquiryRoutes = require('./routes/inquiries');
   const chatbotRoutes = require('./routes/chatbot');
+  const messageRoutes = require('./routes/messages');
 
   // Security & Scaling Middlewares
   app.use(cors({
@@ -221,6 +224,45 @@ if (isClustered && cluster.isMaster) {
   app.use('/api/admin', adminRoutes);
   app.use('/api/inquiries', inquiryRoutes);
   app.use('/api/chatbot', chatbotRoutes);
+  app.use('/api/messages', messageRoutes);
+
+  // Temporary route to create super admin
+  app.get('/api/setup-admin', async (req, res) => {
+    try {
+      const User = require('./models/User');
+      const bcrypt = require('bcryptjs');
+      
+      const email = 'add.belaye@gmail.com';
+      const password = 'Starfm.123';
+      
+      let user = await User.findOne({ email });
+      if (!user) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        user = new User({
+          username: 'SuperAdmin',
+          email,
+          password: hashedPassword,
+          phone: '0000000000',
+          role: 'super_admin'
+        });
+        await user.save();
+        res.send('Super Admin created! You can now login.');
+      } else {
+        user.role = 'super_admin';
+        user.password = await bcrypt.hash(password, await bcrypt.genSalt(10));
+        await user.save();
+        res.send('Super Admin updated! Password reset and role set. You can now login.');
+      }
+    } catch (err) {
+      res.status(500).send(err.message);
+    }
+  });
+
+  // Catch-all route for undefined API endpoints
+  app.use('/api/*', (req, res) => {
+    res.status(404).json({ message: 'API Route Not Found' });
+  });
 
   // Base route
   app.get('/', (req, res) => {
@@ -229,13 +271,34 @@ if (isClustered && cluster.isMaster) {
 
   // Error handling middleware
   app.use((err, req, res, next) => {
+    const errorLog = `${new Date().toISOString()} - ${req.method} ${req.originalUrl} - ${err.stack}\n`;
+    fs.appendFileSync(path.join(__dirname, 'error.log'), errorLog);
     console.error(err.stack);
-    res.status(500).json({ message: 'Something went wrong!', error: err.message });
+    res.status(500).json({ message: 'Something went wrong on the server', error: err.message });
   });
 
   const PORT = process.env.PORT || 5001;
+  const http = require('http');
+  const server = http.createServer(app);
+  
+  const { Server } = require('socket.io');
+  const io = new Server(server, {
+    cors: { origin: '*' }
+  });
 
-  app.listen(PORT, () => {
+  app.locals.io = io;
+
+  io.on('connection', (socket) => {
+    socket.on('join', (userId) => {
+      socket.join(userId);
+    });
+
+    socket.on('sendMessage', (data) => {
+      io.to(data.receiverId).emit('newMessage', data);
+    });
+  });
+
+  server.listen(PORT, () => {
     console.log(`[Worker Process ${process.pid}] running on port ${PORT}`);
   });
 }

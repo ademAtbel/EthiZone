@@ -236,6 +236,14 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
               >
                 {t('sms')}
               </a>
+              <Link 
+                to={`/inbox?contact=${ownerId?._id || ownerId}`}
+                className="btn btn-info flex-grow-1 action-btn"
+                style={{ backgroundColor: 'var(--accent-secondary)', border: 'none', color: '#fff' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                Message
+              </Link>
             </>
           ) : (
             <button className="btn btn-secondary flex-grow-1 action-btn disabled" disabled onClick={(e) => e.stopPropagation()}>

@@ -47,6 +47,7 @@ router.get('/stats', verifySuperAdmin, async (req, res) => {
       }
     });
   } catch (error) {
+    require('fs').appendFileSync(require('path').join(__dirname, '../error.log'), `[STATS] ${error.stack}\n`);
     res.status(500).json({ message: 'Error fetching admin stats', error: error.message });
   }
 });
@@ -72,6 +73,7 @@ router.get('/users', verifySuperAdmin, async (req, res) => {
 
     res.json(users);
   } catch (error) {
+    require('fs').appendFileSync(require('path').join(__dirname, '../error.log'), `[USERS] ${error.stack}\n`);
     res.status(500).json({ message: 'Error fetching users', error: error.message });
   }
 });
@@ -93,8 +95,8 @@ router.patch('/users/:id/verify', verifySuperAdmin, async (req, res) => {
   }
 });
 
-// BAN / DELETE A USER (CLEANS UP ALL ASSOCIATED LISTINGS & REVIEWS)
-router.delete('/users/:id', verifySuperAdmin, async (req, res) => {
+// TOGGLE USER STATUS (ACTIVATE / DEACTIVATE)
+router.patch('/users/:id/toggle-status', verifySuperAdmin, async (req, res) => {
   try {
     const userId = req.params.id;
     const user = await User.findById(userId);
@@ -103,21 +105,18 @@ router.delete('/users/:id', verifySuperAdmin, async (req, res) => {
     }
 
     if (user.role === 'super_admin') {
-      return res.status(400).json({ message: 'Cannot delete the Super Admin' });
+      return res.status(400).json({ message: 'Cannot deactivate the Super Admin' });
     }
 
-    // Delete user
-    await User.findByIdAndDelete(userId);
+    // Toggle status
+    user.status = user.status === 'inactive' ? 'active' : 'inactive';
+    await user.save();
     
-    // Clean up listings
-    await Listing.deleteMany({ ownerId: userId });
-    
-    // Clean up reviews made for them
-    await Rating.deleteMany({ targetId: userId });
+    // If deactivated, we could optionally hide their listings, but for now we just prevent login.
 
-    res.json({ message: 'User and all associated listings and ratings removed successfully' });
+    res.json({ message: `User successfully ${user.status === 'active' ? 'activated' : 'deactivated'}`, user });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting user', error: error.message });
+    res.status(500).json({ message: 'Error toggling user status', error: error.message });
   }
 });
 
@@ -209,6 +208,7 @@ router.get('/listings', verifySuperAdmin, async (req, res) => {
 
     res.json(listings);
   } catch (error) {
+    require('fs').appendFileSync(require('path').join(__dirname, '../error.log'), `[LISTINGS] ${error.stack}\n`);
     res.status(500).json({ message: 'Error fetching listings', error: error.message });
   }
 });
