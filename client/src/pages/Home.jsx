@@ -53,7 +53,8 @@ const Home = () => {
   const [minRating, setMinRating] = useState(0);
 
   // Marketplace / Used Items filters
-  const [priceRange, setPriceRange] = useState(1000);
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [storeType, setStoreType] = useState('All');
 
@@ -450,7 +451,10 @@ const Home = () => {
       if (bedsCount < minBeds) return false;
       const bathsCount = parseInt(meta.bathrooms) || 0;
       if (bathsCount < minBaths) return false;
-      if (priceRange < 1000 && item.price && item.price > priceRange) return false;
+      const pMin = minPrice !== '' ? minPrice : 0;
+      const pMax = maxPrice !== '' ? maxPrice : Infinity;
+      const itemPrice = item.price || 0;
+      if (itemPrice < pMin || itemPrice > pMax) return false;
       if (locationFilter) {
         const loc = (item.description || '') + ' ' + (item.title || '') + ' ' + (item.category || '');
         if (!loc.toLowerCase().includes(locationFilter.toLowerCase())) return false;
@@ -477,7 +481,10 @@ const Home = () => {
         const fuel = meta.fuelType || '';
         if (fuel.toLowerCase() !== fuelType.toLowerCase()) return false;
       }
-      if (priceRange < 1000 && item.price && item.price > priceRange) return false;
+      const pMin = minPrice !== '' ? minPrice : 0;
+      const pMax = maxPrice !== '' ? maxPrice : Infinity;
+      const itemPrice = item.price || 0;
+      if (itemPrice < pMin || itemPrice > pMax) return false;
     }
 
     if (item.type === 'job_opening') {
@@ -489,7 +496,11 @@ const Home = () => {
         const modelStr = item.description || '';
         if (!modelStr.toLowerCase().includes(workModel.toLowerCase())) return false;
       }
-      if (minSalary > 0 && item.price && item.price < minSalary) return false;
+      const pMin = minPrice !== '' ? minPrice : 0;
+      const pMax = maxPrice !== '' ? maxPrice : Infinity;
+      const itemPrice = item.price || 0;
+      if (minSalary > 0 && itemPrice < minSalary) return false;
+      if (itemPrice < pMin || itemPrice > pMax) return false;
       if (locationFilter) {
         const loc = (item.description || '') + ' ' + (item.title || '');
         if (!loc.toLowerCase().includes(locationFilter.toLowerCase())) return false;
@@ -527,7 +538,10 @@ const Home = () => {
     }
 
     if (item.type === 'store_product' || item.type === 'personal_item') {
-      if (priceRange < 1000 && item.price && item.price > priceRange) return false;
+      const pMin = minPrice !== '' ? minPrice : 0;
+      const pMax = maxPrice !== '' ? maxPrice : Infinity;
+      const itemPrice = item.price || 0;
+      if (itemPrice < pMin || itemPrice > pMax) return false;
       if (storeType !== 'All' && item.category !== storeType) return false;
     }
 
@@ -548,6 +562,12 @@ const Home = () => {
     }
     return 0;
   });
+
+  const activePrices = listings.filter(l => l.price !== undefined && l.price !== null).map(l => Number(l.price));
+  const dataMinPrice = activePrices.length > 0 ? Math.min(...activePrices) : 0;
+  const dataMaxPrice = activePrices.length > 0 ? Math.max(...activePrices) : 1000;
+  const currentMinPrice = minPrice !== '' ? minPrice : dataMinPrice;
+  const currentMaxPrice = maxPrice !== '' ? maxPrice : dataMaxPrice;
 
   return (
     <div className="home-page-container">
@@ -849,21 +869,31 @@ const Home = () => {
                 </svg>
                 <span className="fw-semibold">{t('filters')}</span>
               </div>
-              <div className="d-flex align-items-center gap-2">
-                <span style={{ fontSize: '0.8rem', opacity: 0.9 }}>{sortedListings.length} listings</span>
-                <span className="material-symbols-outlined transition-all" style={{ transform: isFilterOpen ? 'rotate(180deg)' : 'rotate(0)' }}>
-                  expand_more
-                </span>
-              </div>
             </button>
           </div>
 
 
 
           <div className="row">
+            {/* Filter Overlay for Mobile */}
+            {isFilterOpen && (
+              <div 
+                className="d-lg-none" 
+                onClick={() => setIsFilterOpen(false)} 
+                style={{ 
+                  position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+                  backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1040, backdropFilter: 'blur(4px)'
+                }} 
+              />
+            )}
+
             {/* Sidebar Column */}
-            <aside className={`col-12 col-lg-3 ${isFilterOpen ? 'd-block' : 'd-none d-lg-block'} mb-4`}>
-              <div className="filter-sidebar-card" style={{ minWidth: '240px' }}>
+            <aside className={`col-12 col-lg-3 ${isFilterOpen ? 'mobile-filter-drawer' : 'd-none d-lg-block'} mb-4`}>
+              <div className="filter-sidebar-card" style={{ minWidth: '240px', height: '100%', overflowY: 'auto' }}>
+                <div className="d-flex justify-content-between align-items-center d-lg-none mb-3 pb-2 border-bottom">
+                   <span className="fw-bold fs-5" style={{ color: 'var(--text-main)' }}>Filters</span>
+                   <button className="btn btn-sm" onClick={() => setIsFilterOpen(false)} style={{ borderRadius: '50%', width: '32px', height: '32px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-glass)' }}>✕</button>
+                </div>
                 
                 {/* Dynamically render the filter fields matching the selected type */}
                 {selectedType === 'house' && (
@@ -951,22 +981,49 @@ const Home = () => {
                       </div>
                     </div>
 
-                    {/* Price Range */}
+                    {/* Dynamic Price Range */}
                     <div className="mt-3 pb-3 border-bottom">
-                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('max_price')}</h4>
-                      <input
-                        type="range"
-                        className="w-100 cursor-pointer"
-                        min="0"
-                        max="5000000"
-                        step="50000"
-                        value={priceRange}
-                        onChange={(e) => setPriceRange(parseInt(e.target.value))}
-                        style={{ accentColor: '#0f5132' }}
-                      />
-                      <div className="d-flex justify-content-between mt-1 text-xs font-semibold text-secondary" style={{ fontSize: '0.8rem' }}>
-                        <span>$0</span>
-                        <span>${priceRange >= 1000000 ? `${(priceRange / 1000000).toFixed(1)}M` : `${(priceRange / 1000).toFixed(0)}k`}</span>
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Price Range</h4>
+                      
+                      <div className="mb-4 mt-2">
+                        <div className="d-flex justify-content-between text-xs font-semibold text-secondary mb-3" style={{ fontSize: '0.8rem' }}>
+                          <span>${currentMinPrice >= 1000000 ? `${(currentMinPrice / 1000000).toFixed(1)}M` : currentMinPrice >= 1000 ? `${(currentMinPrice / 1000).toFixed(0)}k` : currentMinPrice}</span>
+                          <span>${currentMaxPrice >= 1000000 ? `${(currentMaxPrice / 1000000).toFixed(1)}M` : currentMaxPrice >= 1000 ? `${(currentMaxPrice / 1000).toFixed(0)}k` : currentMaxPrice}</span>
+                        </div>
+                        <div className="dual-slider-container">
+                          <div className="dual-slider-track"></div>
+                          <div 
+                            className="dual-slider-range" 
+                            style={{
+                              left: `${dataMaxPrice > dataMinPrice ? ((currentMinPrice - dataMinPrice) / (dataMaxPrice - dataMinPrice)) * 100 : 0}%`,
+                              right: `${dataMaxPrice > dataMinPrice ? 100 - ((currentMaxPrice - dataMinPrice) / (dataMaxPrice - dataMinPrice)) * 100 : 0}%`
+                            }}
+                          ></div>
+                          <input
+                            type="range"
+                            className="dual-slider-input"
+                            min={dataMinPrice}
+                            max={dataMaxPrice}
+                            step={Math.max(1, Math.floor((dataMaxPrice - dataMinPrice) / 100))}
+                            value={currentMinPrice}
+                            onChange={(e) => {
+                              const val = Math.min(Number(e.target.value), currentMaxPrice);
+                              setMinPrice(val);
+                            }}
+                          />
+                          <input
+                            type="range"
+                            className="dual-slider-input"
+                            min={dataMinPrice}
+                            max={dataMaxPrice}
+                            step={Math.max(1, Math.floor((dataMaxPrice - dataMinPrice) / 100))}
+                            value={currentMaxPrice}
+                            onChange={(e) => {
+                              const val = Math.max(Number(e.target.value), currentMinPrice);
+                              setMaxPrice(val);
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -988,7 +1045,8 @@ const Home = () => {
                           setPropertyTypeFilter('All');
                           setMinBeds(0);
                           setMinBaths(0);
-                          setPriceRange(5000000);
+                          setMinPrice('');
+                          setMaxPrice('');
                           setLocationFilter('');
                           setSearchQuery('');
                         }}
@@ -1096,22 +1154,49 @@ const Home = () => {
                       ))}
                     </div>
 
-                    {/* Max Price */}
+                    {/* Dynamic Price Range */}
                     <div className="mt-3 pb-3 border-bottom">
-                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('max_price')}</h4>
-                      <input
-                        type="range"
-                        className="w-100 cursor-pointer"
-                        min="0"
-                        max="150000"
-                        step="5000"
-                        value={priceRange}
-                        onChange={(e) => setPriceRange(parseInt(e.target.value))}
-                        style={{ accentColor: '#0f5132' }}
-                      />
-                      <div className="d-flex justify-content-between mt-1 text-xs font-semibold text-secondary" style={{ fontSize: '0.8rem' }}>
-                        <span>$0</span>
-                        <span>${(priceRange / 1000).toFixed(0)}k</span>
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Price Range</h4>
+                      
+                      <div className="mb-4 mt-2">
+                        <div className="d-flex justify-content-between text-xs font-semibold text-secondary mb-3" style={{ fontSize: '0.8rem' }}>
+                          <span>${currentMinPrice >= 1000000 ? `${(currentMinPrice / 1000000).toFixed(1)}M` : currentMinPrice >= 1000 ? `${(currentMinPrice / 1000).toFixed(0)}k` : currentMinPrice}</span>
+                          <span>${currentMaxPrice >= 1000000 ? `${(currentMaxPrice / 1000000).toFixed(1)}M` : currentMaxPrice >= 1000 ? `${(currentMaxPrice / 1000).toFixed(0)}k` : currentMaxPrice}</span>
+                        </div>
+                        <div className="dual-slider-container">
+                          <div className="dual-slider-track"></div>
+                          <div 
+                            className="dual-slider-range" 
+                            style={{
+                              left: `${dataMaxPrice > dataMinPrice ? ((currentMinPrice - dataMinPrice) / (dataMaxPrice - dataMinPrice)) * 100 : 0}%`,
+                              right: `${dataMaxPrice > dataMinPrice ? 100 - ((currentMaxPrice - dataMinPrice) / (dataMaxPrice - dataMinPrice)) * 100 : 0}%`
+                            }}
+                          ></div>
+                          <input
+                            type="range"
+                            className="dual-slider-input"
+                            min={dataMinPrice}
+                            max={dataMaxPrice}
+                            step={Math.max(1, Math.floor((dataMaxPrice - dataMinPrice) / 100))}
+                            value={currentMinPrice}
+                            onChange={(e) => {
+                              const val = Math.min(Number(e.target.value), currentMaxPrice);
+                              setMinPrice(val);
+                            }}
+                          />
+                          <input
+                            type="range"
+                            className="dual-slider-input"
+                            min={dataMinPrice}
+                            max={dataMaxPrice}
+                            step={Math.max(1, Math.floor((dataMaxPrice - dataMinPrice) / 100))}
+                            value={currentMaxPrice}
+                            onChange={(e) => {
+                              const val = Math.max(Number(e.target.value), currentMinPrice);
+                              setMaxPrice(val);
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -1134,7 +1219,8 @@ const Home = () => {
                           setMinYear('All');
                           setTransmissionFilter('All');
                           setFuelType('All');
-                          setPriceRange(150000);
+                          setMinPrice('');
+                          setMaxPrice('');
                           setLocationFilter('');
                           setSearchQuery('');
                         }}
@@ -1470,21 +1556,49 @@ const Home = () => {
                       ))}
                     </div>
 
-                    {/* Price Range */}
+                    {/* Dynamic Price Range */}
                     <div className="mt-3 pb-3 border-bottom">
-                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('price_range')}</h4>
-                      <input
-                        type="range"
-                        className="w-100 cursor-pointer"
-                        min="0"
-                        max="1000"
-                        value={priceRange}
-                        onChange={(e) => setPriceRange(parseInt(e.target.value))}
-                        style={{ accentColor: '#0f5132' }}
-                      />
-                      <div className="d-flex justify-content-between mt-1 text-xs font-semibold text-secondary" style={{ fontSize: '0.8rem' }}>
-                        <span>$0</span>
-                        <span>${priceRange}</span>
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Price Range</h4>
+                      
+                      <div className="mb-4 mt-2">
+                        <div className="d-flex justify-content-between text-xs font-semibold text-secondary mb-3" style={{ fontSize: '0.8rem' }}>
+                          <span>${currentMinPrice >= 1000000 ? `${(currentMinPrice / 1000000).toFixed(1)}M` : currentMinPrice >= 1000 ? `${(currentMinPrice / 1000).toFixed(0)}k` : currentMinPrice}</span>
+                          <span>${currentMaxPrice >= 1000000 ? `${(currentMaxPrice / 1000000).toFixed(1)}M` : currentMaxPrice >= 1000 ? `${(currentMaxPrice / 1000).toFixed(0)}k` : currentMaxPrice}</span>
+                        </div>
+                        <div className="dual-slider-container">
+                          <div className="dual-slider-track"></div>
+                          <div 
+                            className="dual-slider-range" 
+                            style={{
+                              left: `${dataMaxPrice > dataMinPrice ? ((currentMinPrice - dataMinPrice) / (dataMaxPrice - dataMinPrice)) * 100 : 0}%`,
+                              right: `${dataMaxPrice > dataMinPrice ? 100 - ((currentMaxPrice - dataMinPrice) / (dataMaxPrice - dataMinPrice)) * 100 : 0}%`
+                            }}
+                          ></div>
+                          <input
+                            type="range"
+                            className="dual-slider-input"
+                            min={dataMinPrice}
+                            max={dataMaxPrice}
+                            step={Math.max(1, Math.floor((dataMaxPrice - dataMinPrice) / 100))}
+                            value={currentMinPrice}
+                            onChange={(e) => {
+                              const val = Math.min(Number(e.target.value), currentMaxPrice);
+                              setMinPrice(val);
+                            }}
+                          />
+                          <input
+                            type="range"
+                            className="dual-slider-input"
+                            min={dataMinPrice}
+                            max={dataMaxPrice}
+                            step={Math.max(1, Math.floor((dataMaxPrice - dataMinPrice) / 100))}
+                            value={currentMaxPrice}
+                            onChange={(e) => {
+                              const val = Math.max(Number(e.target.value), currentMinPrice);
+                              setMaxPrice(val);
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -1502,7 +1616,8 @@ const Home = () => {
                     <div className="pt-3">
                       <button
                         onClick={() => {
-                          setPriceRange(1000);
+                          setMinPrice('');
+                          setMaxPrice('');
                           setStoreType('All');
                           setMinRating(0);
                           setLocationFilter('');
@@ -1521,26 +1636,7 @@ const Home = () => {
 
             {/* Listings Grid Column */}
             <main className="col-12 col-lg-9 directory-main">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid var(--border-glass)', paddingBottom: '12px' }}>
-                <h2 className="directory-title" style={{ border: 0, margin: 0, padding: 0 }}>
-                  {selectedType 
-                    ? t('active_postings_for').replace('{type}', t(selectedType.replace('store_product', 'stores').replace('handyman_skill', 'handymen').replace('service', 'services').replace('job_opening', 'organizations').replace('house', 'real_estate').replace('car', 'automotive').replace('personal_item', 'used_items')))
-                    : t('all_listings')}
-                  {selectedCategory && ` in ${selectedCategory}`}
-                </h2>
-                <button 
-                  onClick={() => {
-                    const newParams = new URLSearchParams(searchParams);
-                    newParams.delete('type');
-                    setSearchParams(newParams);
-                    setSelectedCategory('');
-                    setSearchQuery('');
-                  }} 
-                  className="btn btn-secondary btn-sm"
-                >
-                  ← Back to Home
-                </button>
-              </div>
+
 
               {error && <div className="alert alert-danger">{error}</div>}
 
@@ -1550,10 +1646,9 @@ const Home = () => {
                   <p style={{ marginTop: '16px' }}>Searching active directories...</p>
                 </div>
               ) : sortedListings.length === 0 ? (
-                <div className="glass-panel empty-directory flex-center">
-                  <span className="empty-icon">📂</span>
-                  <h3>No Active Listings Found</h3>
-                  <p>Try refining your search keyword or selecting a different category/type filter.</p>
+                <div className="loading-container flex-center">
+                  <div className="spinner"></div>
+                  <p style={{ marginTop: '16px' }}>Searching...</p>
                 </div>
               ) : (
                 <>
@@ -2616,6 +2711,41 @@ const Home = () => {
         }
         body.dark-theme .filter-toggle-btn:hover {
           background-color: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        /* Mobile Filter Drawer CSS */
+        @media (max-width: 991px) {
+          .mobile-filter-drawer {
+            display: block !important;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 75%;
+            height: 100vh;
+            height: 100dvh;
+            background: var(--bg-app);
+            z-index: 1050;
+            margin: 0;
+            padding: 0;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+            animation: slideInLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+          .mobile-filter-drawer .filter-sidebar-card {
+            border-radius: 0;
+            border: none;
+            padding: 20px;
+            background: transparent;
+            box-shadow: none;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+          }
+          .mobile-filter-drawer .filter-sidebar-card::-webkit-scrollbar {
+            display: none;
+          }
+        }
+        @keyframes slideInLeft {
+          from { transform: translateX(-100%); }
+          to { transform: translateX(0); }
         }
       `}</style>
     </div>

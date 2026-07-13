@@ -110,7 +110,8 @@ export default function MarketplacePage() {
   const categoryFilter = searchParams.get("category");
 
   const [products, setProducts] = useState([]);
-  const [priceRange, setPriceRange] = useState(1000);
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [storeType, setStoreType] = useState("All");
   const [minRating, setMinRating] = useState(0);
@@ -201,7 +202,9 @@ export default function MarketplacePage() {
       if (p.storeStatus !== "active" || p.storeIsHidden) return false;
       if (categoryFilter && p.category !== categoryFilter) return false;
       const pPrice = parseFloat(p.price.replace("$", ""));
-      if (pPrice > priceRange) return false;
+      const pMin = minPrice !== '' ? minPrice : 0;
+      const pMax = maxPrice !== '' ? maxPrice : Infinity;
+      if (pPrice < pMin || pPrice > pMax) return false;
       if (selectedLocations.length > 0 && !selectedLocations.includes(p.region))
         return false;
       if (storeType !== "All" && p.storeType !== storeType) return false;
@@ -241,7 +244,14 @@ export default function MarketplacePage() {
         // Newest Arrivals (default to ID descending for mock data)
         return b.id - a.id;
       }
+      return 0;
     });
+
+  const activePrices = products.map(p => parseFloat(p.price.replace("$", "")) || 0);
+  const dataMinPrice = activePrices.length > 0 ? Math.min(...activePrices) : 0;
+  const dataMaxPrice = activePrices.length > 0 ? Math.max(...activePrices) : 1000;
+  const currentMinPrice = minPrice !== '' ? minPrice : dataMinPrice;
+  const currentMaxPrice = maxPrice !== '' ? maxPrice : dataMaxPrice;
 
   return (
     <>
@@ -363,18 +373,49 @@ export default function MarketplacePage() {
                     <h3 className="text-label-md font-label-md text-on-surface uppercase tracking-wider mb-md">
                       Price Range
                     </h3>
-                    <div className="px-xs">
-                      <input
-                        className="w-full h-1 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary"
-                        max="1000"
-                        min="0"
-                        type="range"
-                        value={priceRange}
-                        onChange={(e) => setPriceRange(e.target.value)}
-                      />
-                      <div className="flex justify-between mt-sm text-label-sm font-label-sm text-on-surface-variant">
-                        <span>$0</span>
-                        <span>${priceRange}</span>
+                    {/* Dynamic Price Range */}
+                    <div className="mt-3 pb-3 border-bottom">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Price Range</h4>
+                      
+                      <div className="mb-4 mt-2">
+                        <div className="d-flex justify-content-between text-xs font-semibold text-secondary mb-3" style={{ fontSize: '0.8rem' }}>
+                          <span>${currentMinPrice >= 1000000 ? `${(currentMinPrice / 1000000).toFixed(1)}M` : currentMinPrice >= 1000 ? `${(currentMinPrice / 1000).toFixed(0)}k` : currentMinPrice}</span>
+                          <span>${currentMaxPrice >= 1000000 ? `${(currentMaxPrice / 1000000).toFixed(1)}M` : currentMaxPrice >= 1000 ? `${(currentMaxPrice / 1000).toFixed(0)}k` : currentMaxPrice}</span>
+                        </div>
+                        <div className="dual-slider-container">
+                          <div className="dual-slider-track"></div>
+                          <div 
+                            className="dual-slider-range" 
+                            style={{
+                              left: `${dataMaxPrice > dataMinPrice ? ((currentMinPrice - dataMinPrice) / (dataMaxPrice - dataMinPrice)) * 100 : 0}%`,
+                              right: `${dataMaxPrice > dataMinPrice ? 100 - ((currentMaxPrice - dataMinPrice) / (dataMaxPrice - dataMinPrice)) * 100 : 0}%`
+                            }}
+                          ></div>
+                          <input
+                            type="range"
+                            className="dual-slider-input"
+                            min={dataMinPrice}
+                            max={dataMaxPrice}
+                            step={Math.max(1, Math.floor((dataMaxPrice - dataMinPrice) / 100))}
+                            value={currentMinPrice}
+                            onChange={(e) => {
+                              const val = Math.min(Number(e.target.value), currentMaxPrice);
+                              setMinPrice(val);
+                            }}
+                          />
+                          <input
+                            type="range"
+                            className="dual-slider-input"
+                            min={dataMinPrice}
+                            max={dataMaxPrice}
+                            step={Math.max(1, Math.floor((dataMaxPrice - dataMinPrice) / 100))}
+                            value={currentMaxPrice}
+                            onChange={(e) => {
+                              const val = Math.max(Number(e.target.value), currentMinPrice);
+                              setMaxPrice(val);
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
                   </section>
@@ -562,7 +603,8 @@ export default function MarketplacePage() {
                     </button>
                     <button
                       onClick={() => {
-                        setPriceRange(1000);
+                        setMinPrice('');
+                        setMaxPrice('');
                         setSelectedLocations([]);
                         setStoreType("All");
                         setMinRating(0);

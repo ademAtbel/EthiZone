@@ -603,8 +603,17 @@ const Navbar = () => {
           padding: 8px 4px;
           padding-bottom: env(safe-area-inset-bottom, 8px);
           overflow-x: auto;
-          gap: 4px;
+          gap: 6px;
           box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+          /* Centering logic that supports scrolling */
+          justify-content: flex-start;
+          align-items: center;
+        }
+
+        .mobile-bottom-tabbar::before,
+        .mobile-bottom-tabbar::after {
+          content: '';
+          margin: auto;
         }
         
         .mobile-bottom-tabbar::-webkit-scrollbar {
@@ -619,14 +628,20 @@ const Navbar = () => {
           background: none;
           border: none;
           color: var(--text-secondary);
-          min-width: 72px;
-          padding: 4px;
+          min-width: max-content;
+          padding: 6px 12px;
+          border-radius: 8px;
           gap: 2px;
-          transition: color 0.2s;
+          transition: all 0.2s;
         }
         
         .mobile-tab-btn.active {
           color: var(--accent-primary);
+        }
+        
+        body:not(.dark-theme) .mobile-tab-btn.active {
+          background-color: #1e3a8a;
+          color: #ffffff;
         }
         
         .mobile-tab-btn span.material-symbols-outlined {
@@ -634,7 +649,7 @@ const Navbar = () => {
         }
         
         .mobile-tab-btn span.tab-label {
-          font-size: 0.65rem;
+          font-size: 0.75rem;
           font-weight: 600;
           white-space: nowrap;
         }
@@ -650,43 +665,43 @@ const Navbar = () => {
             onClick={() => { handleTypeSelect('store_product'); setMobileMenuOpen(false); }}
             className={`mobile-tab-btn ${selectedType === 'store_product' ? 'active' : ''}`}
           >
-            <span style={{ fontSize: '1.4rem' }}>🛒</span>
+            <span className="tab-label">{t('stores')}</span>
           </button>
           <button
             onClick={() => { handleTypeSelect('handyman_skill'); setMobileMenuOpen(false); }}
             className={`mobile-tab-btn ${selectedType === 'handyman_skill' ? 'active' : ''}`}
           >
-            <span style={{ fontSize: '1.4rem' }}>🛠️</span>
+            <span className="tab-label">{t('handymen')}</span>
           </button>
           <button
             onClick={() => { handleTypeSelect('service'); setMobileMenuOpen(false); }}
             className={`mobile-tab-btn ${selectedType === 'service' ? 'active' : ''}`}
           >
-            <span style={{ fontSize: '1.4rem' }}>💼</span>
+            <span className="tab-label">{t('services')}</span>
           </button>
           <button
             onClick={() => { handleTypeSelect('job_opening'); setMobileMenuOpen(false); }}
             className={`mobile-tab-btn ${selectedType === 'job_opening' ? 'active' : ''}`}
           >
-            <span style={{ fontSize: '1.4rem' }}>🏢</span>
+            <span className="tab-label">{t('organizations')}</span>
           </button>
           <button
             onClick={() => { handleTypeSelect('house'); setMobileMenuOpen(false); }}
             className={`mobile-tab-btn ${selectedType === 'house' ? 'active' : ''}`}
           >
-            <span style={{ fontSize: '1.4rem' }}>🏠</span>
+            <span className="tab-label">{t('real_estate')}</span>
           </button>
           <button
             onClick={() => { handleTypeSelect('car'); setMobileMenuOpen(false); }}
             className={`mobile-tab-btn ${selectedType === 'car' ? 'active' : ''}`}
           >
-            <span style={{ fontSize: '1.4rem' }}>🚗</span>
+            <span className="tab-label">{t('automotive')}</span>
           </button>
           <button
             onClick={() => { handleTypeSelect('personal_item'); setMobileMenuOpen(false); }}
             className={`mobile-tab-btn ${selectedType === 'personal_item' ? 'active' : ''}`}
           >
-            <span style={{ fontSize: '1.4rem' }}>📦</span>
+            <span className="tab-label">{t('used_items')}</span>
           </button>
         </div>
       )}
