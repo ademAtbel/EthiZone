@@ -58,6 +58,14 @@ const translations = {
     no_refs_yet: 'No customer references logged yet.',
     verified_reviews_desc: 'Below are authenticated client records & star reviews left by visitors who completed service transactions with your business.',
     
+    // Static Pages (User can update these later)
+    about_us_content: '[About Us Placeholder] EthiZone is the ultimate platform connecting buyers and sellers across multiple categories including real estate, automotive, local services, and professional handymen. We strive to provide a seamless, robust, and intuitive marketplace for all your needs.',
+    contact_tab_content: '[Contact Us Placeholder] Have questions or need support? Reach out to our team anytime. We are dedicated to providing you with the best customer service experience. Email us at support@ethizone.com or call our toll-free number.',
+    privacy_policy_content: '[Privacy Policy Placeholder] Your privacy is our top priority. EthiZone uses advanced encryption and security measures to protect your personal data. We do not sell your personal information to third parties without your explicit consent.',
+    terms_of_service_content: '[Terms & Conditions Placeholder] By using EthiZone, you agree to comply with and be bound by our terms of service. Users must be at least 18 years of age to engage in binding contracts on our platform.',
+    legal_disclaimer_title: '⚠️ Important Legal Disclaimer',
+    legal_disclaimer: 'For any money transaction, EthiZone is NOT responsible. The seller is solely responsible for their products and services.',
+    
     // Storefront page
     catalog_listings: 'Catalog & Active Listings',
     no_posts_yet: 'No products, services, or job openings posted by this business yet.',
@@ -306,6 +314,14 @@ const translations = {
     no_listings_yet: 'እስካሁን ምንም ማስታወቂያ አልለጠፉም።',
     no_refs_yet: 'እስካሁን ምንም የደንበኛ አስተያየት የለም።',
     verified_reviews_desc: 'ከድርጅትዎ ጋር የአገልግሎት ግንኙነት ያደረጉ ደንበኞች የሰጡት አስተያየት እና ባለኮከብ ደረጃዎች ከዚህ በታች ቀርበዋል።',
+    
+    // Static Pages (User can update these later)
+    about_us_content: '[ስለ እኛ - ይህን በኋላ ያዘምኑት] EthiZone ገዢዎችን እና ሻጮችን በተለያዩ ዘርፎች የሚያገናኝ ዋና መድረክ ነው። የሪል ስቴት፣ አውቶሞቲቭ፣ የሀገር ውስጥ አገልግሎቶች እና ባለሙያዎችን በቀላሉ ያገናኛል።',
+    contact_tab_content: '[አግኙን - ይህን በኋላ ያዘምኑት] ጥያቄዎች አሉዎት ወይም ድጋፍ ይፈልጋሉ? በማንኛውም ጊዜ ቡድናችንን ያግኙ። በ support@ethizone.com ወይም በነፃ የስልክ መስመራችን ሊያገኙን ይችላሉ።',
+    privacy_policy_content: '[የግላዊነት ፖሊሲ - ይህን በኋላ ያዘምኑት] የእርስዎ ግላዊነት ቅድሚያ የምንሰጠው ጉዳይ ነው። የርስዎን መረጃ ለመጠበቅ ከፍተኛ የጥበቃ ስርአቶችን እንጠቀማለን። ያለእርስዎ ግልጽ ፍቃድ የግል መረጃዎን ለሶስተኛ ወገኖች አንሸጥም።',
+    terms_of_service_content: '[የአገልግሎት ውሎች - ይህን በኋላ ያዘምኑት] EthiZoneን በመጠቀም፣ በአገልግሎት ውሎቻችን ለመገዛት ተስማምተዋል። ተጠቃሚዎች በመድረካችን ላይ ውል ለማድረግ ቢያንስ 18 ዓመት የሞላቸው መሆን አለባቸው።',
+    legal_disclaimer_title: '⚠️ ጠቃሚ ህጋዊ ማሳሰቢያ',
+    legal_disclaimer: 'ለማንኛውም የገንዘብ ዝውውር EthiZone ሀላፊነት አይወስድም። ሻጩ ለምርቶቹ እና ለአገልግሎቶቹ ሙሉ ሀላፊነቱን ይወስዳል።',
     
     // Storefront page
     catalog_listings: 'የማስታወቂያዎች ዝርዝር',

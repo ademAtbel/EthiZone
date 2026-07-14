@@ -17,19 +17,19 @@ const StaticPage = () => {
   switch (location.pathname) {
     case '/about':
       title = t('about_us') || 'About Us';
-      content = 'EthiZone is the ultimate platform connecting buyers and sellers across multiple categories including real estate, automotive, local services, and professional handymen. We strive to provide a seamless, robust, and intuitive marketplace for all your needs.';
+      content = t('about_us_content');
       break;
     case '/contact':
       title = t('contact_tab') || 'Contact Us';
-      content = 'Have questions or need support? Reach out to our team anytime. We are dedicated to providing you with the best customer service experience. Email us at support@ethizone.com or call our toll-free number.';
+      content = t('contact_tab_content');
       break;
     case '/privacy':
       title = t('privacy_policy') || 'Privacy Policy';
-      content = 'Your privacy is our top priority. EthiZone uses advanced encryption and security measures to protect your personal data. We do not sell your personal information to third parties without your explicit consent. Please review our full privacy practices to understand how we collect, use, and safeguard your data.';
+      content = t('privacy_policy_content');
       break;
     case '/terms':
       title = t('terms_of_service') || 'Terms & Conditions';
-      content = 'By using EthiZone, you agree to comply with and be bound by our terms of service. Users must be at least 18 years of age to engage in binding contracts on our platform. We reserve the right to suspend or terminate accounts that violate our community guidelines or engage in fraudulent activities.';
+      content = t('terms_of_service_content');
       break;
     default:
       title = 'Page';
@@ -52,7 +52,7 @@ const StaticPage = () => {
         {/* Global Legal Disclaimer as requested by user */}
         <div className="alert mt-5" style={{ backgroundColor: 'rgba(255, 0, 0, 0.1)', border: '1px solid var(--accent-danger)', color: 'var(--text-main)', borderRadius: '8px' }}>
           <h4 className="alert-heading fw-bold d-flex align-items-center gap-2" style={{ color: 'var(--accent-danger)' }}>
-            ⚠️ Important Legal Disclaimer
+            {t('legal_disclaimer_title') || '⚠️ Important Legal Disclaimer'}
           </h4>
           <p className="mb-0 mt-2 fw-medium" style={{ fontSize: '1.05rem' }}>
             {t('legal_disclaimer') || "For any money transaction, EthiZone is NOT responsible. The seller is solely responsible for their products and services."}
