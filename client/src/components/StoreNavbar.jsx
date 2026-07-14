@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 
@@ -15,6 +15,34 @@ const StoreNavbar = ({
   setActiveTab
 }) => {
   const { t } = useApp();
+  const [headerHeight, setHeaderHeight] = useState(180);
+
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      const headerWrapper = document.querySelector('.header-wrapper');
+      if (headerWrapper) {
+        setHeaderHeight(headerWrapper.offsetHeight);
+      }
+    };
+    
+    // Initial check
+    updateHeaderHeight();
+    
+    // Check on resize
+    window.addEventListener('resize', updateHeaderHeight);
+    
+    // Observe DOM changes in case the top banner or breadcrumbs change
+    const observer = new MutationObserver(updateHeaderHeight);
+    const headerWrapper = document.querySelector('.header-wrapper');
+    if (headerWrapper) {
+      observer.observe(headerWrapper, { childList: true, subtree: true, attributes: true });
+    }
+    
+    return () => {
+      window.removeEventListener('resize', updateHeaderHeight);
+      observer.disconnect();
+    };
+  }, []);
 
   const getCatalogTabName = () => {
     if (role === 'handyman') return t('skills_tab');
@@ -29,8 +57,13 @@ const StoreNavbar = ({
     return t('catalog_tab');
   };
 
+  const handleTabClick = (tabName) => {
+    setActiveTab(tabName);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <nav className="store-navbar">
+    <nav className="store-navbar" style={{ '--header-height': `${headerHeight}px` }}>
       <div className="container store-nav-container">
         <div className="store-brand">
           <span className="store-brand-icon">🏬</span>
@@ -41,38 +74,75 @@ const StoreNavbar = ({
         </div>
         
         <ul className="store-nav-links">
-          {/* Standard Store Section Tabs */}
           <li>
             <button 
               type="button"
-              onClick={() => setActiveTab('home')} 
+              onClick={() => handleTabClick('home')} 
               className={`store-nav-link-btn ${activeTab === 'home' ? 'active' : ''}`}
             >
               {t('home_tab')}
             </button>
           </li>
+          
+          {businessType === 'store' && (
+            <>
+              <li>
+                <button 
+                  type="button"
+              onClick={() => handleTabClick('on_sale')} 
+                  className={`store-nav-link-btn ${activeTab === 'on_sale' ? 'active' : ''}`}
+                >
+                  On Sale
+                </button>
+              </li>
+              <li>
+                <button 
+                  type="button"
+              onClick={() => handleTabClick('new_arrival')} 
+                  className={`store-nav-link-btn ${activeTab === 'new_arrival' ? 'active' : ''}`}
+                >
+                  New Arrival
+                </button>
+              </li>
+            </>
+          )}
+
           <li>
             <button 
               type="button"
-              onClick={() => setActiveTab('catalog')} 
+              onClick={() => handleTabClick('catalog')} 
               className={`store-nav-link-btn ${activeTab === 'catalog' ? 'active' : ''}`}
             >
               {getCatalogTabName()}
             </button>
           </li>
+
+          {businessType !== 'store' && (
+            <li>
+              <button 
+                type="button"
+              onClick={() => handleTabClick('about')} 
+                className={`store-nav-link-btn ${activeTab === 'about' ? 'active' : ''}`}
+              >
+                {t('about_tab')}
+              </button>
+            </li>
+          )}
+
           <li>
             <button 
               type="button"
-              onClick={() => setActiveTab('about')} 
-              className={`store-nav-link-btn ${activeTab === 'about' ? 'active' : ''}`}
+              onClick={() => handleTabClick('gallery')} 
+              className={`store-nav-link-btn ${activeTab === 'gallery' ? 'active' : ''}`}
             >
-              {t('about_tab')}
+              Gallery
             </button>
           </li>
+          
           <li>
             <button 
               type="button"
-              onClick={() => setActiveTab('contact')} 
+              onClick={() => handleTabClick('contact')} 
               className={`store-nav-link-btn ${activeTab === 'contact' ? 'active' : ''}`}
             >
               {t('contact_tab')}
@@ -97,7 +167,77 @@ const StoreNavbar = ({
           })}
         </ul>
 
-        {/* Owner actions removed to keep public storefront clean */}
+      </div>
+      
+      {/* Mobile Bottom Tabbar specific to Storefront */}
+      <div className="store-mobile-bottom-tabbar d-lg-none">
+        <button 
+          onClick={() => handleTabClick('home')} 
+          className={`store-mobile-tab-btn ${activeTab === 'home' ? 'active' : ''}`}
+        >
+          <span className="tab-label">{t('home_tab')}</span>
+        </button>
+        
+        {businessType === 'store' && (
+          <>
+            <button 
+              onClick={() => handleTabClick('on_sale')} 
+              className={`store-mobile-tab-btn ${activeTab === 'on_sale' ? 'active' : ''}`}
+            >
+              <span className="tab-label">On Sale</span>
+            </button>
+            <button 
+              onClick={() => handleTabClick('new_arrival')} 
+              className={`store-mobile-tab-btn ${activeTab === 'new_arrival' ? 'active' : ''}`}
+            >
+              <span className="tab-label">New</span>
+            </button>
+          </>
+        )}
+
+        <button 
+          onClick={() => handleTabClick('catalog')} 
+          className={`store-mobile-tab-btn ${activeTab === 'catalog' ? 'active' : ''}`}
+        >
+          <span className="tab-label">{getCatalogTabName()}</span>
+        </button>
+
+        {businessType !== 'store' && (
+          <button 
+            onClick={() => handleTabClick('about')} 
+            className={`store-mobile-tab-btn ${activeTab === 'about' ? 'active' : ''}`}
+          >
+            <span className="tab-label">{t('about_tab')}</span>
+          </button>
+        )}
+
+        <button 
+          onClick={() => handleTabClick('gallery')} 
+          className={`store-mobile-tab-btn ${activeTab === 'gallery' ? 'active' : ''}`}
+        >
+          <span className="tab-label">Gallery</span>
+        </button>
+
+        <button 
+          onClick={() => handleTabClick('contact')} 
+          className={`store-mobile-tab-btn ${activeTab === 'contact' ? 'active' : ''}`}
+        >
+          <span className="tab-label">{t('contact_tab')}</span>
+        </button>
+        {customLinks.map((link, index) => {
+          const targetUrl = link.url.startsWith('http') ? link.url : `http://${link.url}`;
+          return (
+            <a 
+              key={`mobile-${index}`}
+              href={targetUrl} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="store-mobile-tab-btn custom-link"
+            >
+              <span className="tab-label">{link.label}</span>
+            </a>
+          );
+        })}
       </div>
 
       <style>{`
@@ -106,6 +246,14 @@ const StoreNavbar = ({
           border-bottom: 2px solid var(--accent-secondary);
           padding: 14px 0;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+          z-index: 990;
+        }
+        @media (min-width: 992px) {
+          .store-navbar {
+            position: sticky;
+            /* The top value is set dynamically by JS, but provide a fallback */
+            top: var(--header-height, 180px); 
+          }
         }
         .store-nav-container {
           display: flex;
@@ -185,22 +333,72 @@ const StoreNavbar = ({
             align-items: flex-start;
           }
           .store-nav-links {
-            display: flex;
-            flex-wrap: nowrap;
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            padding-bottom: 8px;
-            gap: 16px;
-            scrollbar-width: none;
-          }
-          .store-nav-links::-webkit-scrollbar {
-            display: none;
+            display: none !important;
           }
           .store-nav-actions {
             width: 100%;
             justify-content: flex-end;
           }
+          
+          /* Show mobile tab bar on small screens */
+          .store-mobile-bottom-tabbar {
+            display: flex !important;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: var(--blur-glass);
+            -webkit-backdrop-filter: var(--blur-glass);
+            border-top: 1px solid var(--accent-secondary);
+            z-index: 2000;
+            padding: 8px 4px;
+            padding-bottom: env(safe-area-inset-bottom, 8px);
+            overflow-x: auto;
+            gap: 6px;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.3);
+            justify-content: flex-start;
+            align-items: center;
+          }
+          .store-mobile-bottom-tabbar::-webkit-scrollbar {
+            display: none;
+          }
+          .store-mobile-bottom-tabbar::before,
+          .store-mobile-bottom-tabbar::after {
+            content: '';
+            margin: auto;
+          }
+        }
+        
+        .store-mobile-bottom-tabbar {
+          display: none; /* Hidden on desktop */
+        }
+        
+        .store-mobile-tab-btn {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: none;
+          border: none;
+          color: var(--text-secondary);
+          min-width: max-content;
+          padding: 6px 12px;
+          border-radius: 8px;
+          gap: 2px;
+          transition: all 0.2s;
+          text-decoration: none;
+        }
+        
+        .store-mobile-tab-btn.active {
+          color: var(--accent-secondary);
+          background-color: rgba(var(--accent-secondary-rgb), 0.15);
+        }
+        
+        .store-mobile-tab-btn span.tab-label {
+          font-size: 0.85rem;
+          font-weight: 600;
+          white-space: nowrap;
         }
       `}</style>
     </nav>

@@ -4,27 +4,30 @@
   --font-heading: 'Outfit', sans-serif;
   --font-body: 'Inter', sans-serif;
 
-  /* HSL Color Palette - Dark Slate & Premium Accents */
-  --bg-app: #090d16;
-  --bg-card: rgba(17, 24, 39, 0.75);
-  --bg-card-hover: rgba(31, 41, 55, 0.85);
-  --bg-navbar: rgba(10, 15, 30, 0.8);
+  /* 3-Color Simplified Dark Palette */
+  /* 1. Backgrounds (Small variation of Dark Navy) */
+  --bg-app: #0b1121;
+  --bg-card: rgba(17, 24, 39, 0.85);
+  --bg-card-hover: rgba(31, 41, 55, 0.95);
+  --bg-navbar: rgba(11, 17, 33, 0.9);
   
-  --accent-primary: #6366f1; /* Indigo */
-  --accent-primary-glow: rgba(99, 102, 241, 0.35);
-  --accent-secondary: #06b6d4; /* Cyan */
-  --accent-secondary-glow: rgba(6, 182, 212, 0.25);
-  --accent-success: #10b981; /* Emerald */
-  --accent-success-glow: rgba(16, 185, 129, 0.25);
-  --accent-warning: #f59e0b; /* Amber */
-  --accent-danger: #ef4444; /* Rose */
+  /* 2. Buttons & Accents (Navy Blue) */
+  --accent-primary: #1e3a8a; 
+  --accent-primary-glow: rgba(30, 58, 138, 0.4);
+  --accent-secondary: #1e40af; 
+  --accent-secondary-glow: rgba(30, 64, 175, 0.3);
+  --accent-success: #1e3a8a; 
+  --accent-success-glow: rgba(30, 58, 138, 0.25);
+  --accent-warning: #1e3a8a; 
+  --accent-danger: #1e3a8a; 
   
-  --text-main: #f3f4f6; /* Gray 100 */
-  --text-secondary: #9ca3af; /* Gray 400 */
-  --text-muted: #6b7280; /* Gray 500 */
+  /* 3. Text (White) */
+  --text-main: #ffffff; 
+  --text-secondary: #f8fafc; 
+  --text-muted: #e2e8f0; 
   
-  --border-glass: rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(99, 102, 241, 0.5);
+  --border-glass: rgba(255, 255, 255, 0.12);
+  --border-focus: rgba(30, 58, 138, 0.6);
   
   --blur-glass: blur(16px);
   --shadow-premium: 0 10px 40px -10px rgba(0, 0, 0, 0.7);
@@ -69,6 +72,27 @@ body.light-theme .btn-secondary:hover {
   background: rgba(0, 0, 0, 0.06);
 }
 
+/* Custom Webkit Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-app);
+  border-left: 1px solid var(--border-glass);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-secondary);
+  border-radius: 8px;
+  border: 2px solid var(--bg-app);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -83,9 +107,9 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.1) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.12) 0px, transparent 60%),
+    radial-gradient(at 100% 0%, rgba(30, 64, 175, 0.08) 0px, transparent 60%),
+    radial-gradient(at 50% 100%, rgba(30, 58, 138, 0.1) 0px, transparent 50%);
   background-attachment: fixed;
 }
 
@@ -155,15 +179,15 @@ a {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-primary) 0%, #4f46e5 100%);
+  background: var(--accent-primary);
   color: #ffffff;
   box-shadow: 0 4px 20px var(--accent-primary-glow);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
+  background: var(--accent-secondary);
   box-shadow: 0 8px 30px var(--accent-primary-glow);
-  filter: brightness(1.1);
 }
 
 .btn-primary:active {
@@ -183,25 +207,25 @@ a {
 }
 
 .btn-success {
-  background: linear-gradient(135deg, var(--accent-success) 0%, #059669 100%);
+  background: var(--accent-success);
   color: #ffffff;
   box-shadow: 0 4px 20px var(--accent-success-glow);
 }
 
 .btn-success:hover {
   transform: translateY(-2px);
+  background: var(--accent-secondary);
   box-shadow: 0 8px 30px var(--accent-success-glow);
-  filter: brightness(1.1);
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, var(--accent-danger) 0%, #dc2626 100%);
+  background: var(--accent-danger);
   color: #ffffff;
 }
 
 .btn-danger:hover {
   transform: translateY(-2px);
-  filter: brightness(1.1);
+  background: var(--accent-secondary);
 }
 
 .btn-icon {

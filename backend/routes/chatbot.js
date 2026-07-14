@@ -14,7 +14,7 @@ router.post('/', async (req, res) => {
     // 1. Help Guide / Listing instructions
     if (query.includes('how to') || query.includes('list') || query.includes('post') || query.includes('sign up') || query.includes('register') || query.includes('sell')) {
       return res.json({
-        reply: "To list your items, skills, or business on Ultimate Master:\n\n1. Click **Be Our Partner** or **Login/Register** in the navbar.\n2. Create an account. Select **Handyman** if you offer trades, **Business** for storefronts, or **Individual** to sell personal items.\n3. Go to your **Dashboard**.\n4. Click **Create Listing**, fill in the details, and upload photos!\n\nYour post will go live instantly for customers to see."
+        reply: "To list your items, skills, or business on Ethiozone:\n\n1. Click **Be Our Partner** or **Login/Register** in the navbar.\n2. Create an account. Select **Handyman** if you offer trades, **Business** for storefronts, or **Individual** to sell personal items.\n3. Go to your **Dashboard**.\n4. Click **Create Listing**, fill in the details, and upload photos!\n\nYour post will go live instantly for customers to see."
       });
     }
 
@@ -91,7 +91,7 @@ router.post('/', async (req, res) => {
       }).limit(3);
 
       if (houses.length > 0) {
-        let reply = "Here are real estate options listed on Ultimate Master:\n\n";
+        let reply = "Here are real estate options listed on Ethiozone:\n\n";
         houses.forEach(h => {
           reply += `- **${h.title}** ($${h.price || 'Call for Price'}). ${h.metadata?.bedrooms || 0} Bed, ${h.metadata?.bathrooms || 0} Bath ${h.metadata?.propertyType || 'House'}.\n`;
         });
@@ -139,7 +139,7 @@ router.post('/', async (req, res) => {
 
     // 7. General Fallback
     return res.json({
-      reply: "I'm here to help you navigate Ultimate Master! You can ask me questions like:\n- *How do I list my business?*\n- *Find a plumber*\n- *Show me job openings*\n- *Real estate rent options*\n- *How do I submit doctor prescriptions?*"
+      reply: "I'm here to help you navigate Ethiozone! You can ask me questions like:\n- *How do I list my business?*\n- *Find a plumber*\n- *Show me job openings*\n- *Real estate rent options*\n- *How do I submit doctor prescriptions?*"
     });
 
   } catch (error) {

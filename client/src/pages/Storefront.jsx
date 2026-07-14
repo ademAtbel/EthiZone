@@ -6,6 +6,7 @@ import QrModal from '../components/QrModal';
 import ListingCard from '../components/ListingCard';
 import CategoryTemplate from '../components/CategoryTemplate';
 import { useApp } from '../context/AppContext';
+import { Building2, MapPin, Phone, MessageCircle, FileText, Shirt, ShoppingBag } from 'lucide-react';
 
 const Storefront = () => {
   const { storeName } = useParams();
@@ -18,8 +19,9 @@ const Storefront = () => {
   const [catalogQuery, setCatalogQuery] = useState('');
   const [catalogSort, setCatalogSort] = useState('newest');
   const [catalogStatusFilter, setCatalogStatusFilter] = useState('all');
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
-  const { t } = useApp();
+  const { t, setActiveStoreType } = useApp();
   const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
   const [submittingInquiry, setSubmittingInquiry] = useState(false);
   const [submissionSuccessLogs, setSubmissionSuccessLogs] = useState(null);
@@ -188,6 +190,11 @@ const Storefront = () => {
       if (!res.ok) throw new Error(storeData.message || 'Store not found');
       
       setStore(storeData);
+      
+      // Update the global active store type for Navbar highlighting
+      if (setActiveStoreType && storeData.businessType) {
+        setActiveStoreType(storeData.businessType);
+      }
 
       // Fetch listings for this store owner using their resolved ID (up to 100)
       const listRes = await fetch(`/api/listings?ownerId=${storeData._id}&limit=100`);
@@ -272,24 +279,32 @@ const Storefront = () => {
             >
               <div className="store-hero-info">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '14px', flexWrap: 'wrap' }}>
-                  {store.storeLogo && (
-                    <img 
-                      src={store.storeLogo} 
-                      alt={`${store.storeName || store.username} Logo`} 
-                      style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--accent-primary)', boxShadow: '0 0 20px rgba(99, 102, 241, 0.35)' }} 
-                    />
-                  )}
+                  <img 
+                    src={store.storeLogo || '/logo.png'} 
+                    alt={`${store.storeName || store.username} Logo`} 
+                    style={{ 
+                      width: '90px', 
+                      height: '90px', 
+                      borderRadius: '50%', 
+                      objectFit: 'cover', 
+                      border: '4px solid var(--accent-primary)', 
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.6), inset 0 4px 8px rgba(255,255,255,0.3), inset 0 -4px 8px rgba(0,0,0,0.4)',
+                      background: 'var(--bg-card)',
+                      transform: 'translateZ(0)',
+                      transition: 'transform 0.3s ease'
+                    }} 
+                  />
                   <h1 style={{ margin: 0, fontSize: '2.2rem' }}>{store.storeName || store.username}</h1>
                 </div>
-                <p className="store-address">📍 {store.address || 'Local Directory Services'}</p>
+                <p className="store-address d-flex align-items-center gap-2" style={{ justifyContent: 'center' }}><MapPin size={16} style={{ color: 'var(--accent-secondary)' }} /> {store.address || 'Local Directory Services'}</p>
                 <p className="store-desc">{store.description || t('middleman_free')}</p>
               </div>
               <div className="store-hero-contact" style={{ zIndex: 2 }}>
                 <span className="contact-label">{t('direct_line')}</span>
                 <span className="contact-number">{store.phone}</span>
                 <div className="contact-cta-row">
-                  <a href={`tel:${store.phone}`} className="btn btn-success">{t('call')}</a>
-                  <a href={`sms:${store.phone}?body=Hi! I am interested in inquiring about your store services.`} className="btn btn-primary">{t('sms')}</a>
+                  <a href={`tel:${store.phone}`} className="btn btn-success d-flex align-items-center justify-content-center gap-2"><Phone size={18} /> {t('call')}</a>
+                  <a href={`sms:${store.phone}?body=Hi! I am interested in inquiring about your store services.`} className="btn btn-primary d-flex align-items-center justify-content-center gap-2"><MessageCircle size={18} /> {t('sms')}</a>
                 </div>
               </div>
             </header>
@@ -328,44 +343,157 @@ const Storefront = () => {
           </>
         )}
 
-        {/* TAB 2: CATALOG / SHOP ITEMS SECTION */}
-        {activeTab === 'catalog' && (
+        {/* TAB 2: CATALOG / SHOP ITEMS / ON SALE / NEW ARRIVAL SECTION */}
+        {['catalog', 'on_sale', 'new_arrival'].includes(activeTab) && (
           <div className="storefront-grid">
             <div className="storefront-main" style={{ width: '100%' }}>
-              <div className="catalog-header-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '12px', flexWrap: 'wrap' }}>
-                <h3 style={{ margin: 0 }}>{t('catalog_active_listings')} ({filteredListings.length})</h3>
+              <div className="catalog-header-bar sticky-catalog-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                <h3 style={{ margin: 0 }}>
+                  {activeTab === 'on_sale' ? 'Items on Sale' : activeTab === 'new_arrival' ? 'New Arrivals' : `${t('catalog_active_listings')} (${filteredListings.length})`}
+                </h3>
                 
-                {/* Catalog Multi-Option Filters */}
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', flex: '1', justifyContent: 'flex-end' }}>
-                  <input 
-                    type="text" 
-                    placeholder={t('search_in_catalog')}
-                    className="form-control" 
-                    style={{ maxWidth: '240px', margin: 0 }}
-                    value={catalogQuery}
-                    onChange={(e) => setCatalogQuery(e.target.value)}
-                  />
-                  <select 
-                    className="form-control" 
-                    value={catalogStatusFilter} 
-                    onChange={(e) => setCatalogStatusFilter(e.target.value)}
-                    style={{ maxWidth: '150px', margin: 0 }}
+                  <button
+                    className="btn btn-outline-secondary d-md-none d-flex align-items-center"
+                    onClick={() => setShowMobileFilters(!showMobileFilters)}
+                    style={{
+                      borderRadius: '8px', padding: '8px 16px', background: 'var(--bg-card)', 
+                      border: '1px solid var(--border-glass)', boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+                      gap: '8px'
+                    }}
                   >
-                    <option value="all">All Statuses</option>
-                    <option value="active">Available</option>
-                    <option value="inactive">Sold Out / Busy</option>
-                  </select>
-                  <select 
-                    className="form-control" 
-                    value={catalogSort} 
-                    onChange={(e) => setCatalogSort(e.target.value)}
-                    style={{ maxWidth: '170px', margin: 0 }}
-                  >
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
-                    <option value="low-to-high">Price: Low to High</option>
-                    <option value="high-to-low">Price: High to Low</option>
-                  </select>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="21" x2="14" y1="4" y2="4" />
+                      <line x1="10" x2="3" y1="4" y2="4" />
+                      <line x1="21" x2="12" y1="12" y2="12" />
+                      <line x1="8" x2="3" y1="12" y2="12" />
+                      <line x1="21" x2="16" y1="20" y2="20" />
+                      <line x1="12" x2="3" y1="20" y2="20" />
+                      <line x1="14" x2="14" y1="2" y2="6" />
+                      <line x1="8" x2="8" y1="10" y2="14" />
+                      <line x1="12" x2="12" y1="18" y2="22" />
+                    </svg>
+                    <span className="fw-semibold">Filters</span>
+                  </button>
+
+                  {/* Desktop Inline Filters */}
+                  <div className="d-none d-md-flex" style={{ gap: '10px', flexWrap: 'wrap', width: '100%', justifyContent: 'flex-end' }}>
+                    <input 
+                      type="text" 
+                      placeholder={t('search_in_catalog')}
+                      className="form-control" 
+                      style={{ maxWidth: '240px', margin: 0 }}
+                      value={catalogQuery}
+                      onChange={(e) => setCatalogQuery(e.target.value)}
+                    />
+                    <select 
+                      className="form-control" 
+                      value={catalogStatusFilter} 
+                      onChange={(e) => setCatalogStatusFilter(e.target.value)}
+                      style={{ maxWidth: '150px', margin: 0 }}
+                    >
+                      <option value="all">All Statuses</option>
+                      <option value="active">Available</option>
+                      <option value="inactive">Sold Out / Busy</option>
+                    </select>
+                    <select 
+                      className="form-control" 
+                      value={catalogSort} 
+                      onChange={(e) => setCatalogSort(e.target.value)}
+                      style={{ maxWidth: '170px', margin: 0 }}
+                    >
+                      <option value="newest">Newest First</option>
+                      <option value="oldest">Oldest First</option>
+                      <option value="low-to-high">Price: Low to High</option>
+                      <option value="high-to-low">Price: High to Low</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Mobile Filter Drawer Overlay */}
+              {showMobileFilters && (
+                <div 
+                  className="d-md-none" 
+                  onClick={() => setShowMobileFilters(false)} 
+                  style={{ 
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+                    backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1040, backdropFilter: 'blur(4px)'
+                  }} 
+                />
+              )}
+
+              {/* Mobile Filter Drawer */}
+              <div className={`d-md-none ${showMobileFilters ? 'mobile-filter-drawer' : 'd-none'}`} style={{ zIndex: 1045 }}>
+                <div className="filter-sidebar-card" style={{ height: '100%', overflowY: 'auto' }}>
+                  <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                     <span className="fw-bold fs-5" style={{ color: 'var(--text-main)' }}>Filters</span>
+                     <button className="btn btn-sm" onClick={() => setShowMobileFilters(false)} style={{ borderRadius: '50%', width: '32px', height: '32px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-glass)' }}>✕</button>
+                  </div>
+                  
+                  <div className="space-y-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div>
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Search</h4>
+                      <input 
+                        type="text" 
+                        placeholder={t('search_in_catalog')}
+                        className="form-control w-100" 
+                        value={catalogQuery}
+                        onChange={(e) => setCatalogQuery(e.target.value)}
+                      />
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Status</h4>
+                      <select 
+                        className="form-control w-100" 
+                        value={catalogStatusFilter} 
+                        onChange={(e) => setCatalogStatusFilter(e.target.value)}
+                      >
+                        <option value="all">All Statuses</option>
+                        <option value="active">Available</option>
+                        <option value="inactive">Sold Out / Busy</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Sort By</h4>
+                      <select 
+                        className="form-control w-100" 
+                        value={catalogSort} 
+                        onChange={(e) => setCatalogSort(e.target.value)}
+                      >
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="low-to-high">Price: Low to High</option>
+                        <option value="high-to-low">Price: High to Low</option>
+                      </select>
+                    </div>
+
+                    <div className="pt-4 mt-2 border-top">
+                      <button
+                        onClick={() => {
+                          setCatalogQuery('');
+                          setCatalogStatusFilter('all');
+                          setCatalogSort('newest');
+                          setShowMobileFilters(false);
+                        }}
+                        className="btn btn-light border w-100 py-2 rounded-3 fw-semibold transition-all"
+                      >
+                        Reset Filters
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
               
@@ -386,6 +514,24 @@ const Storefront = () => {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* TAB: GALLERY PANEL */}
+        {activeTab === 'gallery' && (
+          <div className="glass-panel gallery-panel-card" style={{ padding: '40px', marginBottom: '30px' }}>
+            <h2 style={{ marginBottom: '18px', borderLeft: '3px solid var(--accent-primary)', paddingLeft: '12px' }}>Gallery</h2>
+            <div className="row g-3">
+               {listings.flatMap(l => l.images || []).length > 0 ? (
+                 listings.flatMap(l => l.images || []).slice(0, 16).map((img, idx) => (
+                    <div key={idx} className="col-6 col-md-4 col-lg-3">
+                       <img src={img} alt="Gallery item" style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-glass)' }} />
+                    </div>
+                 ))
+               ) : (
+                 <p className="text-muted" style={{ paddingLeft: '12px' }}>No images available in the gallery yet.</p>
+               )}
             </div>
           </div>
         )}
@@ -429,7 +575,7 @@ const Storefront = () => {
               
               <div style={{ display: 'flex', gap: '14px', justifyContent: 'center' }}>
                 <a href={`tel:${store.phone}`} className="btn btn-success" style={{ padding: '12px 28px', fontSize: '1rem' }}>{t('call_now')}</a>
-                <a href={`sms:${store.phone}?body=Hi! I saw your store on Ultimate Master and want to inquire.`} className="btn btn-primary" style={{ padding: '12px 28px', fontSize: '1rem' }}>{t('send_sms')}</a>
+                <a href={`sms:${store.phone}?body=Hi! I saw your store on Ethiozone and want to inquire.`} className="btn btn-primary" style={{ padding: '12px 28px', fontSize: '1rem' }}>{t('send_sms')}</a>
               </div>
             </div>
           </div>
@@ -864,6 +1010,18 @@ const Storefront = () => {
           grid-template-columns: 1fr;
           gap: 30px;
           align-items: start;
+        }
+        @media (min-width: 992px) {
+          .sticky-catalog-header {
+            position: sticky;
+            /* Top value assumes StoreNavbar is sticky at --header-height */
+            top: calc(var(--header-height, 180px) + 70px);
+            z-index: 980;
+            background: var(--bg-main);
+            padding: 10px 0;
+            /* Slightly expand background to cover spacing */
+            box-shadow: 0 10px 10px var(--bg-main);
+          }
         }
         .storefront-main h3 {
           font-size: 1.3rem;

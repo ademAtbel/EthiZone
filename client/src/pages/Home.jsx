@@ -4,6 +4,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import ListingCard from '../components/ListingCard';
 import FilterButton from '../components/FilterButton';
+import { Search, Star } from 'lucide-react';
 
 const Home = () => {
   const [listings, setListings] = useState([]);
@@ -575,7 +576,7 @@ const Home = () => {
       <section className="search-header-bar">
         <div className="container">
           <form onSubmit={handleSearchSubmit} className="search-bar-form">
-            <span className="search-icon">🔍</span>
+            <Search className="search-icon" size={18} />
             <input
               type="text"
               placeholder="Search products, discover stores, find services..."
@@ -608,27 +609,8 @@ const Home = () => {
             </div>
           </section>
 
-          {/* Slogan Banner */}
-          <section className="motto-banner">
-            <div className="container">
-              <h2 className="motto-text">"ALL Buyers are Sellers"</h2>
-              <a href="#manifesto" className="motto-link">MANIFESTO LINK</a>
-            </div>
-          </section>
 
-          {/* Quick Navigation Pills */}
-          <section className="quick-explore container">
-            <h3 className="section-title-centered">Explore Ethizone</h3>
-            <div className="explore-pills-row">
-              <button onClick={() => handleTypeSelect('store_product')} className="explore-pill">🏬 {t('stores')}</button>
-              <button onClick={() => handleTypeSelect('handyman_skill')} className="explore-pill">🛠️ {t('handymen')}</button>
-              <button onClick={() => handleTypeSelect('service')} className="explore-pill">🗃️ {t('services')}</button>
-              <button onClick={() => handleTypeSelect('job_opening')} className="explore-pill">💼 {t('organizations')}</button>
-              <button onClick={() => handleTypeSelect('house')} className="explore-pill">🏠 {t('real_estate')}</button>
-              <button onClick={() => handleTypeSelect('car')} className="explore-pill">🚗 {t('automotive')}</button>
-              <button onClick={() => handleTypeSelect('personal_item')} className="explore-pill">📦 {t('used_items')}</button>
-            </div>
-          </section>
+
 
           {/* Browse by Category Grid */}
           <section className="category-browse-grid container">
@@ -662,7 +644,7 @@ const Home = () => {
                   </div>
                 </div>
                 <div className="cat-card-small" onClick={() => handleTypeSelect('job_opening')}>
-                  <img src="https://images.unsplash.com/photo-1521737711867-e3b90473bd58?auto=format&fit=crop&w=400&q=80" alt="Jobs" />
+                  <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=400&q=80" alt="Jobs" />
                   <div className="cat-overlay-small">
                     <h4>{t('organizations')}</h4>
                   </div>
@@ -955,8 +937,8 @@ const Home = () => {
                           <button
                             key={num}
                             onClick={() => setMinBeds(num)}
-                            className={`btn btn-sm px-3 rounded-pill fw-semibold ${minBeds === num ? 'btn-success bg-success' : 'btn-light border'}`}
-                            style={minBeds === num ? { backgroundColor: '#0f5132', borderColor: '#0f5132', color: '#fff' } : {}}
+                            className={`btn btn-sm px-3 rounded-pill fw-semibold ${minBeds === num ? 'btn-primary' : 'btn-light border'}`}
+
                           >
                             {num === 0 ? t('all') : `${num}+`}
                           </button>
@@ -972,8 +954,8 @@ const Home = () => {
                           <button
                             key={num}
                             onClick={() => setMinBaths(num)}
-                            className={`btn btn-sm px-3 rounded-pill fw-semibold ${minBaths === num ? 'btn-success bg-success' : 'btn-light border'}`}
-                            style={minBaths === num ? { backgroundColor: '#0f5132', borderColor: '#0f5132', color: '#fff' } : {}}
+                            className={`btn btn-sm px-3 rounded-pill fw-semibold ${minBaths === num ? 'btn-primary' : 'btn-light border'}`}
+
                           >
                             {num === 0 ? t('all') : `${num}+`}
                           </button>
@@ -1101,8 +1083,8 @@ const Home = () => {
                           <button
                             key={item.value}
                             onClick={() => setMinYear(item.value)}
-                            className={`btn btn-sm px-3 rounded-pill fw-semibold ${minYear === item.value ? 'btn-success bg-success' : 'btn-light border'}`}
-                            style={minYear === item.value ? { backgroundColor: '#0f5132', borderColor: '#0f5132', color: '#fff' } : {}}
+                            className={`btn btn-sm px-3 rounded-pill fw-semibold ${minYear === item.value ? 'btn-primary' : 'btn-light border'}`}
+
                           >
                             {item.key ? t(item.key) : item.value}
                           </button>
@@ -1447,7 +1429,7 @@ const Home = () => {
                           />
                           <span className="d-flex align-items-center gap-1">
                             {r.label}
-                            {r.val > 0 && <span className="text-warning">⭐</span>}
+                            {r.val > 0 && <Star size={16} className="text-warning" fill="currentColor" />}
                           </span>
                         </label>
                       ))}
@@ -1716,7 +1698,7 @@ const Home = () => {
           padding: 16px 0;
           box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
-        body.dark-theme .search-header-bar {
+        body:not(.light-theme) .search-header-bar {
           background: #0f172a;
           border-bottom: 1px solid var(--border-glass);
         }
@@ -1744,7 +1726,7 @@ const Home = () => {
           outline: none;
           transition: all 0.2s;
         }
-        body.dark-theme .search-bar-input {
+        body:not(.light-theme) .search-bar-input {
           border-color: var(--border-glass);
           background: rgba(255,255,255,0.03);
           color: #fff;
@@ -1754,7 +1736,7 @@ const Home = () => {
           box-shadow: 0 0 0 3px rgba(13, 92, 58, 0.15);
           background: #ffffff;
         }
-        body.dark-theme .search-bar-input:focus {
+        body:not(.light-theme) .search-bar-input:focus {
           background: rgba(255,255,255,0.05);
         }
 
@@ -1782,7 +1764,7 @@ const Home = () => {
           color: #1e293b;
           margin-bottom: 20px;
         }
-        body.dark-theme .hero-text-col h1 {
+        body:not(.light-theme) .hero-text-col h1 {
           color: #ffffff;
         }
         .hero-text-col p {
@@ -1791,7 +1773,7 @@ const Home = () => {
           line-height: 1.6;
           margin-bottom: 30px;
         }
-        body.dark-theme .hero-text-col p {
+        body:not(.light-theme) .hero-text-col p {
           color: var(--text-secondary);
         }
         .hero-btn-row {
@@ -1843,7 +1825,7 @@ const Home = () => {
           justify-content: center;
           align-items: center;
         }
-        body.dark-theme .hero-monitor-frame {
+        body:not(.light-theme) .hero-monitor-frame {
           background: rgba(255,255,255,0.02);
           border: 1px solid var(--border-glass);
         }
@@ -1861,7 +1843,7 @@ const Home = () => {
           padding: 40px 0;
           text-align: center;
         }
-        body.dark-theme .motto-banner {
+        body:not(.light-theme) .motto-banner {
           background: rgba(13, 92, 58, 0.08);
           border-color: rgba(13, 92, 58, 0.3);
         }
@@ -1888,7 +1870,7 @@ const Home = () => {
           font-size: 0.85rem;
           letter-spacing: 0.05em;
         }
-        body.dark-theme .motto-link {
+        body:not(.light-theme) .motto-link {
           color: #60a5fa;
         }
 
@@ -1904,7 +1886,7 @@ const Home = () => {
           margin-bottom: 30px;
           color: #1e293b;
         }
-        body.dark-theme .section-title-centered {
+        body:not(.light-theme) .section-title-centered {
           color: #fff;
         }
         .explore-pills-row {
@@ -1927,14 +1909,14 @@ const Home = () => {
           align-items: center;
           gap: 8px;
         }
-        body.dark-theme .explore-pill {
+        body:not(.light-theme) .explore-pill {
           background: rgba(255,255,255,0.02);
           border-color: var(--border-glass);
           color: var(--text-secondary);
         }
         .explore-pill:hover {
-          border-color: #0d5c3a;
-          color: #0d5c3a;
+          border-color: var(--accent-primary);
+          color: var(--accent-primary);
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(13, 92, 58, 0.08);
         }
@@ -1956,13 +1938,13 @@ const Home = () => {
           color: #1e293b;
           margin: 0;
         }
-        body.dark-theme .section-header-row h3 {
+        body:not(.light-theme) .section-header-row h3 {
           color: #fff;
         }
         .btn-view-all {
           background: none;
           border: none;
-          color: #0d5c3a;
+          color: var(--accent-primary);
           font-weight: 600;
           font-size: 0.95rem;
           cursor: pointer;
@@ -2008,7 +1990,7 @@ const Home = () => {
           color: #ffffff;
         }
         .cat-badge-tag {
-          background: #0d5c3a;
+          background: var(--accent-primary);
           color: #ffffff;
           padding: 4px 10px;
           border-radius: 4px;
@@ -2067,10 +2049,10 @@ const Home = () => {
           font-weight: 800;
           margin-bottom: 24px;
           color: #1e293b;
-          border-left: 3px solid #0d5c3a;
+          border-left: 3px solid var(--accent-primary);
           padding-left: 12px;
         }
-        body.dark-theme .section-title {
+        body:not(.light-theme) .section-title {
           color: #fff;
         }
         .empty-popular-grid {
@@ -2085,7 +2067,7 @@ const Home = () => {
           overflow: hidden;
           transition: all 0.2s;
         }
-        body.dark-theme .mock-card {
+        body:not(.light-theme) .mock-card {
           background: rgba(255,255,255,0.02);
           border-color: var(--border-glass);
         }
@@ -2108,7 +2090,7 @@ const Home = () => {
         }
         .mock-meta {
           font-size: 0.7rem;
-          color: #0d5c3a;
+          color: var(--accent-primary);
           font-weight: bold;
           letter-spacing: 0.05em;
           display: block;
@@ -2120,7 +2102,7 @@ const Home = () => {
           display: block;
           margin-bottom: 6px;
         }
-        body.dark-theme .mock-meta-small {
+        body:not(.light-theme) .mock-meta-small {
           color: var(--text-secondary);
         }
         .mock-body h5 {
@@ -2129,13 +2111,13 @@ const Home = () => {
           margin: 0 0 8px 0;
           color: #1e293b;
         }
-        body.dark-theme .mock-body h5 {
+        body:not(.light-theme) .mock-body h5 {
           color: #fff;
         }
         .mock-price {
           font-size: 1.1rem;
           font-weight: 800;
-          color: #0d5c3a;
+          color: var(--accent-primary);
         }
 
         /* Mock Job list */
@@ -2152,13 +2134,13 @@ const Home = () => {
           text-align: center;
           transition: all 0.2s;
         }
-        body.dark-theme .job-card-mock {
+        body:not(.light-theme) .job-card-mock {
           background: rgba(255,255,255,0.02);
           border-color: var(--border-glass);
         }
         .job-card-mock:hover {
           transform: translateY(-4px);
-          border-color: #0d5c3a;
+          border-color: var(--accent-primary);
         }
         .job-icon {
           font-size: 2.2rem;
@@ -2171,7 +2153,7 @@ const Home = () => {
           margin: 0 0 6px 0;
           color: #1e293b;
         }
-        body.dark-theme .job-card-mock h5 {
+        body:not(.light-theme) .job-card-mock h5 {
           color: #fff;
         }
         .job-company {
@@ -2182,13 +2164,13 @@ const Home = () => {
           margin-bottom: 8px;
           font-weight: bold;
         }
-        body.dark-theme .job-company {
+        body:not(.light-theme) .job-company {
           color: var(--text-secondary);
         }
         .job-salary {
           font-size: 0.95rem;
           font-weight: 700;
-          color: #0d5c3a;
+          color: var(--accent-primary);
           display: block;
           margin-bottom: 16px;
         }
@@ -2204,13 +2186,13 @@ const Home = () => {
           width: 100%;
           transition: all 0.2s;
         }
-        body.dark-theme .btn-job-details {
+        body:not(.light-theme) .btn-job-details {
           border-color: var(--border-glass);
           color: var(--text-secondary);
         }
         .btn-job-details:hover {
-          border-color: #0d5c3a;
-          color: #0d5c3a;
+          border-color: var(--accent-primary);
+          color: var(--accent-primary);
           background: rgba(13, 92, 58, 0.03);
         }
 
@@ -2263,13 +2245,13 @@ const Home = () => {
           justify-content: space-between;
           height: 310px; /* fixed height for alignment */
         }
-        body.dark-theme .home-featured-card {
+        body:not(.light-theme) .home-featured-card {
           background: rgba(255,255,255,0.02);
           border-color: var(--border-glass);
         }
         .home-featured-card:hover {
           transform: translateY(-4px);
-          border-color: #0d5c3a;
+          border-color: var(--accent-primary);
           box-shadow: 0 10px 20px rgba(0,0,0,0.05);
         }
         .featured-card-avatar {
@@ -2278,20 +2260,20 @@ const Home = () => {
           border-radius: 50%;
           object-fit: cover;
           margin-bottom: 14px;
-          border: 2px solid #0d5c3a;
+          border: 2px solid var(--accent-primary);
         }
         .featured-card-icon {
           width: 80px;
           height: 80px;
           border-radius: 50%;
           background: rgba(13, 92, 58, 0.1);
-          color: #0d5c3a;
+          color: var(--accent-primary);
           font-size: 2.2rem;
           display: flex;
           align-items: center;
           justify-content: center;
           margin-bottom: 14px;
-          border: 2px solid #0d5c3a;
+          border: 2px solid var(--accent-primary);
         }
         .home-featured-card h5 {
           font-size: 1.05rem;
@@ -2303,7 +2285,7 @@ const Home = () => {
           width: 100%;
           color: #1e293b;
         }
-        body.dark-theme .home-featured-card h5 {
+        body:not(.light-theme) .home-featured-card h5 {
           color: #fff;
         }
         .featured-card-subtitle {
@@ -2316,21 +2298,21 @@ const Home = () => {
           text-overflow: ellipsis;
           width: 100%;
         }
-        body.dark-theme .featured-card-subtitle {
+        body:not(.light-theme) .featured-card-subtitle {
           color: var(--text-secondary);
         }
         .featured-card-price {
           font-size: 1rem;
-          color: #0d5c3a;
+          color: var(--accent-primary);
           font-weight: 800;
           display: block;
           margin-bottom: 14px;
         }
-        body.dark-theme .featured-card-price {
+        body:not(.light-theme) .featured-card-price {
           color: #6ee7b7;
         }
         .btn-featured-card-action {
-          background: #0d5c3a;
+          background: var(--accent-primary);
           color: #ffffff;
           border: none;
           padding: 8px 16px;
@@ -2389,7 +2371,7 @@ const Home = () => {
           text-align: center;
           transition: all 0.2s;
         }
-        body.dark-theme .prof-card-mock {
+        body:not(.light-theme) .prof-card-mock {
           background: rgba(255,255,255,0.02);
           border-color: var(--border-glass);
         }
@@ -2402,7 +2384,7 @@ const Home = () => {
           border-radius: 50%;
           object-fit: cover;
           margin-bottom: 14px;
-          border: 2px solid #0d5c3a;
+          border: 2px solid var(--accent-primary);
         }
         .prof-card-mock h5 {
           font-size: 1.05rem;
@@ -2415,7 +2397,7 @@ const Home = () => {
           display: block;
           margin-bottom: 8px;
         }
-        body.dark-theme .prof-title {
+        body:not(.light-theme) .prof-title {
           color: var(--text-secondary);
         }
         .prof-stars {
@@ -2425,7 +2407,7 @@ const Home = () => {
           margin-bottom: 16px;
         }
         .btn-prof-book {
-          background: #0d5c3a;
+          background: var(--accent-primary);
           color: #ffffff;
           border: none;
           padding: 8px 16px;
@@ -2448,7 +2430,7 @@ const Home = () => {
           padding: 80px 0;
           margin-top: 60px;
         }
-        body.dark-theme .how-it-works-section {
+        body:not(.light-theme) .how-it-works-section {
           background: rgba(0,0,0,0.1);
           border-color: var(--border-glass);
         }
@@ -2459,7 +2441,7 @@ const Home = () => {
           margin-bottom: 50px;
           font-size: 1.05rem;
         }
-        body.dark-theme .section-subtitle-centered {
+        body:not(.light-theme) .section-subtitle-centered {
           color: var(--text-secondary);
         }
         .steps-row {
@@ -2487,7 +2469,7 @@ const Home = () => {
           font-size: 0.92rem;
           line-height: 1.5;
         }
-        body.dark-theme .step-col p {
+        body:not(.light-theme) .step-col p {
           color: var(--text-secondary);
         }
         .features-footer-row {
@@ -2498,7 +2480,7 @@ const Home = () => {
           flex-wrap: wrap;
           gap: 20px;
         }
-        body.dark-theme .features-footer-row {
+        body:not(.light-theme) .features-footer-row {
           border-color: var(--border-glass);
         }
         .feat-item {
@@ -2511,7 +2493,7 @@ const Home = () => {
           font-size: 0.8rem;
           margin-top: 4px;
         }
-        body.dark-theme .feat-item p {
+        body:not(.light-theme) .feat-item p {
           color: var(--text-secondary);
         }
 
@@ -2610,14 +2592,14 @@ const Home = () => {
           flex: 1;
         }
         .btn-newsletter-send {
-          background: #0d5c3a;
+          background: var(--accent-primary);
           border: none;
           color: #ffffff;
           padding: 0 16px;
           cursor: pointer;
         }
         .btn-newsletter-send:hover {
-          background: #09442a;
+          background: var(--accent-secondary);
         }
         .footer-bottom {
           border-top: 1px solid #1e293b;
@@ -2704,12 +2686,12 @@ const Home = () => {
         .filter-toggle-btn:hover {
           background-color: #dee2e6 !important;
         }
-        body.dark-theme .filter-toggle-btn {
+        body:not(.light-theme) .filter-toggle-btn {
           background-color: rgba(255, 255, 255, 0.08) !important;
           color: #ffffff !important;
           border: 1px solid var(--border-glass) !important;
         }
-        body.dark-theme .filter-toggle-btn:hover {
+        body:not(.light-theme) .filter-toggle-btn:hover {
           background-color: rgba(255, 255, 255, 0.15) !important;
         }
 

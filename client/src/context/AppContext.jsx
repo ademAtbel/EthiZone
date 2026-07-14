@@ -32,8 +32,8 @@ const translations = {
     salary_offered: 'Salary Offered',
     price: 'Price',
     visit_store: 'Visit Store',
-    call: '📞',
-    sms: '💬',
+    call: 'Call',
+    sms: 'SMS',
     verified: '✓ Verified',
     no_listings_found: 'No listings match your selection.',
     
@@ -281,8 +281,8 @@ const translations = {
     salary_offered: 'የሚከፈል ደመወዝ',
     price: 'ዋጋ',
     visit_store: 'ሱቁን ይጎብኙ',
-    call: '📞',
-    sms: '💬',
+    call: 'ደውል',
+    sms: 'መልዕክት (SMS)',
     verified: '✓ የተረጋገጠ',
     no_listings_found: 'ምንም ማስታወቂያዎች አልተገኙም።',
     
@@ -506,6 +506,7 @@ const translations = {
 export const AppProvider = ({ children }) => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
   const [language, setLanguage] = useState(localStorage.getItem('language') || 'en');
+  const [activeStoreType, setActiveStoreType] = useState('');
 
   useEffect(() => {
     localStorage.setItem('theme', theme);
@@ -533,7 +534,7 @@ export const AppProvider = ({ children }) => {
   };
 
   return (
-    <AppContext.Provider value={{ theme, language, toggleTheme, toggleLanguage, t }}>
+    <AppContext.Provider value={{ theme, language, toggleTheme, toggleLanguage, t, activeStoreType, setActiveStoreType }}>
       {children}
     </AppContext.Provider>
   );

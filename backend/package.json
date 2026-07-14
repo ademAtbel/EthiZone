@@ -1,7 +1,7 @@
 {
   "name": "ultimate-master-server",
   "version": "1.0.0",
-  "description": "Backend API server for Ultimate Master marketplace",
+  "description": "Backend API server for Ethiozone marketplace",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

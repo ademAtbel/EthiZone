@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Link } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
 import Navbar from './components/Navbar';
+import Breadcrumbs from './components/Breadcrumbs';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -10,6 +11,8 @@ import Storefront from './pages/Storefront';
 import SuperAdmin from './pages/SuperAdmin';
 import Inbox from './pages/Inbox';
 import Chatbot from './components/Chatbot';
+import StaticPage from './pages/StaticPage';
+import { Globe, Mail, Phone, ArrowRight } from 'lucide-react';
 
 // Sub-wrapper component to handle global layout styling
 const AppContent = () => {
@@ -19,6 +22,17 @@ const AppContent = () => {
     if (e) e.preventDefault();
     alert("We are working on this feature! It will be available soon.");
   };
+
+  const handleNewsletterSubmit = (e) => {
+    if (e) e.preventDefault();
+    alert(t('newsletter_success') || "You will be notified when a new store is registered!");
+    e.target.reset();
+  };
+
+  const location = useLocation();
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [location.pathname]);
 
   return (
     <>
@@ -35,6 +49,10 @@ const AppContent = () => {
           <Route path="/admin" element={<SuperAdmin />} />
           <Route path="/super-admin" element={<SuperAdmin />} />
           <Route path="/inbox" element={<Inbox />} />
+          <Route path="/about" element={<StaticPage />} />
+          <Route path="/contact" element={<StaticPage />} />
+          <Route path="/privacy" element={<StaticPage />} />
+          <Route path="/terms" element={<StaticPage />} />
         </Routes>
       </main>
 
@@ -46,9 +64,9 @@ const AppContent = () => {
             </div>
             <p>{t('footer_brand_desc')}</p>
             <div className="social-links">
-              <span onClick={handleUnderConstruction} style={{ cursor: 'pointer' }}>🌐</span>
-              <span onClick={handleUnderConstruction} style={{ cursor: 'pointer' }}>✉️</span>
-              <span onClick={handleUnderConstruction} style={{ cursor: 'pointer' }}>📞</span>
+              <span onClick={handleUnderConstruction} style={{ cursor: 'pointer' }}><Globe size={20} /></span>
+              <span onClick={handleUnderConstruction} style={{ cursor: 'pointer' }}><Mail size={20} /></span>
+              <span onClick={handleUnderConstruction} style={{ cursor: 'pointer' }}><Phone size={20} /></span>
             </div>
           </div>
           <div className="footer-col">
@@ -64,18 +82,18 @@ const AppContent = () => {
           <div className="footer-col">
             <h5>{t('company')}</h5>
             <ul>
-              <li><a href="#about" onClick={handleUnderConstruction}>{t('about_us')}</a></li>
-              <li><a href="#contact" onClick={handleUnderConstruction}>{t('contact_tab')}</a></li>
-              <li><a href="#privacy" onClick={handleUnderConstruction}>{t('privacy_policy')}</a></li>
-              <li><a href="#terms" onClick={handleUnderConstruction}>{t('terms_of_service')}</a></li>
+              <li><Link to="/about" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('about_us')}</Link></li>
+              <li><Link to="/contact" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('contact_tab')}</Link></li>
+              <li><Link to="/privacy" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('privacy_policy')}</Link></li>
+              <li><Link to="/terms" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('terms_of_service')}</Link></li>
             </ul>
           </div>
           <div className="footer-col newsletter-col">
             <h5>{t('newsletter')}</h5>
             <p>{t('newsletter_desc')}</p>
-            <form onSubmit={handleUnderConstruction} className="newsletter-input-row">
+            <form onSubmit={handleNewsletterSubmit} className="newsletter-input-row">
               <input type="email" placeholder={t('your_email_placeholder')} required />
-              <button type="submit" className="btn-newsletter-send">➔</button>
+              <button type="submit" className="btn-newsletter-send"><ArrowRight size={18} /></button>
             </form>
           </div>
         </div>

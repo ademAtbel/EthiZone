@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import Breadcrumbs from './Breadcrumbs';
 import QrModal from './QrModal';
 import ThemeToggle from './ThemeToggle';
+import { Printer, User, Key, LayoutDashboard, Store, LogOut, Menu, X, Globe, Mail, Phone, Lock, Eye, EyeOff } from 'lucide-react';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -19,11 +21,19 @@ const Navbar = () => {
     }
     return '/dashboard';
   };
-  const [searchParams, setSearchParams] = useSearchParams();
-  const selectedType = searchParams.get('type') || '';
-  
   // Fetch translation and theme context states
-  const { theme, language, toggleTheme, toggleLanguage, t } = useApp();
+  const { theme, language, toggleTheme, toggleLanguage, t, activeStoreType, setActiveStoreType } = useApp();
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Map internal businessType from Storefront to the URL type param used by the filter badges
+  let mappedActiveType = activeStoreType;
+  if (mappedActiveType === 'store') mappedActiveType = 'store_product';
+  if (mappedActiveType === 'organization') mappedActiveType = 'job_opening';
+  if (mappedActiveType === 'real_estate') mappedActiveType = 'house';
+  if (mappedActiveType === 'automotive') mappedActiveType = 'car';
+
+  const selectedType = mappedActiveType || searchParams.get('type') || '';
 
   // Differentiate public storefront views from private store dashboards
   const isPublicStorefront = location.pathname.startsWith('/store/') && !location.pathname.endsWith('/dashboard');
@@ -89,11 +99,12 @@ const Navbar = () => {
   };
 
   const handleTypeSelect = (type) => {
-    if (window.location.pathname !== '/') {
+    setActiveStoreType('');
+    if (location.pathname !== '/') {
       navigate(`/?type=${type}`);
     } else {
       const newParams = new URLSearchParams(searchParams);
-      if (newParams.get('type') === type) {
+      if (selectedType === type) {
         newParams.delete('type');
       } else {
         newParams.set('type', type);
@@ -105,14 +116,14 @@ const Navbar = () => {
   return (
     <>
       <div className="header-wrapper">
-      <div className="navbar-top-banner" style={{ background: '#0d5c3a', color: '#ffffff', textAlign: 'center', padding: '8px 10px', fontSize: '0.82rem', fontWeight: '700', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+      <div className="navbar-top-banner" style={{ background: 'var(--accent-primary)', color: '#ffffff', textAlign: 'center', padding: '8px 10px', fontSize: '0.82rem', fontWeight: '700', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
         📢 {t('top_banner_slogan')} 📢
       </div>
       <nav className="glass-navbar">
         <div className="container nav-container" style={{ position: 'relative' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           <Link to="/" className="logo" onClick={() => setMobileMenuOpen(false)} style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
-            <img src="/logo.png" alt="Ultimate Master Logo" style={{ height: '112px', objectFit: 'contain' }} />
+            <img src="/logo.png" alt="Ethiozone Logo" style={{ height: '112px', objectFit: 'contain' }} />
           </Link>
           <span className="logo-motto" style={{ fontSize: '0.66rem', color: 'var(--accent-secondary)', fontStyle: 'italic', fontWeight: 600, marginTop: '2px', paddingLeft: '4px', letterSpacing: '0.02em' }}>
             {t('logo_motto_slogan')}
@@ -192,8 +203,8 @@ const Navbar = () => {
               )}
               {user.role === 'business' && (
                 <div className="store-dashboard-shortcuts" style={{ display: 'inline-flex', gap: '8px', marginRight: '10px' }}>
-                  <button onClick={() => setQrOpen(true)} className="btn btn-secondary btn-sm" style={{ padding: '6px 12px', fontSize: '0.82rem' }}>
-                    🖨️ QR Code
+                  <button onClick={() => setQrOpen(true)} className="btn btn-secondary btn-sm d-flex align-items-center gap-1" style={{ padding: '6px 12px', fontSize: '0.82rem' }}>
+                    <Printer size={14} /> QR Code
                   </button>
                   <a 
                     href={`/store/${(user.storeName || '').toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')}`} 
@@ -220,7 +231,7 @@ const Navbar = () => {
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                     style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)', color: '#ffffff', fontWeight: 700, fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--border-glass)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', cursor: 'pointer' }}
                   >
-                    {user.username ? user.username.charAt(0).toUpperCase() : '👤'}
+                    {user.username ? user.username.charAt(0).toUpperCase() : <User size={20} />}
                   </div>
                 )}
 
@@ -242,34 +253,34 @@ const Navbar = () => {
                       <button 
                         type="button" 
                         onClick={() => { setChangePasswordOpen(true); setUserMenuOpen(false); }} 
-                        className="dropdown-item"
+                        className="dropdown-item d-flex align-items-center gap-2"
                         style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }}
                       >
-                        🔑 Change Password
+                        <Key size={16} /> Change Password
                       </button>
-                      <Link to={getDashboardLink()} onClick={() => setUserMenuOpen(false)} className="dropdown-item" style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', textDecoration: 'none' }}>
-                        📊 Dashboard
+                      <Link to={getDashboardLink()} onClick={() => setUserMenuOpen(false)} className="dropdown-item d-flex align-items-center gap-2" style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', textDecoration: 'none' }}>
+                        <LayoutDashboard size={16} /> Dashboard
                       </Link>
                       {user.role === 'business' && (
                         <a 
                           href={`/store/${(user.storeName || '').toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="dropdown-item"
+                          className="dropdown-item d-flex align-items-center gap-2"
                           style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', textDecoration: 'none' }}
                           onClick={() => setUserMenuOpen(false)}
                         >
-                          🏬 Visit Storefront
+                          <Store size={16} /> Visit Storefront
                         </a>
                       )}
                       <div className="dropdown-divider" style={{ height: '1px', background: 'var(--border-glass)', margin: '8px 0' }}></div>
                       <button 
                         type="button" 
                         onClick={handleLogout} 
-                        className="dropdown-item logout-btn"
+                        className="dropdown-item logout-btn d-flex align-items-center gap-2"
                         style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--accent-danger)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }}
                       >
-                        🚪 Logout
+                        <LogOut size={16} /> Logout
                       </button>
                     </div>
                   </>
@@ -653,13 +664,13 @@ const Navbar = () => {
           font-weight: 600;
           white-space: nowrap;
         }
-        
       `}</style>
       </nav>
+      <Breadcrumbs />
       </div>
 
       {/* Mobile Bottom Tabbar */}
-      {showFilters && (
+      {showFilters && !isPublicStorefront && (
         <div className="mobile-bottom-tabbar d-lg-none">
           <button
             onClick={() => { handleTypeSelect('store_product'); setMobileMenuOpen(false); }}

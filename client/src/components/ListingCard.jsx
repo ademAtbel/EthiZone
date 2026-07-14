@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import RatingForm from './RatingForm';
+import { Phone, MessageCircle } from 'lucide-react';
 
 const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -61,7 +62,7 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
   };
 
   // Compile pre-filled contextual SMS content
-  const smsMessage = `Hello ${ownerName || 'Provider'}, I saw your post "${title}" on Ultimate Master and I am interested. Let's connect!`;
+  const smsMessage = `Hello ${ownerName || 'Provider'}, I saw your post "${title}" on Ethiozone and I am interested. Let's connect!`;
   
   // Format listing type labels
   const getBadgeTypeClass = (lType) => {
@@ -224,26 +225,18 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
             <>
               <a 
                 href={`tel:${ownerPhone}`} 
-                className="btn btn-success flex-grow-1 action-btn"
+                className="btn btn-success flex-grow-1 action-btn d-flex align-items-center justify-content-center gap-2"
                 onClick={(e) => e.stopPropagation()}
               >
-                {t('call')}
+                <Phone size={16} /> {t('call')}
               </a>
               <a 
                 href={`sms:${ownerPhone}?body=${encodeURIComponent(smsMessage)}`} 
-                className="btn btn-primary flex-grow-1 action-btn"
+                className="btn btn-primary flex-grow-1 action-btn d-flex align-items-center justify-content-center gap-2"
                 onClick={(e) => e.stopPropagation()}
               >
-                {t('sms')}
+                <MessageCircle size={16} /> {t('sms')}
               </a>
-              <Link 
-                to={`/inbox?contact=${ownerId?._id || ownerId}`}
-                className="btn btn-info flex-grow-1 action-btn"
-                style={{ backgroundColor: 'var(--accent-secondary)', border: 'none', color: '#fff' }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                Message
-              </Link>
             </>
           ) : (
             <button className="btn btn-secondary flex-grow-1 action-btn disabled" disabled onClick={(e) => e.stopPropagation()}>

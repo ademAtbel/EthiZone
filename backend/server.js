@@ -266,7 +266,7 @@ if (isClustered && cluster.isMaster) {
 
   // Base route
   app.get('/', (req, res) => {
-    res.send('Ultimate Master Marketplace API running...');
+    res.send('Ethiozone Marketplace API running...');
   });
 
   // Error handling middleware

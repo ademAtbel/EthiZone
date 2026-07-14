@@ -5,7 +5,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([
     {
       sender: 'ai',
-      text: "👋 Hello! I am your Ultimate Master AI Assistant. I can help you search for jobs, find handymen (Hire Me), browse real estate (Houses), or guide you through creating listings. How can I assist you today?"
+      text: "👋 Hello! I am your Ethiozone AI Assistant. I can help you search for jobs, find handymen (Hire Me), browse real estate (Houses), or guide you through creating listings. How can I assist you today?"
     }
   ]);
   const [input, setInput] = useState('');
@@ -80,7 +80,7 @@ const Chatbot = () => {
               <img src="/logo.png" alt="Logo" className="chatbot-logo-img" />
             </span>
             <div className="header-info">
-              <h4>Ultimate Master AI</h4>
+              <h4>Ethiozone AI</h4>
               <span className="status"><span className="status-dot"></span> Online Guide</span>
             </div>
             <button className="btn-close-chat" onClick={() => setIsOpen(false)}>&times;</button>
