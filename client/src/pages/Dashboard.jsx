@@ -3,6 +3,77 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import ListingCard from '../components/ListingCard';
+import QrModal from '../components/QrModal';
+import { Globe } from 'lucide-react';
+
+// Inline SVG social media icons renderer to avoid dependency/version naming conflicts
+const renderSocialIcon = (platform, size = 20, style = {}) => {
+  const p = platform.toLowerCase();
+  const flexStyle = { flexShrink: 0, ...style };
+  if (p.includes('facebook')) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={flexStyle}>
+        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+      </svg>
+    );
+  }
+  if (p.includes('instagram')) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={flexStyle}>
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+      </svg>
+    );
+  }
+  if (p.includes('telegram')) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={flexStyle}>
+        <path d="M21.13 2.82a1.6 1.6 0 0 0-1.64-.15L3.56 10.08a1.6 1.6 0 0 0-.1 2.92l4.88 2.2 2.2 4.88a1.6 1.6 0 0 0 2.92-.1l7.41-15.93a1.6 1.6 0 0 0-.15-1.64z"/>
+        <line x1="8.5" y1="14.5" x2="21" y2="3"/>
+      </svg>
+    );
+  }
+  if (p.includes('linkedin')) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={flexStyle}>
+        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+        <rect x="2" y="9" width="4" height="12"/>
+        <circle cx="4" cy="4" r="2"/>
+      </svg>
+    );
+  }
+  if (p.includes('youtube')) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={flexStyle}>
+        <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/>
+        <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
+      </svg>
+    );
+  }
+  if (p.includes('tiktok')) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={flexStyle}>
+        <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>
+      </svg>
+    );
+  }
+  if (p.includes('twitter') || p.includes('x')) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={flexStyle}>
+        <path d="M4 4l11.733 16h4.267l-11.733 -16z"/>
+        <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/>
+      </svg>
+    );
+  }
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={flexStyle}>
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+    </svg>
+  );
+};
 
 const Dashboard = () => {
   const { t } = useApp();
@@ -54,6 +125,7 @@ const Dashboard = () => {
     category: '',
     handymanRates: '',
     jobRequirements: '',
+    salaryRate: 'hour',
     bedrooms: '',
     bathrooms: '',
     propertyType: 'House',
@@ -63,6 +135,12 @@ const Dashboard = () => {
     model: ''
   });
   const [selectedImages, setSelectedImages] = useState([]);
+
+  // Listing Creation Modal State
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // QR Code Modal State
+  const [qrOpen, setQrOpen] = useState(false);
 
   // Listing Editing Modal State
   const [editingListing, setEditingListing] = useState(null);
@@ -74,6 +152,7 @@ const Dashboard = () => {
     category: '',
     handymanRates: '',
     jobRequirements: '',
+    salaryRate: 'hour',
     bedrooms: '',
     bathrooms: '',
     propertyType: 'House',
@@ -94,8 +173,57 @@ const Dashboard = () => {
     address: '',
     storeLogo: '',
     storeImage: '',
-    socialLinks: []
+    socialLinks: [],
+    businessType: '',
+    category: ''
   });
+
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+
+  const [profileCategories, setProfileCategories] = useState([]);
+
+  // Fetch categories dynamically based on Business Type in settings
+  useEffect(() => {
+    if (!profileForm.businessType) return;
+    fetch(`/api/categories?type=${profileForm.businessType}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setProfileCategories(data);
+          // If category is not in list or empty, set to first one
+          if (!profileForm.category || !data.some(c => c.name === profileForm.category)) {
+            setProfileForm(prev => ({ ...prev, category: data[0].name }));
+          }
+        } else {
+          const fallbacks = {
+            store: ['Boutique', 'Pharmacy', 'Liquor Store', 'Grocery Store', 'Electronics Shop', 'Bookstore'],
+            service: ['Law Office', 'Tax Office', 'Dental Clinic', 'Consulting Firm', 'Cleaning Agency', 'Beauty Salon'],
+            organization: ['Tech Corporation', 'Construction Company', 'Healthcare Group', 'Educational Institution', 'Non-Profit Org', 'Other'],
+            real_estate: ['Residential Homes', 'Rental Apartments', 'Commercial Real Estate', 'Land & Lots'],
+            automotive: ['Used Car Dealership', 'Car Rental Service', 'Auto Repair Workshop', 'Spare Parts Dealer']
+          };
+          const list = fallbacks[profileForm.businessType] || [];
+          setProfileCategories(list.map(name => ({ name })));
+          if (!profileForm.category || !list.includes(profileForm.category)) {
+            setProfileForm(prev => ({ ...prev, category: list[0] || '' }));
+          }
+        }
+      })
+      .catch(() => {
+        const fallbacks = {
+          store: ['Boutique', 'Pharmacy', 'Liquor Store', 'Grocery Store', 'Electronics Shop', 'Bookstore'],
+          service: ['Law Office', 'Tax Office', 'Dental Clinic', 'Consulting Firm', 'Cleaning Agency', 'Beauty Salon'],
+          organization: ['Tech Corporation', 'Construction Company', 'Healthcare Group', 'Educational Institution', 'Non-Profit Org', 'Other'],
+          real_estate: ['Residential Homes', 'Rental Apartments', 'Commercial Real Estate', 'Land & Lots'],
+          automotive: ['Used Car Dealership', 'Car Rental Service', 'Auto Repair Workshop', 'Spare Parts Dealer']
+        };
+        const list = fallbacks[profileForm.businessType] || [];
+        setProfileCategories(list.map(name => ({ name })));
+        if (!profileForm.category || !list.includes(profileForm.category)) {
+          setProfileForm(prev => ({ ...prev, category: list[0] || '' }));
+        }
+      });
+  }, [profileForm.businessType]);
 
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
@@ -196,7 +324,9 @@ const Dashboard = () => {
           address: userData.address || '',
           storeLogo: userData.storeLogo || '',
           storeImage: userData.storeImage || '',
-          socialLinks: userData.socialLinks || []
+          socialLinks: userData.socialLinks || [],
+          businessType: userData.businessType || '',
+          category: userData.category || ''
         });
 
         // Redirect super_admin to their dedicated panel
@@ -284,6 +414,7 @@ const Dashboard = () => {
 
       setUser(data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
+      setIsEditingProfile(false); // Switch back to read-only details view!
       alert('Store settings updated successfully!');
 
       if (data.user.role === 'business' && data.user.storeName) {
@@ -390,7 +521,7 @@ const Dashboard = () => {
     e.preventDefault();
     const { 
       title, description, price, type, category,
-      handymanRates, jobRequirements,
+      handymanRates, jobRequirements, salaryRate,
       bedrooms, bathrooms, propertyType,
       year, mileage, make, model 
     } = listingForm;
@@ -404,8 +535,11 @@ const Dashboard = () => {
     if (type === 'handyman_skill' && handymanRates) {
       metadata.handymanRates = handymanRates;
     }
-    if (type === 'job_opening' && jobRequirements) {
-      metadata.jobRequirements = jobRequirements.split('\n').filter(r => r.trim() !== '');
+    if (type === 'job_opening') {
+      metadata.salaryRate = salaryRate || 'hour';
+      if (jobRequirements) {
+        metadata.jobRequirements = jobRequirements.split('\n').filter(r => r.trim() !== '');
+      }
     }
     if (type === 'house') {
       metadata.bedrooms = bedrooms ? Number(bedrooms) : undefined;
@@ -429,7 +563,7 @@ const Dashboard = () => {
         body: JSON.stringify({
           title,
           description,
-          price: price ? Number(price) : undefined,
+          price: (price !== '' && price !== undefined && price !== null) ? Number(price) : null,
           type,
           category,
           metadata,
@@ -460,6 +594,7 @@ const Dashboard = () => {
         category: '',
         handymanRates: '',
         jobRequirements: '',
+        salaryRate: 'hour',
         bedrooms: '',
         bathrooms: '',
         propertyType: 'House',
@@ -508,6 +643,7 @@ const Dashboard = () => {
       category: listing.category || '',
       handymanRates: listing.metadata?.handymanRates || '',
       jobRequirements: (listing.metadata?.jobRequirements || []).join('\n'),
+      salaryRate: listing.metadata?.salaryRate || 'hour',
       bedrooms: listing.metadata?.bedrooms || '',
       bathrooms: listing.metadata?.bathrooms || '',
       propertyType: listing.metadata?.propertyType || 'House',
@@ -525,7 +661,7 @@ const Dashboard = () => {
 
     const { 
       title, description, price, type, category,
-      handymanRates, jobRequirements,
+      handymanRates, jobRequirements, salaryRate,
       bedrooms, bathrooms, propertyType,
       year, mileage, make, model, images 
     } = editForm;
@@ -534,8 +670,11 @@ const Dashboard = () => {
     if (type === 'handyman_skill' && handymanRates) {
       metadata.handymanRates = handymanRates;
     }
-    if (type === 'job_opening' && jobRequirements) {
-      metadata.jobRequirements = jobRequirements.split('\n').filter(r => r.trim() !== '');
+    if (type === 'job_opening') {
+      metadata.salaryRate = salaryRate || 'hour';
+      if (jobRequirements) {
+        metadata.jobRequirements = jobRequirements.split('\n').filter(r => r.trim() !== '');
+      }
     }
     if (type === 'house') {
       metadata.bedrooms = bedrooms ? Number(bedrooms) : undefined;
@@ -559,7 +698,7 @@ const Dashboard = () => {
         body: JSON.stringify({
           title,
           description,
-          price: price ? Number(price) : undefined,
+          price: (price !== '' && price !== undefined && price !== null) ? Number(price) : null,
           status: editingListing.status,
           category,
           metadata,
@@ -597,17 +736,22 @@ const Dashboard = () => {
     setEditForm(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }));
   };
 
+  const isOtherOrgOrIndividual = user?.role === 'individual' || 
+    (user?.role === 'business' && user?.businessType === 'organization' && user?.category === 'Other');
+
   // Helper translations for dynamic tabs depending on role/type complexity
   const getTabLabel = (tabKey) => {
     if (tabKey === 'inquiries') return 'Customer Requests';
     if (tabKey === 'overview') return t('dashboard');
     if (tabKey === 'items') {
       if (user?.role === 'handyman') return t('handymen');
-      if (user?.role === 'individual') return t('used_items');
+      if (user?.role === 'individual') return 'Job / Items';
       if (user?.role === 'business') {
         if (user.businessType === 'store') return t('stores');
         if (user.businessType === 'service') return t('services');
-        if (user.businessType === 'organization') return t('organizations');
+        if (user.businessType === 'organization') {
+          return user.category === 'Other' ? 'Job Listings' : t('organizations');
+        }
         if (user.businessType === 'real_estate') return t('real_estate');
         if (user.businessType === 'automotive') return t('automotive');
       }
@@ -685,31 +829,37 @@ const Dashboard = () => {
             </button>
           )}
 
-          <button 
-            onClick={() => setActiveTab('settings')} 
-            className={`sidebar-tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
-          >
-            <span>{getTabIcon('settings')}</span> {getTabLabel('settings')}
-          </button>
+          {!isOtherOrgOrIndividual && (
+            <button 
+              onClick={() => setActiveTab('settings')} 
+              className={`sidebar-tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
+            >
+              <span>{getTabIcon('settings')}</span> {getTabLabel('settings')}
+            </button>
+          )}
 
-          <button 
-            onClick={() => setActiveTab('reviews')} 
-            className={`sidebar-tab-btn ${activeTab === 'reviews' ? 'active' : ''}`}
-          >
-            <span>{getTabIcon('reviews')}</span> {getTabLabel('reviews')}
-          </button>
+          {!isOtherOrgOrIndividual && (
+            <button 
+              onClick={() => setActiveTab('reviews')} 
+              className={`sidebar-tab-btn ${activeTab === 'reviews' ? 'active' : ''}`}
+            >
+              <span>{getTabIcon('reviews')}</span> {getTabLabel('reviews')}
+            </button>
+          )}
 
-          <button 
-            onClick={() => setActiveTab('inquiries')} 
-            className={`sidebar-tab-btn ${activeTab === 'inquiries' ? 'active' : ''}`}
-          >
-            <span>{getTabIcon('inquiries')}</span> {getTabLabel('inquiries')}
-            {inquiries.filter(i => i.status === 'pending').length > 0 && (
-              <span className="badge bg-danger text-white" style={{ marginLeft: '8px', borderRadius: '10px', padding: '2px 8px', fontSize: '0.75rem' }}>
-                {inquiries.filter(i => i.status === 'pending').length}
-              </span>
-            )}
-          </button>
+          {!isOtherOrgOrIndividual && (
+            <button 
+              onClick={() => setActiveTab('inquiries')} 
+              className={`sidebar-tab-btn ${activeTab === 'inquiries' ? 'active' : ''}`}
+            >
+              <span>{getTabIcon('inquiries')}</span> {getTabLabel('inquiries')}
+              {inquiries.filter(i => i.status === 'pending').length > 0 && (
+                <span className="badge bg-danger text-white" style={{ marginLeft: '8px', borderRadius: '10px', padding: '2px 8px', fontSize: '0.75rem' }}>
+                  {inquiries.filter(i => i.status === 'pending').length}
+                </span>
+              )}
+            </button>
+          )}
         </aside>
 
         {/* Right Active View Content Pane */}
@@ -730,6 +880,37 @@ const Dashboard = () => {
                       onChange={(e) => setProfileForm({ ...profileForm, storeName: e.target.value })}
                       required
                     />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '16px' }}>
+                    <label style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Business Type</label>
+                    <select
+                      className="form-control"
+                      value={profileForm.businessType}
+                      onChange={(e) => setProfileForm({ ...profileForm, businessType: e.target.value, category: '' })}
+                      required
+                    >
+                      <option value="store">Store (Sells Products)</option>
+                      <option value="service">Service (Offers Professional Services)</option>
+                      <option value="organization">Organization (Hiring Only / Job Openings)</option>
+                      <option value="real_estate">Real Estate (Housing Listings)</option>
+                      <option value="automotive">Automotive (Car Listings)</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '16px' }}>
+                    <label style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Business Category Type</label>
+                    <select
+                      className="form-control"
+                      value={profileForm.category}
+                      onChange={(e) => setProfileForm({ ...profileForm, category: e.target.value })}
+                      required
+                    >
+                      <option value="">Select Category</option>
+                      {profileCategories.map((cat, idx) => (
+                        <option key={idx} value={cat.name}>{cat.name}</option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="form-group" style={{ marginBottom: '16px' }}>
@@ -814,71 +995,45 @@ const Dashboard = () => {
                   </div>
 
                   <div className="social-links-section" style={{ borderTop: '1px solid var(--border-glass)', paddingTop: '20px', marginBottom: '24px' }}>
-                    <h5 style={{ marginBottom: '16px' }}>Social Media Links (Up to 5)</h5>
+                    <h5 style={{ marginBottom: '16px' }}>Social Media Links</h5>
                     
-                    {profileForm.socialLinks.map((link, idx) => (
-                      <div key={idx} className="social-link-row" style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
-                        <select 
-                          className="form-control" 
-                          style={{ flex: 1 }}
-                          value={link.platform}
-                          onChange={(e) => {
-                            const newLinks = [...profileForm.socialLinks];
-                            newLinks[idx].platform = e.target.value;
-                            setProfileForm({ ...profileForm, socialLinks: newLinks });
-                          }}
-                        >
-                          <option value="Website">Website</option>
-                          <option value="Telegram">Telegram</option>
-                          <option value="Facebook">Facebook</option>
-                          <option value="Instagram">Instagram</option>
-                          <option value="LinkedIn">LinkedIn</option>
-                          <option value="YouTube">YouTube</option>
-                          <option value="TikTok">TikTok</option>
-                          <option value="Twitter/X">Twitter/X</option>
-                        </select>
-                        <input 
-                          type="url" 
-                          className="form-control" 
-                          style={{ flex: 2 }}
-                          placeholder="https://..."
-                          value={link.url}
-                          onChange={(e) => {
-                            const newLinks = [...profileForm.socialLinks];
-                            newLinks[idx].url = e.target.value;
-                            setProfileForm({ ...profileForm, socialLinks: newLinks });
-                          }}
-                          required
-                        />
-                        <button 
-                          type="button" 
-                          className="btn btn-secondary" 
-                          style={{ padding: '0 15px', color: 'var(--accent-danger)' }}
-                          onClick={() => {
-                            const newLinks = profileForm.socialLinks.filter((_, i) => i !== idx);
-                            setProfileForm({ ...profileForm, socialLinks: newLinks });
-                          }}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
-
-                    {profileForm.socialLinks.length < 5 && (
-                      <button 
-                        type="button" 
-                        className="btn btn-secondary"
-                        style={{ fontSize: '0.85rem', padding: '8px 16px' }}
-                        onClick={() => {
-                          setProfileForm({
-                            ...profileForm,
-                            socialLinks: [...profileForm.socialLinks, { platform: 'Website', url: '' }]
-                          });
-                        }}
-                      >
-                        + Add Social Link
-                      </button>
-                    )}
+                    {['Facebook', 'Instagram', 'Telegram', 'TikTok', 'Twitter/X'].map((plat) => {
+                      const existingLink = profileForm.socialLinks.find(l => l.platform.toLowerCase() === plat.toLowerCase()) || { url: '' };
+                      return (
+                        <div key={plat} className="social-link-row" style={{ display: 'flex', gap: '10px', marginBottom: '12px', alignItems: 'center' }}>
+                          {renderSocialIcon(plat, 20, { color: 'var(--accent-primary)', marginRight: '4px' })}
+                          <span style={{ minWidth: '100px', fontWeight: 600, color: 'var(--text-main)' }}>{plat}</span>
+                          <input 
+                            type="url" 
+                            className="form-control" 
+                            style={{ flex: 1 }}
+                            placeholder={
+                              plat === 'Telegram' ? 'https://t.me/your-username' :
+                              plat === 'Twitter/X' ? 'https://x.com/your-username' :
+                              `https://www.${plat.toLowerCase()}.com/your-username`
+                            }
+                            value={existingLink.url}
+                            onChange={(e) => {
+                              const newUrl = e.target.value;
+                              let newSocialLinks = [...profileForm.socialLinks];
+                              
+                              const idx = newSocialLinks.findIndex(l => l.platform.toLowerCase() === plat.toLowerCase());
+                              if (idx > -1) {
+                                if (newUrl.trim() === '') {
+                                  newSocialLinks.splice(idx, 1);
+                                } else {
+                                  newSocialLinks[idx].url = newUrl;
+                                }
+                              } else if (newUrl.trim() !== '') {
+                                newSocialLinks.push({ platform: plat, url: newUrl });
+                              }
+                              
+                              setProfileForm({ ...profileForm, socialLinks: newSocialLinks });
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
 
                   <button type="submit" className="btn btn-primary">
@@ -918,13 +1073,31 @@ const Dashboard = () => {
                 <p style={{ margin: '12px 0 20px 0', color: 'var(--text-secondary)' }}>
                   This is your workspace command center. Use the sidebar on the left to edit your catalog postings, modify your storefront configuration, and read through reviews submitted by local customers.
                 </p>
-                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
                   <button onClick={() => setActiveTab('items')} className="btn btn-primary">
                     Create New Listing
                   </button>
-                  <button onClick={() => setActiveTab('settings')} className="btn btn-secondary">
-                    Configure Profile Settings
-                  </button>
+                  {(user?.role === 'business' || user?.role === 'handyman') && (
+                    <>
+                      <button onClick={() => setQrOpen(true)} className="btn btn-secondary d-flex align-items-center gap-1">
+                        📷 View QR Code
+                      </button>
+                      <a 
+                        href={`/store/${(user.storeName || user.username || '').toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')}`} 
+                        className="btn btn-success d-flex align-items-center gap-1"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ textDecoration: 'none', color: '#fff' }}
+                      >
+                        🌐 Visit Website
+                      </a>
+                    </>
+                  )}
+                  {!isOtherOrgOrIndividual && (
+                    <button onClick={() => setActiveTab('settings')} className="btn btn-secondary">
+                      Configure Profile Settings
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -932,261 +1105,27 @@ const Dashboard = () => {
 
           {/* TAB 2: CATALOG ITEMS MANAGER */}
           {activeTab === 'items' && (
-            <div className="tab-pane-view dashboard-grid">
+            <div className="tab-pane-view">
               
-              {/* Form to Add Listing */}
-              <div className="glass-panel add-listing-card">
-                <h3>{t('post_marketplace')}</h3>
-                <form onSubmit={handleCreateListing} className="listing-creation-form">
-                  
-                  <div className="form-group">
-                    <label>
-                      {user?.role === 'handyman' ? 'Service / Skill Title' :
-                       user?.role === 'business' && user.businessType === 'store' ? 'Product Name' :
-                       user?.role === 'business' && user.businessType === 'service' ? 'Service Name' :
-                       user?.role === 'business' && user.businessType === 'organization' ? 'Job Position Title' :
-                       user?.role === 'business' && user.businessType === 'real_estate' ? 'Property Title' :
-                       user?.role === 'business' && user.businessType === 'automotive' ? 'Vehicle Title' :
-                       'Listing Title'}
-                    </label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
-                      placeholder={
-                        user?.role === 'handyman' ? 'e.g. Master Pipe Leak Repair' :
-                        user?.role === 'business' && user.businessType === 'store' ? 'e.g. Organic Multivitamins Bottle' :
-                        user?.role === 'business' && user.businessType === 'service' ? 'e.g. Professional Tax Advisory' :
-                        user?.role === 'business' && user.businessType === 'organization' ? 'e.g. Senior Software Engineer' :
-                        user?.role === 'business' && user.businessType === 'real_estate' ? 'e.g. Cozy 3-Bedroom Suburban House' :
-                        user?.role === 'business' && user.businessType === 'automotive' ? 'e.g. 2022 Honda Civic LX' :
-                        'e.g. Vintage Leather Jacket'
-                      }
-                      value={listingForm.title}
-                      onChange={(e) => setListingForm({ ...listingForm, title: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  {user?.role === 'business' && (
-                    <div className="form-group">
-                      <label>Listing Post Type (Fixed by Business Type)</label>
-                      <select 
-                        className="form-control"
-                        value={listingForm.type}
-                        disabled
-                      >
-                        <option value="store_product">Store Product Item</option>
-                        <option value="service">Professional Service Listing</option>
-                        <option value="job_opening">Job Opening (Hiring Only)</option>
-                        <option value="house">Real Estate House Listing</option>
-                        <option value="car">Automotive Vehicle Listing</option>
-                      </select>
-                    </div>
-                  )}
-
-                  <div className="form-group">
-                    <label>{listingForm.type === 'job_opening' ? 'Salary Offered ($)' : 'Price / Value Offered ($)'}</label>
-                    <input 
-                      type="number" 
-                      className="form-control" 
-                      placeholder={listingForm.type === 'job_opening' ? 'e.g. 45000' : 'e.g. 50 (Leave blank for call/inquire)'}
-                      value={listingForm.price}
-                      onChange={(e) => setListingForm({ ...listingForm, price: e.target.value })}
-                    />
-                  </div>
-
-                  {/* Handyman specific fields */}
-                  {listingForm.type === 'handyman_skill' && (
-                    <>
-                      <div className="form-group">
-                        <label>Skill Specialty Category</label>
-                        <select 
-                          className="form-control"
-                          value={listingForm.category || ''}
-                          onChange={(e) => setListingForm({ ...listingForm, category: e.target.value })}
-                          required
-                        >
-                          <option value="">Select Specialty</option>
-                          <option value="Plumbing">Plumbing</option>
-                          <option value="Electrical Work">Electrical Work</option>
-                          <option value="Carpentry">Carpentry</option>
-                          <option value="Painting & Plastering">Painting & Plastering</option>
-                          <option value="Roofing">Roofing</option>
-                          <option value="HVAC & Heating">HVAC & Heating</option>
-                          <option value="Appliance Repair">Appliance Repair</option>
-                          <option value="Gardening & Landscaping">Gardening & Landscaping</option>
-                          <option value="Cleaning & Housekeeping">Cleaning & Housekeeping</option>
-                          <option value="Locksmith & Security">Locksmith & Security</option>
-                          <option value="Masonry & Tiling">Masonry & Tiling</option>
-                        </select>
-                      </div>
-                      <div className="form-group">
-                        <label>Service Rate Estimate</label>
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          placeholder="e.g. $45/hour, Flat rate based on scale"
-                          value={listingForm.handymanRates}
-                          onChange={(e) => setListingForm({ ...listingForm, handymanRates: e.target.value })}
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  {/* Job Opening specific fields */}
-                  {listingForm.type === 'job_opening' && (
-                    <div className="form-group">
-                      <label>Job Requirements (One requirement per line)</label>
-                      <textarea 
-                        className="form-control" 
-                        placeholder="e.g. Must have active driver's license&#10;3+ years in retail operations"
-                        value={listingForm.jobRequirements}
-                        onChange={(e) => setListingForm({ ...listingForm, jobRequirements: e.target.value })}
-                        rows="3"
-                      />
-                    </div>
-                  )}
-
-                  {/* Real Estate specific fields */}
-                  {listingForm.type === 'house' && (
-                    <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
-                      <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label>Property Type</label>
-                        <select
-                          className="form-control"
-                          value={listingForm.propertyType}
-                          onChange={(e) => setListingForm({ ...listingForm, propertyType: e.target.value })}
-                        >
-                          <option value="House">House</option>
-                          <option value="Apartment">Apartment</option>
-                          <option value="Commercial">Commercial</option>
-                          <option value="Land">Land</option>
-                        </select>
-                      </div>
-                      <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label>Bedrooms</label>
-                        <input
-                          type="number"
-                          className="form-control"
-                          placeholder="e.g. 3"
-                          value={listingForm.bedrooms}
-                          onChange={(e) => setListingForm({ ...listingForm, bedrooms: e.target.value })}
-                        />
-                      </div>
-                      <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label>Bathrooms</label>
-                        <input
-                          type="number"
-                          className="form-control"
-                          placeholder="e.g. 2"
-                          value={listingForm.bathrooms}
-                          onChange={(e) => setListingForm({ ...listingForm, bathrooms: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Automotive specific fields */}
-                  {listingForm.type === 'car' && (
-                    <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
-                      <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label>Make</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="e.g. Toyota"
-                          value={listingForm.make}
-                          onChange={(e) => setListingForm({ ...listingForm, make: e.target.value })}
-                        />
-                      </div>
-                      <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label>Model</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="e.g. Camry"
-                          value={listingForm.model}
-                          onChange={(e) => setListingForm({ ...listingForm, model: e.target.value })}
-                        />
-                      </div>
-                      <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label>Year</label>
-                        <input
-                          type="number"
-                          className="form-control"
-                          placeholder="e.g. 2023"
-                          value={listingForm.year}
-                          onChange={(e) => setListingForm({ ...listingForm, year: e.target.value })}
-                        />
-                      </div>
-                      <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label>Mileage (mi)</label>
-                        <input
-                          type="number"
-                          className="form-control"
-                          placeholder="e.g. 15000"
-                          value={listingForm.mileage}
-                          onChange={(e) => setListingForm({ ...listingForm, mileage: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="form-group">
-                    <label>Listing Description</label>
-                    <textarea 
-                      className="form-control" 
-                      placeholder="Describe your offer, specifications, terms and options clearly..."
-                      value={listingForm.description}
-                      onChange={(e) => setListingForm({ ...listingForm, description: e.target.value })}
-                      rows="4"
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Listing Images (Max 5)</label>
-                    <input 
-                      type="file" 
-                      className="form-control" 
-                      accept="image/*" 
-                      multiple 
-                      onChange={handleImageChange}
-                      disabled={selectedImages.length >= 5}
-                    />
-                    <p className="help-text">Select up to 5 images. Stored locally via base64 encoding.</p>
-                    
-                    {selectedImages.length > 0 && (
-                      <div className="image-previews-grid">
-                        {selectedImages.map((img, idx) => (
-                          <div key={idx} className="preview-thumbnail-wrapper">
-                            <img src={img} alt={`Preview ${idx + 1}`} className="preview-thumbnail" />
-                            <button 
-                              type="button" 
-                              onClick={() => handleRemoveImage(idx)} 
-                              className="btn-remove-preview"
-                            >
-                              &times;
-                            </button>
-                          </div>
-                        ))}
-                      </div>
+              {/* Table of Listings (Alternative view to Card lists) */}
+              <div className="listings-manager-card" style={{ width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <h3 style={{ margin: 0 }}>{t('my_listings')} ({listings.length})</h3>
+                    {listings.length > 0 && (
+                      <span className="badge bg-primary text-white" style={{ fontSize: '0.8rem' }}>
+                        Showing {filteredListings.length} of {listings.length} Items
+                      </span>
                     )}
                   </div>
-
-                  <button type="submit" className="btn btn-primary w-full">{t('publish_btn')}</button>
-                </form>
-              </div>
-
-              {/* Table of Listings (Alternative view to Card lists) */}
-              <div className="listings-manager-card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-                  <h3 style={{ margin: 0 }}>{t('my_listings')} ({listings.length})</h3>
-                  {listings.length > 0 && (
-                    <span className="badge bg-primary text-white" style={{ fontSize: '0.8rem' }}>
-                      Showing {filteredListings.length} of {listings.length} Items
-                    </span>
-                  )}
+                  
+                  <button 
+                    onClick={() => setIsCreateModalOpen(true)} 
+                    className="btn btn-primary"
+                    style={{ borderRadius: '8px', padding: '8px 16px', fontWeight: 'bold' }}
+                  >
+                    + Add / {user?.role === 'business' ? (user?.category || 'Listing') : (user?.role === 'handyman' ? 'Handyman Skill' : 'Item')}
+                  </button>
                 </div>
 
                 {listings.length === 0 ? (
@@ -1645,15 +1584,41 @@ const Dashboard = () => {
                 />
               </div>
 
-              <div className="form-group">
-                <label>{editForm.type === 'job_opening' ? 'Salary Offered ($)' : 'Price / Value Offered ($)'}</label>
-                <input 
-                  type="number" 
-                  className="form-control" 
-                  value={editForm.price}
-                  onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
-                />
-              </div>
+              {editForm.type === 'job_opening' ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Salary Rate</label>
+                    <select
+                      className="form-control"
+                      value={editForm.salaryRate}
+                      onChange={(e) => setEditForm({ ...editForm, salaryRate: e.target.value })}
+                    >
+                      <option value="hour">Per Hour</option>
+                      <option value="month">Per Month</option>
+                      <option value="year">Per Year</option>
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Salary Amount ($)</label>
+                    <input 
+                      type="number" 
+                      className="form-control" 
+                      value={editForm.price}
+                      onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="form-group">
+                  <label>Price / Value Offered ($)</label>
+                  <input 
+                    type="number" 
+                    className="form-control" 
+                    value={editForm.price}
+                    onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                  />
+                </div>
+              )}
 
               {/* Handyman Rate field */}
               {editForm.type === 'handyman_skill' && (
@@ -1833,6 +1798,319 @@ const Dashboard = () => {
         </div>
       )}
 
+      {/* CREATE LISTING LIGHTBOX MODAL */}
+      {isCreateModalOpen && (
+        <div className="modal-overlay">
+          <div className="glass-panel modal-content" style={{ maxWidth: '650px', width: '95%' }}>
+            <button onClick={() => setIsCreateModalOpen(false)} className="btn-close-modal" style={{ position: 'absolute', top: '16px', right: '20px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
+            <h3>{t('post_marketplace')}</h3>
+            
+            <form onSubmit={async (e) => {
+              await handleCreateListing(e);
+              setIsCreateModalOpen(false); // Close modal on success!
+            }} className="modal-body-scroll" style={{ maxHeight: '80vh', overflowY: 'auto', paddingRight: '6px' }}>
+              
+              <div className="form-group">
+                <label>
+                  {user?.role === 'handyman' ? 'Service / Skill Title' :
+                   user?.role === 'business' && user.businessType === 'store' ? 'Product Name' :
+                   user?.role === 'business' && user.businessType === 'service' ? 'Service Name' :
+                   user?.role === 'business' && user.businessType === 'organization' ? 'Job Position Title' :
+                   user?.role === 'business' && user.businessType === 'real_estate' ? 'Property Title' :
+                   user?.role === 'business' && user.businessType === 'automotive' ? 'Vehicle Title' :
+                   'Listing Title'}
+                </label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  placeholder={
+                    user?.role === 'handyman' ? 'e.g. Master Pipe Leak Repair' :
+                    user?.role === 'business' && user.businessType === 'store' ? 'e.g. Organic Multivitamins Bottle' :
+                    user?.role === 'business' && user.businessType === 'service' ? 'e.g. Professional Tax Advisory' :
+                    user?.role === 'business' && user.businessType === 'organization' ? 'e.g. Senior Software Engineer' :
+                    user?.role === 'business' && user.businessType === 'real_estate' ? 'e.g. Cozy 3-Bedroom Suburban House' :
+                    user?.role === 'business' && user.businessType === 'automotive' ? 'e.g. 2022 Honda Civic LX' :
+                    'e.g. Vintage Leather Jacket'
+                  }
+                  value={listingForm.title}
+                  onChange={(e) => setListingForm({ ...listingForm, title: e.target.value })}
+                  required
+                />
+              </div>
+
+              {user?.role === 'business' && (
+                <div className="form-group">
+                  <label>Listing Post Type (Fixed by Business Type)</label>
+                  <select 
+                    className="form-control"
+                    value={listingForm.type}
+                    disabled
+                  >
+                    <option value="store_product">Store Product Item</option>
+                    <option value="service">Professional Service Listing</option>
+                    <option value="job_opening">Job Opening (Hiring Only)</option>
+                    <option value="house">Real Estate House Listing</option>
+                    <option value="car">Automotive Vehicle Listing</option>
+                  </select>
+                </div>
+              )}
+
+              {user?.role === 'individual' && (
+                <div className="form-group">
+                  <label>Listing Post Type</label>
+                  <select 
+                    className="form-control"
+                    value={listingForm.type}
+                    onChange={(e) => {
+                      const newType = e.target.value;
+                      setListingForm(prev => ({ 
+                        ...prev, 
+                        type: newType,
+                        category: newType === 'job_opening' ? 'Other' : '' 
+                      }));
+                    }}
+                    required
+                  >
+                    <option value="personal_item">Personal Item (Sell)</option>
+                    <option value="job_opening">Job Opening (Hire someone)</option>
+                  </select>
+                </div>
+              )}
+
+              {listingForm.type === 'job_opening' ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Salary Rate</label>
+                    <select
+                      className="form-control"
+                      value={listingForm.salaryRate}
+                      onChange={(e) => setListingForm({ ...listingForm, salaryRate: e.target.value })}
+                    >
+                      <option value="hour">Per Hour</option>
+                      <option value="month">Per Month</option>
+                      <option value="year">Per Year</option>
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Salary Amount ($)</label>
+                    <input 
+                      type="number" 
+                      className="form-control" 
+                      placeholder="e.g. 25 or 45000"
+                      value={listingForm.price}
+                      onChange={(e) => setListingForm({ ...listingForm, price: e.target.value })}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="form-group">
+                  <label>Price / Value Offered ($)</label>
+                  <input 
+                    type="number" 
+                    className="form-control" 
+                    placeholder="e.g. 50 (Leave blank for call/inquire)"
+                    value={listingForm.price}
+                    onChange={(e) => setListingForm({ ...listingForm, price: e.target.value })}
+                  />
+                </div>
+              )}
+
+              {/* Handyman specific fields */}
+              {listingForm.type === 'handyman_skill' && (
+                <>
+                  <div className="form-group">
+                    <label>Skill Specialty Category</label>
+                    <select 
+                      className="form-control"
+                      value={listingForm.category || ''}
+                      onChange={(e) => setListingForm({ ...listingForm, category: e.target.value })}
+                      required
+                    >
+                      <option value="">Select Specialty</option>
+                      <option value="Plumbing">Plumbing</option>
+                      <option value="Electrical Work">Electrical Work</option>
+                      <option value="Carpentry">Carpentry</option>
+                      <option value="Painting & Plastering">Painting & Plastering</option>
+                      <option value="Roofing">Roofing</option>
+                      <option value="HVAC & Heating">HVAC & Heating</option>
+                      <option value="Appliance Repair">Appliance Repair</option>
+                      <option value="Gardening & Landscaping">Gardening & Landscaping</option>
+                      <option value="Cleaning & Housekeeping">Cleaning & Housekeeping</option>
+                      <option value="Locksmith & Security">Locksmith & Security</option>
+                      <option value="Masonry & Tiling">Masonry & Tiling</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Service Rate Estimate</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      placeholder="e.g. $45/hour, Flat rate based on scale"
+                      value={listingForm.handymanRates}
+                      onChange={(e) => setListingForm({ ...listingForm, handymanRates: e.target.value })}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Job Opening specific fields */}
+              {listingForm.type === 'job_opening' && (
+                <div className="form-group">
+                  <label>Job Requirements (One requirement per line)</label>
+                  <textarea 
+                    className="form-control" 
+                    placeholder="e.g. Must have active driver's license&#10;3+ years in retail operations"
+                    value={listingForm.jobRequirements}
+                    onChange={(e) => setListingForm({ ...listingForm, jobRequirements: e.target.value })}
+                    rows="3"
+                  />
+                </div>
+              )}
+
+              {/* Real Estate specific fields */}
+              {listingForm.type === 'house' && (
+                <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Property Type</label>
+                    <select
+                      className="form-control"
+                      value={listingForm.propertyType}
+                      onChange={(e) => setListingForm({ ...listingForm, propertyType: e.target.value })}
+                    >
+                      <option value="House">House</option>
+                      <option value="Apartment">Apartment</option>
+                      <option value="Commercial">Commercial</option>
+                      <option value="Land">Land</option>
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Bedrooms</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      placeholder="e.g. 3"
+                      value={listingForm.bedrooms}
+                      onChange={(e) => setListingForm({ ...listingForm, bedrooms: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Bathrooms</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      placeholder="e.g. 2"
+                      value={listingForm.bathrooms}
+                      onChange={(e) => setListingForm({ ...listingForm, bathrooms: e.target.value })}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Automotive specific fields */}
+              {listingForm.type === 'car' && (
+                <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Make</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="e.g. Toyota"
+                      value={listingForm.make}
+                      onChange={(e) => setListingForm({ ...listingForm, make: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Model</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="e.g. Camry"
+                      value={listingForm.model}
+                      onChange={(e) => setListingForm({ ...listingForm, model: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Year</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      placeholder="e.g. 2023"
+                      value={listingForm.year}
+                      onChange={(e) => setListingForm({ ...listingForm, year: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Mileage (mi)</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      placeholder="e.g. 15000"
+                      value={listingForm.mileage}
+                      onChange={(e) => setListingForm({ ...listingForm, mileage: e.target.value })}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="form-group">
+                <label>Listing Description</label>
+                <textarea 
+                  className="form-control" 
+                  placeholder="Describe your offer, specifications, terms and options clearly..."
+                  value={listingForm.description}
+                  onChange={(e) => setListingForm({ ...listingForm, description: e.target.value })}
+                  rows="4"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Listing Images (Max 5)</label>
+                <input 
+                  type="file" 
+                  className="form-control" 
+                  accept="image/*" 
+                  multiple 
+                  onChange={handleImageChange}
+                  disabled={selectedImages.length >= 5}
+                />
+                <p className="help-text">Select up to 5 images. Stored locally via base64 encoding.</p>
+                
+                {selectedImages.length > 0 && (
+                  <div className="image-previews-grid">
+                    {selectedImages.map((img, idx) => (
+                      <div key={idx} className="preview-thumbnail-wrapper">
+                        <img src={img} alt={`Preview ${idx + 1}`} className="preview-thumbnail" />
+                        <button 
+                          type="button" 
+                          onClick={() => handleRemoveImage(idx)} 
+                          className="btn-remove-preview"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+                <button type="submit" className="btn btn-primary flex-grow-1">{t('publish_btn')}</button>
+                <button type="button" onClick={() => setIsCreateModalOpen(false)} className="btn btn-secondary">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {qrOpen && user && (
+        <QrModal 
+          isOpen={qrOpen} 
+          onClose={() => setQrOpen(false)} 
+          storeName={user.storeName || user.username}
+          storeId={user._id}
+        />
+      )}
 
 
       <style>{`

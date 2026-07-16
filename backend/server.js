@@ -46,6 +46,7 @@ const runSeeding = async () => {
       { name: 'Healthcare Group', type: 'organization', description: 'Hospital chains, clinical services and research' },
       { name: 'Educational Institution', type: 'organization', description: 'Universities, schools and training academies' },
       { name: 'Non-Profit Org', type: 'organization', description: 'Social charity, fundraising and volunteer setups' },
+      { name: 'Other', type: 'organization', description: 'Other categories of hiring entities' },
 
       // REAL ESTATE (Houses)
       { name: 'Residential Homes', type: 'real_estate', description: 'Single family houses, villas, and townhomes' },
@@ -184,6 +185,7 @@ if (isClustered && cluster.isMaster) {
   const inquiryRoutes = require('./routes/inquiries');
   const chatbotRoutes = require('./routes/chatbot');
   const messageRoutes = require('./routes/messages');
+  const contactRoutes = require('./routes/contact');
 
   // Security & Scaling Middlewares
   app.use(cors({
@@ -225,6 +227,7 @@ if (isClustered && cluster.isMaster) {
   app.use('/api/inquiries', inquiryRoutes);
   app.use('/api/chatbot', chatbotRoutes);
   app.use('/api/messages', messageRoutes);
+  app.use('/api/contact', contactRoutes);
 
   // Temporary route to create super admin
   app.get('/api/setup-admin', async (req, res) => {

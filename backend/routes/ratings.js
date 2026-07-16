@@ -2,6 +2,82 @@ const express = require('express');
 const router = express.Router();
 const Rating = require('../models/Rating');
 const User = require('../models/User');
+const RatingVerification = require('../models/RatingVerification');
+const { sendOtpEmail } = require('../utils/email');
+
+// POST: GENERATE AND SEND VERIFICATION CODE
+router.post('/send-code', async (req, res) => {
+  try {
+    const { email, targetId } = req.body;
+
+    if (!email || !targetId) {
+      return res.status(400).json({ message: 'Email and target ID are required.' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Verify correct email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normalizedEmail)) {
+      return res.status(400).json({ message: 'Please provide a valid email address.' });
+    }
+
+    // Check if target user exists
+    const targetUser = await User.findById(targetId);
+    if (!targetUser) {
+      return res.status(404).json({ message: 'Target user/store not found.' });
+    }
+
+    // Check if this email has already rated this target
+    const existingRating = await Rating.findOne({ targetId, email: normalizedEmail });
+    if (existingRating) {
+      return res.status(400).json({ message: 'This email address has already submitted a rating for this provider.' });
+    }
+
+    // Generate 4-digit code
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
+
+    // Save or update verification document
+    await RatingVerification.findOneAndUpdate(
+      { email: normalizedEmail, targetId },
+      { code, createdAt: new Date() },
+      { upsert: true, new: true }
+    );
+
+    // Send the email
+    await sendOtpEmail(normalizedEmail, code);
+
+    res.json({ success: true, message: 'Verification code has been sent to your email.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error sending verification code', error: error.message });
+  }
+});
+
+// POST: VERIFY CODE
+router.post('/verify-code', async (req, res) => {
+  try {
+    const { email, targetId, code } = req.body;
+
+    if (!email || !targetId || !code) {
+      return res.status(400).json({ message: 'Email, target ID and verification code are required.' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Find verification record
+    const record = await RatingVerification.findOne({ email: normalizedEmail, targetId });
+    if (!record || record.code !== code.trim()) {
+      return res.status(400).json({ message: 'Invalid or expired verification code.' });
+    }
+
+    // Delete verification record after successful verification so it can't be reused
+    await RatingVerification.deleteOne({ _id: record._id });
+
+    res.json({ success: true, message: 'Verified successfully.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error verifying code', error: error.message });
+  }
+});
 
 // POST A VERIFIED RATING (GUEST-FRIENDLY, REQUIRES VALIDATED NAME, EMAIL, AND PHONE)
 router.post('/', async (req, res) => {
@@ -35,12 +111,19 @@ router.post('/', async (req, res) => {
       return res.status(404).json({ message: 'Target user/store not found' });
     }
 
+    // Check if this email address has already rated this provider/store
+    const normalizedEmail = email.toLowerCase().trim();
+    const existingRating = await Rating.findOne({ targetId, email: normalizedEmail });
+    if (existingRating) {
+      return res.status(400).json({ message: 'This email address has already submitted a rating for this provider.' });
+    }
+
     const newRating = new Rating({
       targetId,
       rating,
       comment,
       name,
-      email,
+      email: normalizedEmail,
       phone
     });
 

@@ -59,10 +59,10 @@ const translations = {
     verified_reviews_desc: 'Below are authenticated client records & star reviews left by visitors who completed service transactions with your business.',
     
     // Static Pages (User can update these later)
-    about_us_content: '[About Us Placeholder] EthiZone is the ultimate platform connecting buyers and sellers across multiple categories including real estate, automotive, local services, and professional handymen. We strive to provide a seamless, robust, and intuitive marketplace for all your needs.',
-    contact_tab_content: '[Contact Us Placeholder] Have questions or need support? Reach out to our team anytime. We are dedicated to providing you with the best customer service experience. Email us at support@ethizone.com or call our toll-free number.',
-    privacy_policy_content: '[Privacy Policy Placeholder] Your privacy is our top priority. EthiZone uses advanced encryption and security measures to protect your personal data. We do not sell your personal information to third parties without your explicit consent.',
-    terms_of_service_content: '[Terms & Conditions Placeholder] By using EthiZone, you agree to comply with and be bound by our terms of service. Users must be at least 18 years of age to engage in binding contracts on our platform.',
+    about_us_content: 'EthiZone is a multi-category marketplace designed to connect people who want to buy, sell, rent, offer services, find work, hire talent, and grow businesses through one simple platform. A person may buy today and sell tomorrow. EthiZone brings these opportunities into one organized platform.',
+    contact_tab_content: 'We are here to help users, sellers, service providers, store owners, professionals, and customers use EthiZone safely and effectively. Support Email: support@ethizone.com | Business and Partnership Email: partners@ethizone.com | Safety and Report Email: safety@ethizone.com. Response Time: We aim to respond as soon as possible.',
+    privacy_policy_content: 'EthiZone respects user privacy and is committed to protecting personal information. This Privacy Policy explains how information may be collected and used when users access EthiZone, create an account, register a business or profile, publish listings, communicate with others, or use marketplace services.',
+    terms_of_service_content: 'By accessing or using EthiZone, users agree to follow these Terms of Service. If a user does not agree, they should not use the platform. EthiZone is a digital marketplace and technology platform. Unless EthiZone clearly provides a separate written service or guarantee, EthiZone is not the seller, buyer, broker, landlord, tenant, employer, employee, delivery provider, payment guarantor, legal advisor, or agent in user transactions.',
     legal_disclaimer_title: '⚠️ Important Legal Disclaimer',
     legal_disclaimer: 'For any money transaction, EthiZone is NOT responsible. The seller is solely responsible for their products and services.',
     
@@ -148,7 +148,11 @@ const translations = {
 
     // RatingForm verification
     write_reference: 'Write a Verified Reference',
-    prevent_fake: 'To prevent fake reviews, you must provide your email and phone. Your name and phone will be publicly visible to verify authenticity.',
+    prevent_fake: 'To prevent fake reviews, you must provide your email and phone to verify authenticity.',
+    rate: 'Rate',
+    review: 'review',
+    reviews: 'reviews',
+    new_status: 'New',
     your_name: 'Your Name',
     email_address: 'Email Address',
     phone_number: 'Phone Number',
@@ -202,7 +206,6 @@ const translations = {
     bathrooms_filter: 'Bathrooms',
     max_price: 'Max Price',
     location_placeholder: 'City, Town, State or Zip...',
-    brand: 'Brand',
     min_year_filter: 'Min Year',
     transmission: 'Transmission',
     fuel_type: 'Fuel Type',
@@ -316,10 +319,10 @@ const translations = {
     verified_reviews_desc: 'ከድርጅትዎ ጋር የአገልግሎት ግንኙነት ያደረጉ ደንበኞች የሰጡት አስተያየት እና ባለኮከብ ደረጃዎች ከዚህ በታች ቀርበዋል።',
     
     // Static Pages (User can update these later)
-    about_us_content: '[ስለ እኛ - ይህን በኋላ ያዘምኑት] EthiZone ገዢዎችን እና ሻጮችን በተለያዩ ዘርፎች የሚያገናኝ ዋና መድረክ ነው። የሪል ስቴት፣ አውቶሞቲቭ፣ የሀገር ውስጥ አገልግሎቶች እና ባለሙያዎችን በቀላሉ ያገናኛል።',
-    contact_tab_content: '[አግኙን - ይህን በኋላ ያዘምኑት] ጥያቄዎች አሉዎት ወይም ድጋፍ ይፈልጋሉ? በማንኛውም ጊዜ ቡድናችንን ያግኙ። በ support@ethizone.com ወይም በነፃ የስልክ መስመራችን ሊያገኙን ይችላሉ።',
-    privacy_policy_content: '[የግላዊነት ፖሊሲ - ይህን በኋላ ያዘምኑት] የእርስዎ ግላዊነት ቅድሚያ የምንሰጠው ጉዳይ ነው። የርስዎን መረጃ ለመጠበቅ ከፍተኛ የጥበቃ ስርአቶችን እንጠቀማለን። ያለእርስዎ ግልጽ ፍቃድ የግል መረጃዎን ለሶስተኛ ወገኖች አንሸጥም።',
-    terms_of_service_content: '[የአገልግሎት ውሎች - ይህን በኋላ ያዘምኑት] EthiZoneን በመጠቀም፣ በአገልግሎት ውሎቻችን ለመገዛት ተስማምተዋል። ተጠቃሚዎች በመድረካችን ላይ ውል ለማድረግ ቢያንስ 18 ዓመት የሞላቸው መሆን አለባቸው።',
+    about_us_content: 'EthiZone ግለሰቦች፣ ሱቆች፣ አገልግሎት ሰጪዎች፣ ባለሙያዎች እና የንግድ ድርጅቶች በአንድ የታመነ ዲጂታል የገበያ ቦታ ላይ እንዲገናኙ የሚረዳ መድረክ ነው። ሁሉም ገዢዎች ሻጮች ናቸው በሚለው ሃሳብ ዙሪያ የተገነባ ነው።',
+    contact_tab_content: 'እገዛ ይፈልጋሉ፣ ጥያቄ አለዎት ወይስ ችግርን ሪፖርት ማድረግ ይፈልጋሉ? የEthiZone የድጋፍ ቡድንን ያነጋግሩ። የድጋፍ ኢሜይል፡ support@ethizone.com | የንግድ እና አጋርነት ኢሜይል፡ partners@ethizone.com | ደህንነት እና ሪፖርት፡ safety@ethizone.com። የድጋፍ ምላሽ ጊዜ፡ በተቻለ ፍጥነት ምላሽ ለመስጠት እንጥራለን።',
+    privacy_policy_content: 'EthiZone የተጠቃሚዎችን ግላዊነት ያከብራል እንዲሁም የግል መረጃዎችን ለመጠበቅ ቁርጠኛ ነው። ይህ የግላዊነት ፖሊሲ ተጠቃሚዎች EthiZoneን ሲጎበኙ መረጃ እንዴት እንደሚሰበሰብ እና ጥቅም ላይ እንደሚውል ያብራራል።',
+    terms_of_service_content: 'EthiZoneን በመጠቀም በአገልግሎት ውሎቻችን ለመገዛት ተስማምተዋል። EthiZone ዲጂታል የገበያ ቦታ እና የቴክኖሎጂ መድረክ ነው። ሌላ የጽሁፍ ዋስትና በግልጽ ካልተሰጠ በስተቀር EthiZone በተጠቃሚዎች ግብይት ውስጥ ሻጭ፣ ገዢ፣ አከራይ፣ ተከራይ፣ ቀጣሪ ወይም ወኪል አይደለም።',
     legal_disclaimer_title: '⚠️ ጠቃሚ ህጋዊ ማሳሰቢያ',
     legal_disclaimer: 'ለማንኛውም የገንዘብ ዝውውር EthiZone ሀላፊነት አይወስድም። ሻጩ ለምርቶቹ እና ለአገልግሎቶቹ ሙሉ ሀላፊነቱን ይወስዳል።',
     
@@ -405,7 +408,11 @@ const translations = {
 
     // RatingForm verification
     write_reference: 'የተረጋገጠ ምስክርነት ይጻፉ',
-    prevent_fake: 'ሐሰተኛ አስተያየቶችን ለመከላከል ኢሜይልዎን እና ስልክ ቁጥርዎን ማስገባት አለብዎት። ትክክለኛነቱን ለማረጋገጥ ስምዎ እና ስልክዎ ለህዝብ ይታያል።',
+    prevent_fake: 'ሐሰተኛ አስተያየቶችን ለመከላከል ኢሜይልዎን እና ስልክ ቁጥርዎን ማስገባት አለብዎት።',
+    rate: 'ደረጃ',
+    review: 'አስተያየት',
+    reviews: 'አስተያየቶች',
+    new_status: 'አዲስ',
     your_name: 'ስምዎ',
     email_address: 'ኢሜይል አድራሻ',
     phone_number: 'ስልክ ቁጥር',
@@ -459,7 +466,6 @@ const translations = {
     bathrooms_filter: 'መታጠቢያ ቤቶች',
     max_price: 'ከፍተኛ ዋጋ',
     location_placeholder: 'ከተማ፣ አካባቢ ወይም ፖስታ ሳጥን...',
-    brand: 'ብራንድ',
     min_year_filter: 'የተመረተበት አመት',
     transmission: 'ማስተላለፊያ (ትራንስሚሽን)',
     fuel_type: 'የነዳጅ አይነት',

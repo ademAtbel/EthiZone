@@ -12,7 +12,7 @@ const RatingForm = ({ targetId, onRatingSubmitted }) => {
   });
   
   // Verification states
-  const [verificationMethod, setVerificationMethod] = useState('sms');
+  const [verificationMethod, setVerificationMethod] = useState('email');
   const [codeSent, setCodeSent] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [enteredCode, setEnteredCode] = useState('');
@@ -30,34 +30,70 @@ const RatingForm = ({ targetId, onRatingSubmitted }) => {
     });
   };
 
-  // Triggers mock SMS or Email verification sending code in sandbox
-  const handleSendVerificationCode = () => {
+  // Triggers actual Email verification sending code
+  const handleSendVerificationCode = async () => {
     if (!formData.name || !formData.email || !formData.phone) {
       setError('Please fill in Name, Email and Phone details first to trigger verification.');
       return;
     }
     setError('');
+    setVerificationMsg('');
 
-    // Generate random 4 digit code
-    const code = Math.floor(1000 + Math.random() * 9000).toString();
-    setVerificationCode(code);
-    setCodeSent(true);
+    try {
+      const response = await fetch('/api/ratings/send-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          targetId
+        })
+      });
 
-    if (verificationMethod === 'sms') {
-      setVerificationMsg(`💬 Sandbox SMS sent to ${formData.phone}. Enter Code: ${code}`);
-    } else {
-      setVerificationMsg(`✉️ Sandbox Email sent to ${formData.email}. Enter Code: ${code}`);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to send verification code');
+      }
+
+      setCodeSent(true);
+      setVerificationMsg(`✉️ Sandbox Email sent to ${formData.email}. Please check your inbox/terminal.`);
+    } catch (err) {
+      setError(err.message);
     }
   };
 
-  // Check code input
-  const handleVerifyCode = () => {
-    if (enteredCode === verificationCode && verificationCode !== '') {
+  // Check code input with backend
+  const handleVerifyCode = async () => {
+    if (!enteredCode) {
+      setError('Please enter the 4-digit code.');
+      return;
+    }
+    setError('');
+
+    try {
+      const response = await fetch('/api/ratings/verify-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          targetId,
+          code: enteredCode
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Verification failed');
+      }
+
       setVerified(true);
       setError('');
       setVerificationMsg('✅ Verified successfully! Form unlocked.');
-    } else {
-      setError('Invalid verification code. Please check and try again.');
+    } catch (err) {
+      setError(err.message);
     }
   };
 
@@ -179,25 +215,7 @@ const RatingForm = ({ targetId, onRatingSubmitted }) => {
         {/* Verification trigger segment */}
         {!verified && (
           <div className="verification-segment" style={{ padding: '16px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-glass)', marginBottom: '20px' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: 600, display: 'block', marginBottom: '8px' }}>{t('select_channel')}</label>
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', cursor: 'pointer' }}>
-                <input 
-                  type="radio" 
-                  checked={verificationMethod === 'sms'} 
-                  onChange={() => setVerificationMethod('sms')} 
-                />
-                {t('sms_ver')}
-              </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', cursor: 'pointer' }}>
-                <input 
-                  type="radio" 
-                  checked={verificationMethod === 'email'} 
-                  onChange={() => setVerificationMethod('email')} 
-                />
-                {t('email_ver')}
-              </label>
-            </div>
+            
 
             <button 
               type="button" 

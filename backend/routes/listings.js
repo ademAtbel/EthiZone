@@ -15,8 +15,8 @@ router.post('/', verifyToken, async (req, res) => {
     }
 
     // Verify correct type mapping for non-stores
-    if (user.role === 'individual' && type !== 'personal_item') {
-      return res.status(400).json({ message: 'Individuals can only post personal items' });
+    if (user.role === 'individual' && type !== 'personal_item' && type !== 'job_opening') {
+      return res.status(400).json({ message: 'Individuals can only post personal items or job openings' });
     }
     if (user.role === 'handyman' && type !== 'handyman_skill') {
       return res.status(400).json({ message: 'Handymen can only post handyman skills' });
@@ -52,9 +52,9 @@ router.post('/', verifyToken, async (req, res) => {
       ownerPhone: user.phone,
       title,
       description,
-      price,
+      price: (price !== undefined && price !== null && price !== '') ? price : null,
       type,
-      category: ['store_product', 'service', 'job_opening', 'house', 'car'].includes(type) ? user.category : category,
+      category: (['store_product', 'service', 'job_opening', 'house', 'car'].includes(type) && user.role === 'business') ? user.category : (category || 'Other'),
       metadata,
       images: images || []
     });
@@ -162,7 +162,7 @@ router.put('/:id', verifyToken, async (req, res) => {
 
     listing.title = title || listing.title;
     listing.description = description || listing.description;
-    listing.price = price !== undefined ? price : listing.price;
+    listing.price = (price !== undefined && price !== null && price !== '') ? price : null;
     listing.status = status || listing.status;
     listing.category = category !== undefined ? category : listing.category;
     listing.metadata = metadata || listing.metadata;
@@ -174,6 +174,32 @@ router.put('/:id', verifyToken, async (req, res) => {
     res.json(updatedListing);
   } catch (error) {
     res.status(500).json({ message: 'Error updating listing', error: error.message });
+  }
+});
+
+// UPDATE LISTING STATUS
+router.patch('/:id/status', verifyToken, async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!['active', 'sold', 'busy', 'inactive'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
+
+    const listing = await Listing.findById(req.params.id);
+    if (!listing) {
+      return res.status(404).json({ message: 'Listing not found' });
+    }
+
+    // Check ownership or super admin
+    if (listing.ownerId.toString() !== req.user.id && req.user.role !== 'super_admin') {
+      return res.status(403).json({ message: 'Unauthorized action' });
+    }
+
+    listing.status = status;
+    const updatedListing = await listing.save();
+    res.json(updatedListing);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating listing status', error: error.message });
   }
 });
 

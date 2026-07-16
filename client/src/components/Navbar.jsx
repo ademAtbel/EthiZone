@@ -201,13 +201,13 @@ const Navbar = () => {
               {user.role === 'super_admin' && (
                 <Link to="/super-admin" className="nav-link admin-badge">Super Admin</Link>
               )}
-              {user.role === 'business' && (
+              {(user.role === 'business' || user.role === 'handyman') && (
                 <div className="store-dashboard-shortcuts" style={{ display: 'inline-flex', gap: '8px', marginRight: '10px' }}>
                   <button onClick={() => setQrOpen(true)} className="btn btn-secondary btn-sm d-flex align-items-center gap-1" style={{ padding: '6px 12px', fontSize: '0.82rem' }}>
                     <Printer size={14} /> QR Code
                   </button>
                   <a 
-                    href={`/store/${(user.storeName || '').toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')}`} 
+                    href={`/store/${(user.storeName || user.username || '').toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')}`} 
                     className="btn btn-primary"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -261,9 +261,9 @@ const Navbar = () => {
                       <Link to={getDashboardLink()} onClick={() => setUserMenuOpen(false)} className="dropdown-item d-flex align-items-center gap-2" style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', textDecoration: 'none' }}>
                         <LayoutDashboard size={16} /> Dashboard
                       </Link>
-                      {user.role === 'business' && (
+                      {(user.role === 'business' || user.role === 'handyman') && (
                         <a 
-                          href={`/store/${(user.storeName || '').toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')}`}
+                          href={`/store/${(user.storeName || user.username || '').toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="dropdown-item d-flex align-items-center gap-2"

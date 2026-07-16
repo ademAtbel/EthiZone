@@ -6,7 +6,76 @@ import QrModal from '../components/QrModal';
 import ListingCard from '../components/ListingCard';
 import CategoryTemplate from '../components/CategoryTemplate';
 import { useApp } from '../context/AppContext';
-import { Building2, MapPin, Phone, MessageCircle, FileText, Shirt, ShoppingBag } from 'lucide-react';
+import { Building2, MapPin, Phone, MessageCircle, FileText, Shirt, ShoppingBag, Globe } from 'lucide-react';
+
+// Inline SVG social media icons renderer to avoid dependency/version naming conflicts
+const renderSocialIcon = (platform, size = 16, style = {}) => {
+  const p = platform.toLowerCase();
+  const flexStyle = { flexShrink: 0, ...style };
+  if (p.includes('facebook')) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={flexStyle}>
+        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+      </svg>
+    );
+  }
+  if (p.includes('instagram')) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={flexStyle}>
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+      </svg>
+    );
+  }
+  if (p.includes('telegram')) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={flexStyle}>
+        <path d="M21.13 2.82a1.6 1.6 0 0 0-1.64-.15L3.56 10.08a1.6 1.6 0 0 0-.1 2.92l4.88 2.2 2.2 4.88a1.6 1.6 0 0 0 2.92-.1l7.41-15.93a1.6 1.6 0 0 0-.15-1.64z"/>
+        <line x1="8.5" y1="14.5" x2="21" y2="3"/>
+      </svg>
+    );
+  }
+  if (p.includes('linkedin')) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={flexStyle}>
+        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+        <rect x="2" y="9" width="4" height="12"/>
+        <circle cx="4" cy="4" r="2"/>
+      </svg>
+    );
+  }
+  if (p.includes('youtube')) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={flexStyle}>
+        <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/>
+        <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
+      </svg>
+    );
+  }
+  if (p.includes('tiktok')) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={flexStyle}>
+        <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>
+      </svg>
+    );
+  }
+  if (p.includes('twitter') || p.includes('x')) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={flexStyle}>
+        <path d="M4 4l11.733 16h4.267l-11.733 -16z"/>
+        <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/>
+      </svg>
+    );
+  }
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={flexStyle}>
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+    </svg>
+  );
+};
 
 const Storefront = () => {
   const { storeName } = useParams();
@@ -268,49 +337,50 @@ const Storefront = () => {
         {/* TAB 1: HOME PAGE SECTION */}
         {activeTab === 'home' && (
           <>
-            <header 
-              className="storefront-hero glass-panel"
-              style={store.storeImage ? { 
-                backgroundImage: `linear-gradient(to right, rgba(9, 13, 22, 0.96) 35%, rgba(9, 13, 22, 0.45) 100%), url(${store.storeImage})`, 
-                backgroundSize: 'cover', 
-                backgroundPosition: 'center',
-                position: 'relative'
-              } : {}}
-            >
-              <div className="store-hero-info">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '14px', flexWrap: 'wrap' }}>
-                  <img 
-                    src={store.storeLogo || '/logo.png'} 
-                    alt={`${store.storeName || store.username} Logo`} 
-                    style={{ 
-                      width: '90px', 
-                      height: '90px', 
-                      borderRadius: '50%', 
-                      objectFit: 'cover', 
-                      border: '4px solid var(--accent-primary)', 
-                      boxShadow: '0 10px 25px rgba(0,0,0,0.6), inset 0 4px 8px rgba(255,255,255,0.3), inset 0 -4px 8px rgba(0,0,0,0.4)',
-                      background: 'var(--bg-card)',
-                      transform: 'translateZ(0)',
-                      transition: 'transform 0.3s ease'
-                    }} 
-                  />
-                  <h1 style={{ margin: 0, fontSize: '2.2rem' }}>{store.storeName || store.username}</h1>
+            {store.category?.toLowerCase() !== 'other' && (
+              <header 
+                className="storefront-hero glass-panel"
+                style={store.storeImage ? { 
+                  backgroundImage: `linear-gradient(to right, rgba(9, 13, 22, 0.96) 35%, rgba(9, 13, 22, 0.45) 100%), url(${store.storeImage})`, 
+                  backgroundSize: 'cover', 
+                  backgroundPosition: 'center',
+                  position: 'relative'
+                } : {}}
+              >
+                <div className="store-hero-info">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '14px', flexWrap: 'wrap' }}>
+                    <img 
+                      src={store.storeLogo || '/logo.png'} 
+                      alt={`${store.storeName || store.username} Logo`} 
+                      style={{ 
+                        width: '90px', 
+                        height: '90px', 
+                        borderRadius: '50%', 
+                        objectFit: 'cover', 
+                        border: '4px solid var(--accent-primary)', 
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.6), inset 0 4px 8px rgba(255,255,255,0.3), inset 0 -4px 8px rgba(0,0,0,0.4)',
+                        background: 'var(--bg-card)',
+                        transform: 'translateZ(0)',
+                        transition: 'transform 0.3s ease'
+                      }} 
+                    />
+                    <h1 style={{ margin: 0, fontSize: '2.2rem' }}>{store.storeName || store.username}</h1>
+                  </div>
+                  <p className="store-address d-flex align-items-center gap-2" style={{ justifyContent: 'center' }}><MapPin size={16} style={{ color: 'var(--accent-secondary)' }} /> {store.address || 'Local Directory Services'}</p>
+                  <p className="store-desc">{store.description || t('middleman_free')}</p>
                 </div>
-                <p className="store-address d-flex align-items-center gap-2" style={{ justifyContent: 'center' }}><MapPin size={16} style={{ color: 'var(--accent-secondary)' }} /> {store.address || 'Local Directory Services'}</p>
-                <p className="store-desc">{store.description || t('middleman_free')}</p>
-              </div>
-              <div className="store-hero-contact" style={{ zIndex: 2 }}>
-                <span className="contact-label">{t('direct_line')}</span>
-                <span className="contact-number">{store.phone}</span>
-                <div className="contact-cta-row">
-                  <a href={`tel:${store.phone}`} className="btn btn-success d-flex align-items-center justify-content-center gap-2"><Phone size={18} /> {t('call')}</a>
-                  <a href={`sms:${store.phone}?body=Hi! I am interested in inquiring about your store services.`} className="btn btn-primary d-flex align-items-center justify-content-center gap-2"><MessageCircle size={18} /> {t('sms')}</a>
+                <div className="store-hero-contact" style={{ zIndex: 2 }}>
+                  <span className="contact-label">{t('direct_line')}</span>
+                  <span className="contact-number">{store.phone}</span>
+                  <div className="contact-cta-row">
+                    <a href={`tel:${store.phone}`} className="btn btn-success d-flex align-items-center justify-content-center gap-2"><Phone size={18} /> {t('call')}</a>
+                    <a href={`sms:${store.phone}?body=Hi! I am interested in inquiring about your store services.`} className="btn btn-primary d-flex align-items-center justify-content-center gap-2"><MessageCircle size={18} /> {t('sms')}</a>
+                  </div>
                 </div>
-              </div>
-            </header>
+              </header>
+            )}
 
-            {/* Dynamic Category Interactive Template layout */}
-            {store.category && (
+            {store.category && store.category?.toLowerCase() !== 'other' && (
               <div className="category-template-container">
                 <CategoryTemplate 
                   category={store.category} 
@@ -887,50 +957,43 @@ const Storefront = () => {
         </div>
       )}
       {/* Storefront Custom Social Footer */}
-      {store.socialLinks && store.socialLinks.length > 0 && (
-        <footer className="store-footer glass-panel container" style={{ marginTop: '50px', padding: '24px', textAlign: 'center' }}>
-          <h5 style={{ marginBottom: '16px', color: 'var(--text-main)', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Connect with Us</h5>
-          <div className="store-social-row" style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            {store.socialLinks.map((link, idx) => {
-              let icon = '🔗';
-              const platformLower = link.platform.toLowerCase();
-              if (platformLower.includes('facebook')) icon = '📘';
-              if (platformLower.includes('instagram')) icon = '📸';
-              if (platformLower.includes('telegram')) icon = '✈️';
-              if (platformLower.includes('linkedin')) icon = '💼';
-              if (platformLower.includes('youtube')) icon = '🎥';
-              if (platformLower.includes('tiktok')) icon = '🎵';
-              if (platformLower.includes('twitter') || platformLower.includes('x')) icon = '🐦';
-              if (platformLower.includes('website')) icon = '🌐';
-              
-              return (
-                <a 
-                  key={idx} 
-                  href={link.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="store-social-badge"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '8px 16px',
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid var(--border-glass)',
-                    borderRadius: '20px',
-                    color: 'var(--text-secondary)',
-                    textDecoration: 'none',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <span style={{ fontSize: '1.1rem' }}>{icon}</span>
-                  <span style={{ fontWeight: 600 }}>{link.platform}</span>
-                </a>
-              );
-            })}
-          </div>
-        </footer>
-      )}
+      {(() => {
+        const activeLinks = (store.socialLinks || []).filter(l => l.url && l.url.trim() !== '');
+        if (activeLinks.length === 0) return null;
+        return (
+          <footer className="store-footer glass-panel container" style={{ marginTop: '50px', padding: '24px', textAlign: 'center' }}>
+            <div className="store-social-row" style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              {activeLinks.map((link, idx) => {
+                return (
+                  <a 
+                    key={idx} 
+                    href={link.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="store-social-badge"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '42px',
+                      height: '42px',
+                      background: 'rgba(255,255,255,0.03)',
+                      border: '1px solid var(--border-glass)',
+                      borderRadius: '50%',
+                      color: 'var(--text-secondary)',
+                      textDecoration: 'none',
+                      transition: 'all 0.2s ease'
+                    }}
+                    title={link.platform}
+                  >
+                    {renderSocialIcon(link.platform, 20, { color: 'var(--accent-secondary)' })}
+                  </a>
+                );
+              })}
+            </div>
+          </footer>
+        );
+      })()}
 
       <style>{`
         .store-social-badge:hover {

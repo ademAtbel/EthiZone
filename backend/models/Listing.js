@@ -25,6 +25,7 @@ const ListingSchema = new mongoose.Schema({
   metadata: {
     jobRequirements: [String],  // Job descriptions requirements
     handymanRates: String,      // e.g. "$45/hr", "Flat rate"
+    salaryRate: String,         // "hour", "year", "month"
     storeInventoryCount: Number,
     // Real Estate metadata
     bedrooms: Number,

@@ -42,7 +42,9 @@ const UserSchema = new mongoose.Schema({
       platform: { type: String, required: true },
       url: { type: String, required: true }
     }
-  ]
+  ],
+  otpCode: { type: String },
+  otpExpires: { type: Date }
 }, { timestamps: true });
 
 // Secondary indexes for high scale query performance

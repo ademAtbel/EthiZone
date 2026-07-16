@@ -28,26 +28,31 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const images = listing.images || [];
 
-  // Fetch listing owner reviews when the detail modal opens
+  // Fetch listing owner reviews on mount/ownerId change
   useEffect(() => {
-    if (isDetailModalOpen) {
-      const fetchRatings = async () => {
-        try {
-          setLoadingRatings(true);
-          const res = await fetch(`/api/ratings/target/${ownerId?._id || ownerId}`);
-          if (res.ok) {
-            const data = await res.json();
-            setModalRatings(data);
-          }
-        } catch (err) {
-          console.error('Error fetching modal ratings', err);
-        } finally {
-          setLoadingRatings(false);
+    const fetchRatings = async () => {
+      const targetUserId = ownerId?._id || ownerId;
+      if (!targetUserId) return;
+      try {
+        setLoadingRatings(true);
+        const res = await fetch(`/api/ratings/target/${targetUserId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setModalRatings(data);
         }
-      };
-      fetchRatings();
-    }
-  }, [isDetailModalOpen, ownerId]);
+      } catch (err) {
+        console.error('Error fetching ratings', err);
+      } finally {
+        setLoadingRatings(false);
+      }
+    };
+    fetchRatings();
+  }, [ownerId]);
+
+  const ratingsCount = modalRatings.length;
+  const avgRating = ratingsCount > 0
+    ? (modalRatings.reduce((sum, r) => sum + r.rating, 0) / ratingsCount).toFixed(1)
+    : null;
 
   const handleNextImage = (e) => {
     e.stopPropagation();
@@ -106,6 +111,18 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
 
   const handleRatingAdded = (newRating) => {
     setModalRatings((prev) => [newRating, ...prev]);
+  };
+
+  const formatSalary = (amt, rate) => {
+    if (!amt) return t('contact_for_price');
+    const formattedAmt = `$${amt.toLocaleString()}`;
+    const selectedRate = rate || (amt < 200 ? 'hour' : 'month');
+    switch (selectedRate) {
+      case 'hour': return `${formattedAmt}/hour`;
+      case 'month': return `${formattedAmt}/month`;
+      case 'year': return `${formattedAmt}/year`;
+      default: return `${formattedAmt}/${selectedRate}`;
+    }
   };
 
   return (
@@ -190,7 +207,15 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
           <div className="listing-price-container">
             <span className="price-label">{type === 'job_opening' ? t('salary_offered') : t('price')}</span>
             <span className="price-value">
-              {price ? `$${price.toLocaleString()}` : t('contact_for_price')}
+              {type === 'job_opening' ? formatSalary(price, metadata?.salaryRate) : (price ? `$${price.toLocaleString()}` : t('contact_for_price'))}
+            </span>
+          </div>
+
+          {/* Average Rating Display */}
+          <div className="listing-rating-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', fontSize: '0.82rem' }}>
+            <span className="price-label">{t('rate')}</span>
+            <span style={{ color: 'var(--accent-warning)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              ★ {avgRating ? `${avgRating} (${ratingsCount} ${ratingsCount === 1 ? t('review') : t('reviews')})` : t('new_status')}
             </span>
           </div>
 
@@ -270,7 +295,9 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                       style={{ width: '100%', height: '280px', objectFit: 'cover', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-glass)' }} 
                     />
                   ) : (
-                    <div className="flex-center" style={{ width: '100%', height: '280px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: 'var(--radius-md)', fontSize: '3rem' }}>📦</div>
+                    <div className="flex-center" style={{ width: '100%', height: '280px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: 'var(--radius-md)' }}>
+                      <img src="/logo.png" alt="Ethiozone Logo" style={{ maxWidth: '80%', maxHeight: '80%', objectFit: 'contain' }} />
+                    </div>
                   )}
                   {images.length > 1 && (
                     <div className="modal-carousel-controls" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px', gap: '16px' }}>
@@ -361,7 +388,7 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                       <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{type === 'job_opening' ? t('salary_offered') : t('price')}</span>
                       <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent-secondary)' }}>
-                        {price ? `$${price.toLocaleString()}` : t('contact_for_price')}
+                        {type === 'job_opening' ? formatSalary(price, metadata?.salaryRate) : (price ? `$${price.toLocaleString()}` : t('contact_for_price'))}
                       </span>
                     </div>
 
@@ -399,7 +426,6 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                           <div className="ref-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                             <div style={{ display: 'flex', flexDirection: 'column' }}>
                               <strong style={{ fontSize: '0.92rem' }}>{rev.name}</strong>
-                              <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '2px' }}>📞 {rev.phone}</span>
                             </div>
                             <span style={{ color: 'var(--accent-warning)', fontSize: '0.95rem' }}>{'★'.repeat(rev.rating)}</span>
                           </div>

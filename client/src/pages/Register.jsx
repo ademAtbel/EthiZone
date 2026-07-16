@@ -43,7 +43,7 @@ const Register = () => {
             ],
             organization: [
               { name: 'Tech Corporation' }, { name: 'Construction Company' },
-              { name: 'Healthcare Group' }, { name: 'Educational Institution' }, { name: 'Non-Profit Org' }
+              { name: 'Healthcare Group' }, { name: 'Educational Institution' }, { name: 'Non-Profit Org' }, { name: 'Other' }
             ],
             real_estate: [
               { name: 'Residential Homes' }, { name: 'Rental Apartments' },
@@ -73,7 +73,7 @@ const Register = () => {
           ],
           organization: [
             { name: 'Tech Corporation' }, { name: 'Construction Company' },
-            { name: 'Healthcare Group' }, { name: 'Educational Institution' }, { name: 'Non-Profit Org' }
+            { name: 'Healthcare Group' }, { name: 'Educational Institution' }, { name: 'Non-Profit Org' }, { name: 'Other' }
           ],
           real_estate: [
             { name: 'Residential Homes' }, { name: 'Rental Apartments' },
@@ -104,7 +104,7 @@ const Register = () => {
     setError('');
     setLoading(true);
 
-    const { username, email, phone, password, role, category, storeName } = formData;
+    const { username, email, phone, password, role, category } = formData;
 
     if (!username || !email || !phone || !password || !role) {
       setError('Required field missing.');
@@ -112,8 +112,8 @@ const Register = () => {
       return;
     }
 
-    if (role === 'business' && (!storeName || !category || !formData.businessType)) {
-      setError('Please provide Business Name, Business Type, and Category.');
+    if (role === 'business' && (!category || !formData.businessType)) {
+      setError('Please select Business Type and Category.');
       setLoading(false);
       return;
     }
@@ -226,20 +226,6 @@ const Register = () => {
           {formData.role === 'business' && (
             <div className="conditional-fields">
               <div className="form-group">
-                <label htmlFor="storeName">Business / Store Name</label>
-                <input
-                  type="text"
-                  id="storeName"
-                  name="storeName"
-                  className="form-control"
-                  placeholder="e.g. Apex Pharmacy"
-                  value={formData.storeName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
                 <label htmlFor="businessType">Business Type</label>
                 <select
                   id="businessType"
@@ -272,47 +258,6 @@ const Register = () => {
                   ))}
                 </select>
               </div>
-
-              <div className="form-group">
-                <label htmlFor="description">Store Description</label>
-                <textarea
-                  id="description"
-                  name="description"
-                  className="form-control"
-                  placeholder="Describe your boutique, clinic, law office, or liquor store services..."
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows="2"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="address">Physical Address</label>
-                <input
-                  type="text"
-                  id="address"
-                  name="address"
-                  className="form-control"
-                  placeholder="123 Main St, Springfield"
-                  value={formData.address}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-          )}
-
-          {formData.role === 'handyman' && (
-            <div className="form-group">
-              <label htmlFor="description">Handyman Description / Specialty</label>
-              <textarea
-                id="description"
-                name="description"
-                className="form-control"
-                placeholder="e.g., Specializing in custom carpentry, electrical troubleshooting..."
-                value={formData.description}
-                onChange={handleChange}
-                rows="2"
-              />
             </div>
           )}
 

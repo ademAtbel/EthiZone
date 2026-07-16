@@ -50,9 +50,12 @@ const AppContent = () => {
           <Route path="/super-admin" element={<SuperAdmin />} />
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/about" element={<StaticPage />} />
+          <Route path="/about-us" element={<StaticPage />} />
           <Route path="/contact" element={<StaticPage />} />
           <Route path="/privacy" element={<StaticPage />} />
+          <Route path="/privacy-policy" element={<StaticPage />} />
           <Route path="/terms" element={<StaticPage />} />
+          <Route path="/terms-of-service" element={<StaticPage />} />
         </Routes>
       </main>
 
@@ -82,10 +85,10 @@ const AppContent = () => {
           <div className="footer-col">
             <h5>{t('company')}</h5>
             <ul>
-              <li><Link to="/about" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('about_us')}</Link></li>
+              <li><Link to="/about-us" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('about_us')}</Link></li>
               <li><Link to="/contact" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('contact_tab')}</Link></li>
-              <li><Link to="/privacy" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('privacy_policy')}</Link></li>
-              <li><Link to="/terms" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('terms_of_service')}</Link></li>
+              <li><Link to="/privacy-policy" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('privacy_policy')}</Link></li>
+              <li><Link to="/terms-of-service" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('terms_of_service')}</Link></li>
             </ul>
           </div>
           <div className="footer-col newsletter-col">

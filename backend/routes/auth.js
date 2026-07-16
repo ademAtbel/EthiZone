@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { verifyToken } = require('../middleware/auth');
+const { sendOtpEmail } = require('../utils/email');
 
 // REGISTER USER
 router.post('/register', async (req, res) => {
@@ -29,7 +30,7 @@ router.post('/register', async (req, res) => {
       role,
       businessType: role === 'business' ? businessType : undefined,
       category: role === 'business' ? category : undefined,
-      storeName: role === 'business' ? storeName : undefined,
+      storeName: role === 'business' ? (storeName || username) : undefined,
       description: (role === 'business' || role === 'handyman') ? description : undefined,
       address: role === 'business' ? address : undefined,
       customNavbarLinks: []
@@ -122,6 +123,101 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// REQUEST ONE-TIME PASSWORD (OTP)
+router.post('/request-otp', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email address is required.' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'No account registered with this email address.' });
+    }
+
+    if (user.status === 'inactive') {
+      return res.status(403).json({ message: 'Your account has been deactivated. Please contact support.' });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Set expiry to 60 seconds from now
+    user.otpCode = otp;
+    user.otpExpires = new Date(Date.now() + 60 * 1000); // 60 seconds
+    await user.save();
+
+    // Send the OTP email
+    await sendOtpEmail(user.email, otp);
+
+    res.json({ success: true, message: 'One-Time Login Code has been sent to your email.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error requesting login code', error: error.message });
+  }
+});
+
+// LOGIN WITH ONE-TIME PASSWORD (OTP)
+router.post('/login-with-otp', async (req, res) => {
+  try {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+      return res.status(400).json({ message: 'Email and verification code are required.' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    if (user.status === 'inactive') {
+      return res.status(403).json({ message: 'Your account has been deactivated. Please contact support.' });
+    }
+
+    // Check OTP and expiry
+    if (!user.otpCode || user.otpCode !== code || Date.now() > user.otpExpires) {
+      return res.status(400).json({ message: 'Invalid or expired one-time code. Codes expire in 60 seconds.' });
+    }
+
+    // Clear OTP fields
+    user.otpCode = undefined;
+    user.otpExpires = undefined;
+    await user.save();
+
+    // Create token
+    const token = jwt.sign(
+      { id: user._id, role: user.role, username: user.username },
+      process.env.JWT_SECRET || 'secretkey123',
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        businessType: user.businessType,
+        category: user.category,
+        storeName: user.storeName,
+        description: user.description,
+        address: user.address,
+        socialLinks: user.socialLinks || [],
+        storeLogo: user.storeLogo || '',
+        storeImage: user.storeImage || '',
+        isOnline: user.isOnline,
+        verificationBadge: user.verificationBadge
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error during OTP login', error: error.message });
+  }
+});
+
 // GET CURRENT USER PROFILE
 router.get('/me', verifyToken, async (req, res) => {
   try {
@@ -172,7 +268,7 @@ router.patch('/update-navbar', verifyToken, async (req, res) => {
 // UPDATE STORE PROFILE DETAILS (STORES/SERVICES ONLY)
 router.patch('/update-profile', verifyToken, async (req, res) => {
   try {
-    const { storeName, description, address, socialLinks, storeLogo, storeImage } = req.body;
+    const { storeName, description, address, socialLinks, storeLogo, storeImage, businessType, category } = req.body;
 
     const user = await User.findById(req.user.id);
     if (!user || user.role !== 'business') {
@@ -184,6 +280,8 @@ router.patch('/update-profile', verifyToken, async (req, res) => {
     if (address !== undefined) user.address = address;
     if (storeLogo !== undefined) user.storeLogo = storeLogo;
     if (storeImage !== undefined) user.storeImage = storeImage;
+    if (businessType) user.businessType = businessType;
+    if (category) user.category = category;
     
     if (socialLinks !== undefined) {
       if (!Array.isArray(socialLinks)) {
