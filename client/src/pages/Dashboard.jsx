@@ -129,6 +129,7 @@ const Dashboard = () => {
     bedrooms: '',
     bathrooms: '',
     propertyType: 'House',
+    address: '',
     year: '',
     mileage: '',
     make: '',
@@ -156,6 +157,7 @@ const Dashboard = () => {
     bedrooms: '',
     bathrooms: '',
     propertyType: 'House',
+    address: '',
     year: '',
     mileage: '',
     make: '',
@@ -175,7 +177,9 @@ const Dashboard = () => {
     storeImage: '',
     socialLinks: [],
     businessType: '',
-    category: ''
+    category: '',
+    workingDays: '',
+    businessHours: ''
   });
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -326,7 +330,9 @@ const Dashboard = () => {
           storeImage: userData.storeImage || '',
           socialLinks: userData.socialLinks || [],
           businessType: userData.businessType || '',
-          category: userData.category || ''
+          category: userData.category || '',
+          workingDays: userData.workingDays || 'Monday - Saturday',
+          businessHours: userData.businessHours || '09:00 AM - 07:00 PM'
         });
 
         // Redirect super_admin to their dedicated panel
@@ -522,7 +528,7 @@ const Dashboard = () => {
     const { 
       title, description, price, type, category,
       handymanRates, jobRequirements, salaryRate,
-      bedrooms, bathrooms, propertyType,
+      bedrooms, bathrooms, propertyType, address,
       year, mileage, make, model 
     } = listingForm;
 
@@ -545,6 +551,7 @@ const Dashboard = () => {
       metadata.bedrooms = bedrooms ? Number(bedrooms) : undefined;
       metadata.bathrooms = bathrooms ? Number(bathrooms) : undefined;
       metadata.propertyType = propertyType || 'House';
+      metadata.address = address;
     }
     if (type === 'car') {
       metadata.year = year ? Number(year) : undefined;
@@ -598,6 +605,7 @@ const Dashboard = () => {
         bedrooms: '',
         bathrooms: '',
         propertyType: 'House',
+        address: '',
         year: '',
         mileage: '',
         make: '',
@@ -647,6 +655,7 @@ const Dashboard = () => {
       bedrooms: listing.metadata?.bedrooms || '',
       bathrooms: listing.metadata?.bathrooms || '',
       propertyType: listing.metadata?.propertyType || 'House',
+      address: listing.metadata?.address || '',
       year: listing.metadata?.year || '',
       mileage: listing.metadata?.mileage || '',
       make: listing.metadata?.make || '',
@@ -662,7 +671,7 @@ const Dashboard = () => {
     const { 
       title, description, price, type, category,
       handymanRates, jobRequirements, salaryRate,
-      bedrooms, bathrooms, propertyType,
+      bedrooms, bathrooms, propertyType, address,
       year, mileage, make, model, images 
     } = editForm;
 
@@ -680,6 +689,7 @@ const Dashboard = () => {
       metadata.bedrooms = bedrooms ? Number(bedrooms) : undefined;
       metadata.bathrooms = bathrooms ? Number(bathrooms) : undefined;
       metadata.propertyType = propertyType || 'House';
+      metadata.address = address;
     }
     if (type === 'car') {
       metadata.year = year ? Number(year) : undefined;
@@ -931,6 +941,29 @@ const Dashboard = () => {
                       value={profileForm.address}
                       onChange={(e) => setProfileForm({ ...profileForm, address: e.target.value })}
                     />
+                  </div>
+
+                  <div className="form-row" style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
+                    <div className="form-group" style={{ flex: 1 }}>
+                      <label style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Working Days</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        placeholder="e.g. Monday - Saturday"
+                        value={profileForm.workingDays}
+                        onChange={(e) => setProfileForm({ ...profileForm, workingDays: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-group" style={{ flex: 1 }}>
+                      <label style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Business Hours</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        placeholder="e.g. 09:00 AM - 07:00 PM"
+                        value={profileForm.businessHours}
+                        onChange={(e) => setProfileForm({ ...profileForm, businessHours: e.target.value })}
+                      />
+                    </div>
                   </div>
 
                   <div className="form-group" style={{ marginBottom: '20px' }}>
@@ -1672,39 +1705,52 @@ const Dashboard = () => {
 
               {/* Real Estate Fields */}
               {editForm.type === 'house' && (
-                <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label>Property Type</label>
-                    <select
-                      className="form-control"
-                      value={editForm.propertyType}
-                      onChange={(e) => setEditForm({ ...editForm, propertyType: e.target.value })}
-                    >
-                      <option value="House">House</option>
-                      <option value="Apartment">Apartment</option>
-                      <option value="Commercial">Commercial</option>
-                      <option value="Land">Land</option>
-                    </select>
+                <>
+                  <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Property Type</label>
+                      <select
+                        className="form-control"
+                        value={editForm.propertyType}
+                        onChange={(e) => setEditForm({ ...editForm, propertyType: e.target.value })}
+                      >
+                        <option value="House">House</option>
+                        <option value="Apartment">Apartment</option>
+                        <option value="Commercial">Commercial</option>
+                        <option value="Land">Land</option>
+                      </select>
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Bedrooms</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={editForm.bedrooms}
+                        onChange={(e) => setEditForm({ ...editForm, bedrooms: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Bathrooms</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={editForm.bathrooms}
+                        onChange={(e) => setEditForm({ ...editForm, bathrooms: e.target.value })}
+                      />
+                    </div>
                   </div>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label>Bedrooms</label>
+                  <div className="form-group" style={{ marginBottom: '16px' }}>
+                    <label>Property Address</label>
                     <input
-                      type="number"
+                      type="text"
                       className="form-control"
-                      value={editForm.bedrooms}
-                      onChange={(e) => setEditForm({ ...editForm, bedrooms: e.target.value })}
+                      placeholder="e.g. Bole Subcity, Kebele 03, Addis Ababa"
+                      value={editForm.address || ''}
+                      onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                      required
                     />
                   </div>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label>Bathrooms</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      value={editForm.bathrooms}
-                      onChange={(e) => setEditForm({ ...editForm, bathrooms: e.target.value })}
-                    />
-                  </div>
-                </div>
+                </>
               )}
 
               {/* Automotive Fields */}
@@ -1969,41 +2015,54 @@ const Dashboard = () => {
 
               {/* Real Estate specific fields */}
               {listingForm.type === 'house' && (
-                <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label>Property Type</label>
-                    <select
-                      className="form-control"
-                      value={listingForm.propertyType}
-                      onChange={(e) => setListingForm({ ...listingForm, propertyType: e.target.value })}
-                    >
-                      <option value="House">House</option>
-                      <option value="Apartment">Apartment</option>
-                      <option value="Commercial">Commercial</option>
-                      <option value="Land">Land</option>
-                    </select>
+                <>
+                  <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Property Type</label>
+                      <select
+                        className="form-control"
+                        value={listingForm.propertyType}
+                        onChange={(e) => setListingForm({ ...listingForm, propertyType: e.target.value })}
+                      >
+                        <option value="House">House</option>
+                        <option value="Apartment">Apartment</option>
+                        <option value="Commercial">Commercial</option>
+                        <option value="Land">Land</option>
+                      </select>
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Bedrooms</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        placeholder="e.g. 3"
+                        value={listingForm.bedrooms}
+                        onChange={(e) => setListingForm({ ...listingForm, bedrooms: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Bathrooms</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        placeholder="e.g. 2"
+                        value={listingForm.bathrooms}
+                        onChange={(e) => setListingForm({ ...listingForm, bathrooms: e.target.value })}
+                      />
+                    </div>
                   </div>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label>Bedrooms</label>
+                  <div className="form-group" style={{ marginBottom: '16px' }}>
+                    <label>Property Address</label>
                     <input
-                      type="number"
+                      type="text"
                       className="form-control"
-                      placeholder="e.g. 3"
-                      value={listingForm.bedrooms}
-                      onChange={(e) => setListingForm({ ...listingForm, bedrooms: e.target.value })}
+                      placeholder="e.g. Bole Subcity, Kebele 03, Addis Ababa"
+                      value={listingForm.address || ''}
+                      onChange={(e) => setListingForm({ ...listingForm, address: e.target.value })}
+                      required
                     />
                   </div>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label>Bathrooms</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      placeholder="e.g. 2"
-                      value={listingForm.bathrooms}
-                      onChange={(e) => setListingForm({ ...listingForm, bathrooms: e.target.value })}
-                    />
-                  </div>
-                </div>
+                </>
               )}
 
               {/* Automotive specific fields */}

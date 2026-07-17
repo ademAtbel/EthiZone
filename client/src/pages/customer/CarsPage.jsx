@@ -43,11 +43,13 @@ export default function CarsPage() {
     if (transmission !== "All" && car.transmission !== transmission)
       return false;
     if (nearMe && car.distance > radius) return false;
-    if (
-      locationFilter &&
-      !car.location.toLowerCase().includes(locationFilter.toLowerCase())
-    )
-      return false;
+    if (locationFilter) {
+      const addressVal = (car.metadata?.address || car.ownerId?.address || '').toLowerCase();
+      const textVal = ((car.description || '') + ' ' + (car.title || '') + ' ' + (car.category || '')).toLowerCase();
+      if (!addressVal.includes(locationFilter.toLowerCase()) && !textVal.includes(locationFilter.toLowerCase())) {
+        return false;
+      }
+    }
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       if (

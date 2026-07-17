@@ -6,6 +6,8 @@ const User = require('../models/User');
 const { verifyToken } = require('../middleware/auth');
 const { sendOtpEmail } = require('../utils/email');
 
+
+
 // REGISTER USER
 router.post('/register', async (req, res) => {
   try {
@@ -268,7 +270,7 @@ router.patch('/update-navbar', verifyToken, async (req, res) => {
 // UPDATE STORE PROFILE DETAILS (STORES/SERVICES ONLY)
 router.patch('/update-profile', verifyToken, async (req, res) => {
   try {
-    const { storeName, description, address, socialLinks, storeLogo, storeImage, businessType, category } = req.body;
+    const { storeName, description, address, socialLinks, storeLogo, storeImage, businessType, category, workingDays, businessHours } = req.body;
 
     const user = await User.findById(req.user.id);
     if (!user || user.role !== 'business') {
@@ -282,6 +284,8 @@ router.patch('/update-profile', verifyToken, async (req, res) => {
     if (storeImage !== undefined) user.storeImage = storeImage;
     if (businessType) user.businessType = businessType;
     if (category) user.category = category;
+    if (workingDays !== undefined) user.workingDays = workingDays;
+    if (businessHours !== undefined) user.businessHours = businessHours;
     
     if (socialLinks !== undefined) {
       if (!Array.isArray(socialLinks)) {
@@ -316,6 +320,8 @@ router.patch('/update-profile', verifyToken, async (req, res) => {
         socialLinks: user.socialLinks || [],
         storeLogo: user.storeLogo || '',
         storeImage: user.storeImage || '',
+        workingDays: user.workingDays || 'Monday - Saturday',
+        businessHours: user.businessHours || '09:00 AM - 07:00 PM',
         isOnline: user.isOnline,
         verificationBadge: user.verificationBadge
       }

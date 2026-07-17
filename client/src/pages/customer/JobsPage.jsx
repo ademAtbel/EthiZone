@@ -38,11 +38,13 @@ export default function JobsPage() {
     if (workModel !== "All" && job.workModel !== workModel) return false;
     if (job.salaryMin < minSalary) return false;
     if (nearMe && job.distance > radius) return false;
-    if (
-      locationFilter &&
-      !job.location.toLowerCase().includes(locationFilter.toLowerCase())
-    )
-      return false;
+    if (locationFilter) {
+      const addressVal = (job.metadata?.address || job.ownerId?.address || '').toLowerCase();
+      const textVal = ((job.description || '') + ' ' + (job.title || '') + ' ' + (job.category || '')).toLowerCase();
+      if (!addressVal.includes(locationFilter.toLowerCase()) && !textVal.includes(locationFilter.toLowerCase())) {
+        return false;
+      }
+    }
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       if (

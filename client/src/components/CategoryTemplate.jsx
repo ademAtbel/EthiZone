@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, MapPin, Send, Phone, Activity, Upload, Scale, BarChart2, FolderOpen, ShieldAlert, Wine, AlertTriangle, GlassWater, Shirt, ShoppingBag } from 'lucide-react';
 
-const CategoryTemplate = ({ category = '', ownerName = '', ownerPhone = '', onOpenModal }) => {
+const CategoryTemplate = ({ 
+  category = '', 
+  ownerName = '', 
+  ownerPhone = '', 
+  workingDays = 'Monday - Saturday', 
+  businessHours = '09:00 AM - 07:00 PM', 
+  onOpenModal 
+}) => {
   const normalizedCategory = category.toLowerCase().trim().replace(/_/g, ' ');
 
   // 1. PHARMACY TEMPLATE
@@ -38,11 +45,11 @@ const CategoryTemplate = ({ category = '', ownerName = '', ownerPhone = '', onOp
       <div className="info-grid" style={{ marginBottom: '20px' }}>
         <div className="info-item">
           <strong><Calendar size={16} className="d-inline-block me-1"/> Working Days</strong>
-          <span>Monday - Saturday</span>
+          <span>{workingDays || 'Monday - Saturday'}</span>
         </div>
         <div className="info-item">
           <strong><Clock size={16} className="d-inline-block me-1"/> Business Hours</strong>
-          <span>09:00 AM - 07:00 PM</span>
+          <span>{businessHours || '09:00 AM - 07:00 PM'}</span>
         </div>
         <div className="info-item">
           <strong><MapPin size={16} className="d-inline-block me-1"/> Direct Line</strong>

@@ -131,11 +131,13 @@ export default function HireMePage() {
     if (availabilityFilter !== "All" && pro.availability !== availabilityFilter)
       return false;
     if (pro.rating < minRating) return false;
-    if (
-      locationFilter &&
-      !pro.location.toLowerCase().includes(locationFilter.toLowerCase())
-    )
-      return false;
+    if (locationFilter) {
+      const addressVal = (pro.address || pro.metadata?.address || pro.ownerId?.address || '').toLowerCase();
+      const textVal = ((pro.description || '') + ' ' + (pro.username || '') + ' ' + (pro.category || '')).toLowerCase();
+      if (!addressVal.includes(locationFilter.toLowerCase()) && !textVal.includes(locationFilter.toLowerCase())) {
+        return false;
+      }
+    }
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       if (

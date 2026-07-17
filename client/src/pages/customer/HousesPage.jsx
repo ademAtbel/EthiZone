@@ -43,11 +43,13 @@ export default function HousesPage() {
     if (house.beds < minBeds) return false;
     if (house.baths < minBaths) return false;
     if (nearMe && house.distance > radius) return false;
-    if (
-      locationFilter &&
-      !house.location.toLowerCase().includes(locationFilter.toLowerCase())
-    )
-      return false;
+    if (locationFilter) {
+      const addressVal = (house.metadata?.address || house.ownerId?.address || '').toLowerCase();
+      const textVal = ((house.description || '') + ' ' + (house.title || '') + ' ' + (house.category || '')).toLowerCase();
+      if (!addressVal.includes(locationFilter.toLowerCase()) && !textVal.includes(locationFilter.toLowerCase())) {
+        return false;
+      }
+    }
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       if (

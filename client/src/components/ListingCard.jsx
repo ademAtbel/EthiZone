@@ -188,11 +188,16 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
             </div>
           )}
 
-          {type === 'house' && metadata && (
-            <div className="card-metadata" style={{ display: 'flex', gap: '12px', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-              {metadata.propertyType && <span>🏠 {metadata.propertyType}</span>}
-              {metadata.bedrooms && <span>🛏️ {metadata.bedrooms} Beds</span>}
-              {metadata.bathrooms && <span>🛁 {metadata.bathrooms} Baths</span>}
+          {type === 'house' && (
+            <div className="card-metadata" style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                {metadata?.propertyType && <span>🏠 {metadata.propertyType}</span>}
+                {metadata?.bedrooms && <span>🛏️ {metadata.bedrooms} Beds</span>}
+                {metadata?.bathrooms && <span>🛁 {metadata.bathrooms} Baths</span>}
+              </div>
+              {(metadata?.address || ownerId?.address) && (
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>📍 {metadata?.address || ownerId?.address}</span>
+              )}
             </div>
           )}
 
@@ -354,11 +359,14 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
 
                     {/* Metadata details */}
                     <div className="metadata-detailed-list" style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.88rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-glass)', padding: '12px', borderRadius: 'var(--radius-sm)', marginBottom: '20px' }}>
-                      {type === 'house' && metadata && (
+                      {type === 'house' && (
                         <>
-                          {metadata.propertyType && <span>🏠 {t('property')}: <strong>{metadata.propertyType}</strong></span>}
-                          {metadata.bedrooms && <span>🛏️ {t('bedrooms')}: <strong>{metadata.bedrooms}</strong></span>}
-                          {metadata.bathrooms && <span>🛁 {t('bathrooms')}: <strong>{metadata.bathrooms}</strong></span>}
+                          {metadata?.propertyType && <span>🏠 {t('property')}: <strong>{metadata.propertyType}</strong></span>}
+                          {metadata?.bedrooms && <span>🛏️ {t('bedrooms')}: <strong>{metadata.bedrooms}</strong></span>}
+                          {metadata?.bathrooms && <span>🛁 {t('bathrooms')}: <strong>{metadata.bathrooms}</strong></span>}
+                          {(metadata?.address || ownerId?.address) && (
+                            <span>📍 {t('address_label') || 'Address'}: <strong>{metadata?.address || ownerId?.address}</strong></span>
+                          )}
                         </>
                       )}
                       {type === 'car' && metadata && (

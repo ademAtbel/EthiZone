@@ -31,6 +31,7 @@ const ListingSchema = new mongoose.Schema({
     bedrooms: Number,
     bathrooms: Number,
     propertyType: String,
+    address: String,
     // Automotive metadata
     year: Number,
     mileage: Number,

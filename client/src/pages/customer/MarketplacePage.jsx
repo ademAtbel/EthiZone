@@ -210,11 +210,13 @@ export default function MarketplacePage() {
       if (storeType !== "All" && p.storeType !== storeType) return false;
       if (parseFloat(p.rating) < minRating) return false;
       if (nearMe && p.distance > radius) return false;
-      if (
-        locationFilter &&
-        !p.location.toLowerCase().includes(locationFilter.toLowerCase())
-      )
-        return false;
+      if (locationFilter) {
+        const addressVal = (p.metadata?.address || p.ownerId?.address || '').toLowerCase();
+        const textVal = ((p.description || '') + ' ' + (p.title || '') + ' ' + (p.category || '')).toLowerCase();
+        if (!addressVal.includes(locationFilter.toLowerCase()) && !textVal.includes(locationFilter.toLowerCase())) {
+          return false;
+        }
+      }
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         if (

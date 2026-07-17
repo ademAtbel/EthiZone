@@ -31,6 +31,8 @@ const UserSchema = new mongoose.Schema({
   address: { type: String },
   storeLogo: { type: String, default: '' },
   storeImage: { type: String, default: '' },
+  workingDays: { type: String, default: 'Monday - Saturday' },
+  businessHours: { type: String, default: '09:00 AM - 07:00 PM' },
   customNavbarLinks: [
     {
       label: { type: String, required: true },

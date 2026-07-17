@@ -457,8 +457,11 @@ const Home = () => {
       const itemPrice = item.price || 0;
       if (itemPrice < pMin || itemPrice > pMax) return false;
       if (locationFilter) {
-        const loc = (item.description || '') + ' ' + (item.title || '') + ' ' + (item.category || '');
-        if (!loc.toLowerCase().includes(locationFilter.toLowerCase())) return false;
+        const addressVal = (item.metadata?.address || item.ownerId?.address || '').toLowerCase();
+        const textVal = ((item.description || '') + ' ' + (item.title || '') + ' ' + (item.category || '')).toLowerCase();
+        if (!addressVal.includes(locationFilter.toLowerCase()) && !textVal.includes(locationFilter.toLowerCase())) {
+          return false;
+        }
       }
     }
 
@@ -503,8 +506,11 @@ const Home = () => {
       if (minSalary > 0 && itemPrice < minSalary) return false;
       if (itemPrice < pMin || itemPrice > pMax) return false;
       if (locationFilter) {
-        const loc = (item.description || '') + ' ' + (item.title || '');
-        if (!loc.toLowerCase().includes(locationFilter.toLowerCase())) return false;
+        const addressVal = (item.metadata?.address || item.ownerId?.address || '').toLowerCase();
+        const textVal = ((item.description || '') + ' ' + (item.title || '') + ' ' + (item.category || '')).toLowerCase();
+        if (!addressVal.includes(locationFilter.toLowerCase()) && !textVal.includes(locationFilter.toLowerCase())) {
+          return false;
+        }
       }
     }
 
@@ -522,8 +528,11 @@ const Home = () => {
         }
       }
       if (locationFilter) {
-        const loc = (item.description || '') + ' ' + (item.title || '');
-        if (!loc.toLowerCase().includes(locationFilter.toLowerCase())) return false;
+        const addressVal = (item.metadata?.address || item.ownerId?.address || '').toLowerCase();
+        const textVal = ((item.description || '') + ' ' + (item.title || '') + ' ' + (item.category || '')).toLowerCase();
+        if (!addressVal.includes(locationFilter.toLowerCase()) && !textVal.includes(locationFilter.toLowerCase())) {
+          return false;
+        }
       }
     }
 

@@ -386,6 +386,8 @@ const Storefront = () => {
                   category={store.category} 
                   ownerName={store.storeName || store.username} 
                   ownerPhone={store.phone} 
+                  workingDays={store.workingDays}
+                  businessHours={store.businessHours}
                   onOpenModal={() => setInquiryModalOpen(true)}
                 />
               </div>

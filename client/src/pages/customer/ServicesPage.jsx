@@ -66,11 +66,12 @@ export default function ServicesPage() {
     }
 
     // 5. Location
-    if (
-      locationFilter &&
-      !service.location.toLowerCase().includes(locationFilter.toLowerCase())
-    ) {
-      return false;
+    if (locationFilter) {
+      const addressVal = (service.metadata?.address || service.ownerId?.address || '').toLowerCase();
+      const textVal = ((service.description || '') + ' ' + (service.title || '') + ' ' + (service.category || '')).toLowerCase();
+      if (!addressVal.includes(locationFilter.toLowerCase()) && !textVal.includes(locationFilter.toLowerCase())) {
+        return false;
+      }
     }
 
     return true;

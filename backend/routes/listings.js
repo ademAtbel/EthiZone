@@ -109,7 +109,7 @@ router.get('/', async (req, res) => {
 
     // Fetch and populate owner details with pagination
     const listings = await Listing.find(filter)
-      .populate('ownerId', 'username email phone role storeName category verificationBadge isOnline')
+      .populate('ownerId', 'username email phone role storeName category verificationBadge isOnline address')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -130,7 +130,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id)
-      .populate('ownerId', 'username email phone role storeName category verificationBadge isOnline');
+      .populate('ownerId', 'username email phone role storeName category verificationBadge isOnline address');
     if (!listing) {
       return res.status(404).json({ message: 'Listing not found' });
     }
