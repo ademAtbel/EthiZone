@@ -1,0 +1,13 @@
+0000000000000000000000000000000000000000 fd56cef0d07f9cb3c0827d7a1713118f985407b3 ademAtbel <add.belaye@gmail.com> 1783646618 -0400	commit (initial): Initial commit: prepared codebase for deployment
+fd56cef0d07f9cb3c0827d7a1713118f985407b3 fd56cef0d07f9cb3c0827d7a1713118f985407b3 ademAtbel <add.belaye@gmail.com> 1783646618 -0400	Branch: renamed refs/heads/master to refs/heads/main
+fd56cef0d07f9cb3c0827d7a1713118f985407b3 30436e7832abcc23f39c1b3a13a49b9241ac9e60 ademAtbel <add.belaye@gmail.com> 1783649469 -0400	commit: Add under-construction alert for footer links and socials
+30436e7832abcc23f39c1b3a13a49b9241ac9e60 f8844a8beabebbaf543e497e6681ddda7b81161c ademAtbel <add.belaye@gmail.com> 1783650458 -0400	commit: feat: align database models, seed mock data, and fix tailwind color configurations
+f8844a8beabebbaf543e497e6681ddda7b81161c a9ed281f7e072bcd3b7d9b1467b4e968c139f3e2 ademAtbel <add.belaye@gmail.com> 1783654621 -0400	commit: Configure deployment, add directory filter bar, and update premium storefront maintenance view
+a9ed281f7e072bcd3b7d9b1467b4e968c139f3e2 71830171c64f99f2aede6f934cbf15c8767805c5 ademAtbel <add.belaye@gmail.com> 1783898307 -0400	commit: feat(ui): implement responsive mobile bottom tab bar and filter accordion
+71830171c64f99f2aede6f934cbf15c8767805c5 164843000ee14ec58a8cd46f79ff99511ed77974 ademAtbel <add.belaye@gmail.com> 1783908471 -0400	commit: feat(ui): dynamic dual-price sliders, responsive mobile tab bar, and slide-in filter drawer
+164843000ee14ec58a8cd46f79ff99511ed77974 267b439eb1686d151adaa28505aea2dbfd24f427 ademAtbel <add.belaye@gmail.com> 1783913349 -0400	commit: feat(chat): implement real-time messaging system with socket.io
+267b439eb1686d151adaa28505aea2dbfd24f427 e611c12c930cf235b2f6533b3fc7f88f57493c91 ademAtbel <add.belaye@gmail.com> 1783997537 -0400	commit: feat: complete UI overhaul and branding update to Ethiozone
+e611c12c930cf235b2f6533b3fc7f88f57493c91 1c30926f09b1917b84706dcebab6efd4b8cc8fee ademAtbel <add.belaye@gmail.com> 1784000271 -0400	commit: feat: complete UI updates, static pages, and Ethiozone branding
+1c30926f09b1917b84706dcebab6efd4b8cc8fee 98e5b7d0055e19520d1948a321b58a40f2a168fa ademAtbel <add.belaye@gmail.com> 1784003943 -0400	commit: fix(build): add lucide-react dependency and configure build script
+98e5b7d0055e19520d1948a321b58a40f2a168fa 9764ea0a897d15594e39ad1e3960be0fc8cd317b ademAtbel <add.belaye@gmail.com> 1784174977 -0400	commit: by me
+9764ea0a897d15594e39ad1e3960be0fc8cd317b 2e6524414ae269f5dc9df78a38028e44d2c2a39b ademAtbel <add.belaye@gmail.com> 1784258820 -0400	commit: feat: enable location filter to search within listing and owner profile addresses

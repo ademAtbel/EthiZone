@@ -255,7 +255,15 @@ const Storefront = () => {
       setLoading(true);
       // Fetch store profile by its name slug
       const res = await fetch(`/api/auth/store-profile/${storeName}`);
-      const storeData = await res.json();
+      
+      let storeData = {};
+      try {
+        const text = await res.text();
+        storeData = text ? JSON.parse(text) : {};
+      } catch (e) {
+        throw new Error('Store profile service is temporarily unavailable. Please try again.');
+      }
+
       if (!res.ok) throw new Error(storeData.message || 'Store not found');
       
       setStore(storeData);
@@ -267,12 +275,28 @@ const Storefront = () => {
 
       // Fetch listings for this store owner using their resolved ID (up to 100)
       const listRes = await fetch(`/api/listings?ownerId=${storeData._id}&limit=100`);
-      const listData = await listRes.json();
+      let listData = [];
+      if (listRes.ok) {
+        try {
+          const text = await listRes.text();
+          listData = text ? JSON.parse(text) : [];
+        } catch (e) {
+          console.error('Failed to parse listings response', e);
+        }
+      }
       setListings(listData);
 
       // Fetch references/reviews for this store owner using their resolved ID (up to 100)
       const ratingsRes = await fetch(`/api/ratings/target/${storeData._id}?limit=100`);
-      const ratingsData = await ratingsRes.json();
+      let ratingsData = [];
+      if (ratingsRes.ok) {
+        try {
+          const text = await ratingsRes.text();
+          ratingsData = text ? JSON.parse(text) : [];
+        } catch (e) {
+          console.error('Failed to parse ratings response', e);
+        }
+      }
       setRatings(ratingsData);
 
     } catch (err) {

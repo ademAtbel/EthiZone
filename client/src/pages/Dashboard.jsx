@@ -1643,7 +1643,7 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <div className="form-group">
-                  <label>Price / Value Offered ($)</label>
+                  <label>Price / Value Offered ($) <span style={{ fontWeight: 400, fontSize: '0.82rem', opacity: 0.8 }}>(Optional — Leave blank for "Contact for Price")</span></label>
                   <input 
                     type="number" 
                     className="form-control" 
@@ -1950,7 +1950,7 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <div className="form-group">
-                  <label>Price / Value Offered ($)</label>
+                  <label>Price / Value Offered ($) <span style={{ fontWeight: 400, fontSize: '0.82rem', opacity: 0.8 }}>(Optional — Leave blank for "Contact for Price")</span></label>
                   <input 
                     type="number" 
                     className="form-control" 

@@ -114,12 +114,30 @@ router.get('/', async (req, res) => {
       .skip(skip)
       .limit(limit);
 
+    // Calculate and attach average rating and reviews count for each owner
+    const Rating = require('../models/Rating');
+    const populatedListings = await Promise.all(listings.map(async (listing) => {
+      const ownerId = listing.ownerId?._id || listing.ownerId;
+      if (!ownerId) return listing.toObject();
+
+      const ratings = await Rating.find({ targetId: ownerId });
+      const count = ratings.length;
+      const avg = count > 0 
+        ? parseFloat((ratings.reduce((sum, r) => sum + r.rating, 0) / count).toFixed(1))
+        : null;
+
+      const obj = listing.toObject();
+      obj.avgRating = avg;
+      obj.ratingsCount = count;
+      return obj;
+    }));
+
     res.setHeader('X-Total-Count', totalListings);
     res.setHeader('X-Total-Pages', Math.ceil(totalListings / limit));
     res.setHeader('X-Current-Page', page);
     res.setHeader('X-Limit', limit);
 
-    res.json(listings);
+    res.json(populatedListings);
   } catch (error) {
     console.error('Error in GET /api/listings:', error);
     res.status(500).json({ message: 'Error retrieving listings', error: error.message });
@@ -134,7 +152,20 @@ router.get('/:id', async (req, res) => {
     if (!listing) {
       return res.status(404).json({ message: 'Listing not found' });
     }
-    res.json(listing);
+
+    // Attach avgRating and ratingsCount
+    const Rating = require('../models/Rating');
+    const ratings = await Rating.find({ targetId: listing.ownerId?._id || listing.ownerId });
+    const count = ratings.length;
+    const avg = count > 0 
+      ? parseFloat((ratings.reduce((sum, r) => sum + r.rating, 0) / count).toFixed(1))
+      : null;
+
+    const obj = listing.toObject();
+    obj.avgRating = avg;
+    obj.ratingsCount = count;
+
+    res.json(obj);
   } catch (error) {
     res.status(500).json({ message: 'Error retrieving listing', error: error.message });
   }

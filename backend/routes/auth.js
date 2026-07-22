@@ -384,12 +384,12 @@ router.patch('/change-password', verifyToken, async (req, res) => {
 // GET PUBLIC STORE PROFILE BY NAME (SLUG)
 router.get('/store-profile/:storeName', async (req, res) => {
   try {
-    const rawName = req.params.storeName.replace(/-/g, ' ');
+    const slug = req.params.storeName.toLowerCase().trim();
     
-    // Perform case-insensitive match on business role storeName
+    // Look up business by unique storeSlug directly
     const store = await User.findOne({
       role: 'business',
-      storeName: { $regex: new RegExp("^" + rawName + "$", "i") }
+      storeSlug: slug
     }).select('-password');
 
     if (!store) {

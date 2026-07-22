@@ -644,6 +644,7 @@ const Navbar = () => {
           border-radius: 8px;
           gap: 2px;
           transition: all 0.2s;
+          cursor: pointer;
         }
         
         .mobile-tab-btn.active {

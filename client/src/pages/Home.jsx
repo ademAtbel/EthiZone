@@ -542,7 +542,7 @@ const Home = () => {
         if (!availStr.toLowerCase().includes(availabilityFilter.toLowerCase())) return false;
       }
       if (minRating > 0) {
-        const itemRating = parseFloat(item.rating) || 5.0;
+        const itemRating = item.avgRating !== undefined && item.avgRating !== null ? parseFloat(item.avgRating) : 5.0;
         if (itemRating < minRating) return false;
       }
     }
@@ -574,8 +574,10 @@ const Home = () => {
   });
 
   const activePrices = listings.filter(l => l.price !== undefined && l.price !== null).map(l => Number(l.price));
-  const dataMinPrice = activePrices.length > 0 ? Math.min(...activePrices) : 0;
-  const dataMaxPrice = activePrices.length > 0 ? Math.max(...activePrices) : 1000;
+  const rawMin = activePrices.length > 0 ? Math.min(...activePrices) : 0;
+  const rawMax = activePrices.length > 0 ? Math.max(...activePrices) : 1000;
+  const dataMinPrice = rawMin === rawMax ? 0 : rawMin;
+  const dataMaxPrice = rawMax === 0 ? 1000 : rawMax;
   const currentMinPrice = minPrice !== '' ? minPrice : dataMinPrice;
   const currentMaxPrice = maxPrice !== '' ? maxPrice : dataMaxPrice;
 
@@ -686,7 +688,12 @@ const Home = () => {
                       <span className="featured-card-subtitle">{item.category || 'Product'}</span>
                       <span className="featured-card-price">${item.price}</span>
                     </div>
-                    <Link to={`/store/${ownerSlug}`} className="btn-featured-card-action">View Details</Link>
+                    <Link 
+                      to={item.type === 'personal_item' ? `/?type=personal_item&query=${encodeURIComponent(item.title)}` : `/store/${ownerSlug}`} 
+                      className="btn-featured-card-action"
+                    >
+                      View Details
+                    </Link>
                   </div>
                 );
               })}

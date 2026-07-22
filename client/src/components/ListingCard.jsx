@@ -28,8 +28,9 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const images = listing.images || [];
 
-  // Fetch listing owner reviews on mount/ownerId change
+  // Fetch listing owner reviews only when details modal is open
   useEffect(() => {
+    if (!isDetailModalOpen) return;
     const fetchRatings = async () => {
       const targetUserId = ownerId?._id || ownerId;
       if (!targetUserId) return;
@@ -47,12 +48,15 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
       }
     };
     fetchRatings();
-  }, [ownerId]);
+  }, [ownerId, isDetailModalOpen]);
 
-  const ratingsCount = modalRatings.length;
-  const avgRating = ratingsCount > 0
-    ? (modalRatings.reduce((sum, r) => sum + r.rating, 0) / ratingsCount).toFixed(1)
-    : null;
+  const initialAvg = listing.avgRating;
+  const initialCount = listing.ratingsCount;
+
+  const ratingsCount = modalRatings.length > 0 ? modalRatings.length : (initialCount || 0);
+  const avgRating = modalRatings.length > 0
+    ? (modalRatings.reduce((sum, r) => sum + r.rating, 0) / modalRatings.length).toFixed(1)
+    : (initialAvg ? Number(initialAvg).toFixed(1) : null);
 
   const handleNextImage = (e) => {
     e.stopPropagation();
@@ -358,38 +362,43 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                     </p>
 
                     {/* Metadata details */}
-                    <div className="metadata-detailed-list" style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.88rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-glass)', padding: '12px', borderRadius: 'var(--radius-sm)', marginBottom: '20px' }}>
-                      {type === 'house' && (
-                        <>
-                          {metadata?.propertyType && <span>🏠 {t('property')}: <strong>{metadata.propertyType}</strong></span>}
-                          {metadata?.bedrooms && <span>🛏️ {t('bedrooms')}: <strong>{metadata.bedrooms}</strong></span>}
-                          {metadata?.bathrooms && <span>🛁 {t('bathrooms')}: <strong>{metadata.bathrooms}</strong></span>}
-                          {(metadata?.address || ownerId?.address) && (
-                            <span>📍 {t('address_label') || 'Address'}: <strong>{metadata?.address || ownerId?.address}</strong></span>
-                          )}
-                        </>
-                      )}
-                      {type === 'car' && metadata && (
-                        <>
-                          {metadata.year && <span>📅 {t('model_year')}: <strong>{metadata.year}</strong></span>}
-                          {metadata.make && <span>🏷️ {t('brand')}: <strong>{metadata.make} {metadata.model}</strong></span>}
-                          {metadata.mileage !== undefined && <span>🛣️ {t('mileage')}: <strong>{metadata.mileage.toLocaleString()} miles</strong></span>}
-                        </>
-                      )}
-                      {type === 'handyman_skill' && metadata?.handymanRates && (
-                        <span>⏱️ {t('rates')}: <strong>{metadata.handymanRates}</strong></span>
-                      )}
-                      {type === 'job_opening' && metadata?.jobRequirements && (
-                        <div>
-                          <span style={{ fontWeight: 600, display: 'block', marginBottom: '4px' }}>{t('requirements')}:</span>
-                          <ul style={{ paddingLeft: '16px' }}>
-                            {metadata.jobRequirements.map((req, index) => (
-                              <li key={index}>{req}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
+                    {( (type === 'house' && (metadata?.propertyType || metadata?.bedrooms || metadata?.bathrooms || metadata?.address || ownerId?.address)) ||
+                       (type === 'car' && metadata && (metadata.year || metadata.make || metadata.mileage !== undefined)) ||
+                       (type === 'handyman_skill' && metadata?.handymanRates) ||
+                       (type === 'job_opening' && metadata?.jobRequirements && metadata.jobRequirements.length > 0) ) && (
+                      <div className="metadata-detailed-list" style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.88rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-glass)', padding: '12px', borderRadius: 'var(--radius-sm)', marginBottom: '20px' }}>
+                        {type === 'house' && (
+                          <>
+                            {metadata?.propertyType && <span>🏠 {t('property')}: <strong>{metadata.propertyType}</strong></span>}
+                            {metadata?.bedrooms && <span>🛏️ {t('bedrooms')}: <strong>{metadata.bedrooms}</strong></span>}
+                            {metadata?.bathrooms && <span>🛁 {t('bathrooms')}: <strong>{metadata.bathrooms}</strong></span>}
+                            {(metadata?.address || ownerId?.address) && (
+                              <span>📍 {t('address_label') || 'Address'}: <strong>{metadata?.address || ownerId?.address}</strong></span>
+                            )}
+                          </>
+                        )}
+                        {type === 'car' && metadata && (
+                          <>
+                            {metadata.year && <span>📅 {t('model_year')}: <strong>{metadata.year}</strong></span>}
+                            {metadata.make && <span>🏷️ {t('brand')}: <strong>{metadata.make} {metadata.model}</strong></span>}
+                            {metadata.mileage !== undefined && <span>🛣️ {t('mileage')}: <strong>{metadata.mileage.toLocaleString()} miles</strong></span>}
+                          </>
+                        )}
+                        {type === 'handyman_skill' && metadata?.handymanRates && (
+                          <span>⏱️ {t('rates')}: <strong>{metadata.handymanRates}</strong></span>
+                        )}
+                        {type === 'job_opening' && metadata?.jobRequirements && (
+                          <div>
+                            <span style={{ fontWeight: 600, display: 'block', marginBottom: '4px' }}>{t('requirements')}:</span>
+                            <ul style={{ paddingLeft: '16px' }}>
+                              {metadata.jobRequirements.map((req, index) => (
+                                <li key={index}>{req}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div>

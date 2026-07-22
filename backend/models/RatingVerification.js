@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const RatingVerificationSchema = new mongoose.Schema({
   email: { type: String, required: true },
   targetId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  code: { type: String, required: true }
+  code: { type: String, required: true },
+  verified: { type: Boolean, default: false }
 }, { timestamps: true });
 
 // Auto-delete verification code after 5 minutes (300 seconds)

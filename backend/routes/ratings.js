@@ -37,10 +37,10 @@ router.post('/send-code', async (req, res) => {
     // Generate 4-digit code
     const code = Math.floor(1000 + Math.random() * 9000).toString();
 
-    // Save or update verification document
+    // Save or update verification document (reset verified status)
     await RatingVerification.findOneAndUpdate(
       { email: normalizedEmail, targetId },
-      { code, createdAt: new Date() },
+      { code, verified: false, createdAt: new Date() },
       { upsert: true, new: true }
     );
 
@@ -70,8 +70,9 @@ router.post('/verify-code', async (req, res) => {
       return res.status(400).json({ message: 'Invalid or expired verification code.' });
     }
 
-    // Delete verification record after successful verification so it can't be reused
-    await RatingVerification.deleteOne({ _id: record._id });
+    // Set verified flag instead of deleting immediately, so main POST rating endpoint can check it
+    record.verified = true;
+    await record.save();
 
     res.json({ success: true, message: 'Verified successfully.' });
   } catch (error) {
@@ -111,8 +112,14 @@ router.post('/', async (req, res) => {
       return res.status(404).json({ message: 'Target user/store not found' });
     }
 
-    // Check if this email address has already rated this provider/store
+    // Enforce backend-level OTP verification check
     const normalizedEmail = email.toLowerCase().trim();
+    const verification = await RatingVerification.findOne({ email: normalizedEmail, targetId, verified: true });
+    if (!verification) {
+      return res.status(400).json({ message: 'Email address verification required before posting review.' });
+    }
+
+    // Check if this email address has already rated this provider/store
     const existingRating = await Rating.findOne({ targetId, email: normalizedEmail });
     if (existingRating) {
       return res.status(400).json({ message: 'This email address has already submitted a rating for this provider.' });
@@ -128,6 +135,10 @@ router.post('/', async (req, res) => {
     });
 
     const savedRating = await newRating.save();
+    
+    // Delete verification record now that rating is created
+    await RatingVerification.deleteOne({ _id: verification._id });
+
     res.status(201).json(savedRating);
   } catch (error) {
     res.status(500).json({ message: 'Error submitting reference rating', error: error.message });
