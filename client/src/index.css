@@ -4,37 +4,37 @@
   --font-heading: 'Outfit', sans-serif;
   --font-body: 'Inter', sans-serif;
 
-  /* 3-Color Simplified Dark Palette */
-  /* 1. Backgrounds (Small variation of Dark Navy) */
-  --bg-app: #0b1121;
-  --bg-card: rgba(17, 24, 39, 0.85);
-  --bg-card-hover: rgba(31, 41, 55, 0.95);
-  --bg-navbar: rgba(11, 17, 33, 0.9);
+  /* Premium 3-Color Gold, Black, White & Light Gray Palette */
+  /* 1. Backgrounds (Clean White / Light Gray) */
+  --bg-app: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f9fafb;
+  --bg-navbar: #ffffff;
   
-  /* 2. Buttons & Accents (Navy Blue) */
-  --accent-primary: #1e3a8a; 
-  --accent-primary-glow: rgba(30, 58, 138, 0.4);
-  --accent-secondary: #1e40af; 
-  --accent-secondary-glow: rgba(30, 64, 175, 0.3);
-  --accent-success: #1e3a8a; 
-  --accent-success-glow: rgba(30, 58, 138, 0.25);
-  --accent-warning: #1e3a8a; 
-  --accent-danger: #1e3a8a; 
+  /* 2. Buttons & Accents (Black & Gold Highlights) */
+  --accent-primary: #000000; 
+  --accent-primary-glow: rgba(0, 0, 0, 0.1);
+  --accent-secondary: #c5a85a; 
+  --accent-secondary-glow: rgba(197, 168, 90, 0.3);
+  --accent-success: #c5a85a; 
+  --accent-success-glow: rgba(197, 168, 90, 0.25);
+  --accent-warning: #c5a85a; 
+  --accent-danger: #ef4444; 
   
-  /* 3. Text (White) */
-  --text-main: #ffffff; 
-  --text-secondary: #f8fafc; 
-  --text-muted: #e2e8f0; 
+  /* 3. Text (Black / Dark Gray) */
+  --text-main: #000000; 
+  --text-secondary: #374151; 
+  --text-muted: #8c8c8c; 
   
-  --border-glass: rgba(255, 255, 255, 0.12);
-  --border-focus: rgba(30, 58, 138, 0.6);
+  --border-glass: #e5e7eb; 
+  --border-focus: #c5a85a; 
   
-  --blur-glass: blur(16px);
-  --shadow-premium: 0 10px 40px -10px rgba(0, 0, 0, 0.7);
-  --shadow-inset: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
-  --radius-lg: 16px;
-  --radius-md: 10px;
-  --radius-sm: 6px;
+  --blur-glass: none;
+  --shadow-premium: 0 4px 20px rgba(0, 0, 0, 0.04);
+  --shadow-inset: inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
+  --radius-lg: 12px;
+  --radius-md: 8px;
+  --radius-sm: 4px;
   
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-fast: all 0.15s ease;
@@ -42,20 +42,27 @@
 
 body.light-theme {
   --bg-app: #ffffff;
-  --bg-card: rgba(245, 247, 250, 0.88);
-  --bg-card-hover: rgba(235, 240, 247, 0.95);
-  --bg-navbar: rgba(255, 255, 255, 0.92);
-  --text-main: #0a0f1d; /* Deep slate / black */
-  --text-secondary: #374151; /* Dark gray */
-  --text-muted: #6b7280;
-  --border-glass: rgba(0, 0, 0, 0.1);
+  --bg-card: #ffffff;
+  --bg-card-hover: #f9fafb;
+  --bg-navbar: #ffffff;
+  --text-main: #000000;
+  --text-secondary: #374151;
+  --text-muted: #8c8c8c;
+  --border-glass: #e5e7eb;
+  --border-focus: #c5a85a;
+  --accent-primary: #000000;
+  --accent-secondary: #c5a85a;
+  --accent-success: #c5a85a;
+  --accent-warning: #c5a85a;
+  --accent-primary-glow: rgba(0, 0, 0, 0.1);
+  --accent-secondary-glow: rgba(197, 168, 90, 0.3);
+  --accent-success-glow: rgba(197, 168, 90, 0.25);
 }
 
 body.light-theme {
   background-image: 
-    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.04) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.03) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.02) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(197, 168, 90, 0.03) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(197, 168, 90, 0.01) 0px, transparent 50%);
 }
 
 body.light-theme .form-control {
@@ -107,9 +114,8 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.12) 0px, transparent 60%),
-    radial-gradient(at 100% 0%, rgba(30, 64, 175, 0.08) 0px, transparent 60%),
-    radial-gradient(at 50% 100%, rgba(30, 58, 138, 0.1) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(197, 168, 90, 0.03) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(197, 168, 90, 0.01) 0px, transparent 50%);
   background-attachment: fixed;
 }
 
@@ -138,8 +144,8 @@ a {
 }
 
 .glass-panel:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 15px 50px -5px rgba(0, 0, 0, 0.8), 0 0 15px rgba(99, 102, 241, 0.1);
+  border-color: var(--accent-secondary);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05), 0 0 15px rgba(197, 168, 90, 0.2);
 }
 
 /* Layout Utilities */
@@ -277,6 +283,22 @@ body.light-theme .form-control:focus {
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
 }
 
+.form-control:disabled {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  color: var(--text-muted) !important;
+  opacity: 0.6;
+  cursor: not-allowed;
+  border-color: var(--border-glass) !important;
+  -webkit-text-fill-color: var(--text-muted) !important;
+}
+
+body.light-theme .form-control:disabled {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+  color: var(--text-muted) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  -webkit-text-fill-color: var(--text-muted) !important;
+}
+
 /* Chrome/Safari Browser Autofill style overrides to prevent invisible text */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
@@ -325,27 +347,33 @@ body.light-theme select.form-control option {
 }
 
 .badge-indigo {
-  background: rgba(99, 102, 241, 0.15);
-  color: #a5b4fc;
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: rgba(197, 168, 90, 0.15);
+  color: var(--accent-primary);
+  border: 1px solid rgba(197, 168, 90, 0.3);
 }
 
 .badge-cyan {
-  background: rgba(6, 182, 212, 0.15);
-  color: #67e8f9;
-  border: 1px solid rgba(6, 182, 212, 0.25);
+  background: rgba(197, 168, 90, 0.12);
+  color: var(--accent-secondary);
+  border: 1px solid rgba(197, 168, 90, 0.25);
 }
 
 .badge-emerald {
-  background: rgba(16, 185, 129, 0.15);
-  color: #6ee7b7;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: rgba(197, 168, 90, 0.15);
+  color: var(--accent-secondary);
+  border: 1px solid rgba(197, 168, 90, 0.25);
 }
 
 .badge-amber {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fde047;
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  background: rgba(197, 168, 90, 0.15);
+  color: var(--accent-secondary);
+  border: 1px solid rgba(197, 168, 90, 0.25);
+}
+
+.badge-danger {
+  background: rgba(197, 168, 90, 0.15);
+  color: var(--accent-secondary);
+  border: 1px solid rgba(197, 168, 90, 0.25);
 }
 
 /* Modal Layout */

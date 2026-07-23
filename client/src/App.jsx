@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Link } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
+import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Breadcrumbs from './components/Breadcrumbs';
 import Home from './pages/Home';
@@ -12,6 +13,25 @@ import SuperAdmin from './pages/SuperAdmin';
 import Inbox from './pages/Inbox';
 import Chatbot from './components/Chatbot';
 import StaticPage from './pages/StaticPage';
+
+// Seller / Partner Imports
+import SellerDashboard from './pages/seller/SellerDashboard';
+import SellerHubPage from './pages/seller/SellerHubPage';
+import ManageProductsPage from './pages/seller/ManageProductsPage';
+import AddProductPage from './pages/seller/AddProductPage';
+import AddServicePage from './pages/seller/AddServicePage';
+import AddJobPage from './pages/seller/AddJobPage';
+import AddHousePage from './pages/seller/AddHousePage';
+import AddCarPage from './pages/seller/AddCarPage';
+import ManageOrdersPage from './pages/seller/ManageOrdersPage';
+import ShippingRulesPage from './pages/seller/ShippingRulesPage';
+import SellerChatInbox from './pages/seller/SellerChatInbox';
+import SellertoAdminSupportChat from './pages/seller/SellertoAdminSupportChat';
+
+// Customer / Registration Imports
+import RegistrationPage from './pages/customer/RegistrationPage';
+import PhoneEntryModal from './pages/customer/PhoneEntryModal';
+import SMSCodeModal from './pages/customer/SMSCodeModal';
 import { Globe, Mail, Phone, ArrowRight } from 'lucide-react';
 
 // Sub-wrapper component to handle global layout styling
@@ -46,6 +66,25 @@ const AppContent = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/store/:storeName/dashboard" element={<Dashboard />} />
           <Route path="/store/:storeName" element={<Storefront />} />
+
+          {/* Customer / Partner Auth Portals */}
+          <Route path="/partner-register" element={<RegistrationPage />} />
+          <Route path="/phoneentrymodal" element={<PhoneEntryModal />} />
+          <Route path="/smscodemodal" element={<SMSCodeModal />} />
+
+          {/* Seller / Partner Portal Dashboard & Sub-pages */}
+          <Route path="/seller/:storeSlug/sellerdashboard" element={<SellerDashboard />} />
+          <Route path="/seller/:storeSlug/hub" element={<SellerHubPage />} />
+          <Route path="/seller/:storeSlug/manageproducts" element={<ManageProductsPage />} />
+          <Route path="/seller/:storeSlug/addproduct" element={<AddProductPage />} />
+          <Route path="/seller/:storeSlug/addservice" element={<AddServicePage />} />
+          <Route path="/seller/:storeSlug/addjob" element={<AddJobPage />} />
+          <Route path="/seller/:storeSlug/addhouse" element={<AddHousePage />} />
+          <Route path="/seller/:storeSlug/addcar" element={<AddCarPage />} />
+          <Route path="/seller/:storeSlug/manageorders" element={<ManageOrdersPage />} />
+          <Route path="/seller/:storeSlug/shippingrules" element={<ShippingRulesPage />} />
+          <Route path="/seller/:storeSlug/messages" element={<SellerChatInbox />} />
+          <Route path="/seller/:storeSlug/support" element={<SellertoAdminSupportChat />} />
           <Route path="/admin" element={<SuperAdmin />} />
           <Route path="/super-admin" element={<SuperAdmin />} />
           <Route path="/inbox" element={<Inbox />} />
@@ -114,8 +153,8 @@ const AppContent = () => {
         
         /* Premium Global Footer styles */
         .landing-footer {
-          background: #0f172a;
-          color: #94a3b8;
+          background: var(--bg-app);
+          color: var(--text-secondary);
           padding: 80px 0 30px 0;
           font-size: 0.9rem;
           margin-top: 60px;
@@ -138,7 +177,7 @@ const AppContent = () => {
           }
         }
         .footer-col h5 {
-          color: #ffffff;
+          color: var(--text-main);
           font-size: 0.95rem;
           font-weight: 700;
           text-transform: uppercase;
@@ -154,17 +193,17 @@ const AppContent = () => {
           margin-bottom: 12px;
         }
         .footer-col ul li a {
-          color: #94a3b8;
+          color: var(--text-secondary);
           text-decoration: none;
           transition: color 0.2s;
         }
         .footer-col ul li a:hover {
-          color: #ffffff;
+          color: var(--accent-secondary);
         }
         .footer-link-btn {
           background: none;
           border: none;
-          color: #94a3b8;
+          color: var(--text-secondary);
           padding: 0;
           cursor: pointer;
           font-size: 0.9rem;
@@ -174,7 +213,7 @@ const AppContent = () => {
           transition: color 0.2s;
         }
         .footer-link-btn:hover {
-          color: #ffffff;
+          color: var(--accent-secondary);
         }
         .brand-col p {
           margin-top: 16px;
@@ -191,7 +230,7 @@ const AppContent = () => {
           transition: color 0.2s;
         }
         .social-links span:hover {
-          color: #ffffff;
+          color: var(--accent-secondary);
         }
         .newsletter-col p {
           margin-bottom: 16px;
@@ -200,28 +239,28 @@ const AppContent = () => {
           display: flex;
           border-radius: 4px;
           overflow: hidden;
-          border: 1px solid #334155;
+          border: 1px solid var(--border-glass);
         }
         .newsletter-input-row input {
-          background: #1e293b;
+          background: var(--bg-app);
           border: none;
           padding: 12px 16px;
-          color: #ffffff;
+          color: var(--text-main);
           outline: none;
           flex: 1;
         }
         .btn-newsletter-send {
-          background: #0d5c3a;
+          background: var(--accent-primary);
           border: none;
           color: #ffffff;
           padding: 0 16px;
           cursor: pointer;
         }
         .btn-newsletter-send:hover {
-          background: #09442a;
+          background: var(--accent-secondary);
         }
         .footer-bottom {
-          border-top: 1px solid #1e293b;
+          border-top: 1px solid var(--border-glass);
           padding-top: 30px;
           font-size: 0.8rem;
         }
@@ -236,9 +275,11 @@ const AppContent = () => {
 function App() {
   return (
     <AppProvider>
-      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <AppContent />
-      </Router>
+      <AuthProvider>
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <AppContent />
+        </Router>
+      </AuthProvider>
     </AppProvider>
   );
 }

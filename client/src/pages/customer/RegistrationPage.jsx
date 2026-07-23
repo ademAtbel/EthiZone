@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import CustomerNavbar from "../../components/CustomerNavbar";
+import { validateEmail, validatePhone } from "../../utils/validation";
 import CustomerFooter from "../../components/CustomerFooter";
 import GoogleAuthButton from "../../components/GoogleAuthButton";
 import { useAuth } from "../../context/AuthContext";
@@ -70,6 +71,18 @@ export default function RegistrationPage() {
       return;
     }
 
+    const emailCheck = validateEmail(formData.email);
+    if (!emailCheck.valid) {
+      setError(emailCheck.reason);
+      return;
+    }
+
+    const phoneCheck = validatePhone(formData.phone);
+    if (!phoneCheck.valid) {
+      setError(phoneCheck.reason);
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -100,7 +113,13 @@ export default function RegistrationPage() {
         body: JSON.stringify(payload)
       });
 
-      const data = await response.json();
+      let data;
+      const text = await response.text();
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (err) {
+        data = { message: "Unable to connect to the backend server. Please make sure the backend server is running on port 5001." };
+      }
 
       if (!response.ok) {
         throw new Error(data.message || "Registration failed");

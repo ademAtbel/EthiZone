@@ -1,6 +1,6 @@
 // Ultimate Master Marketplace - Dashboard Page (Optimized for High Scale)
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useParams } from 'react-router-dom';
+import { useNavigate, Link, useParams, useSearchParams } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import ListingCard from '../components/ListingCard';
 import QrModal from '../components/QrModal';
@@ -81,7 +81,9 @@ const Dashboard = () => {
   const [listings, setListings] = useState([]);
   const [ratings, setRatings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('items');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'items';
+  const setActiveTab = (tab) => setSearchParams({ tab });
   const [inquiries, setInquiries] = useState([]);
   const [activeInquiryAlert, setActiveInquiryAlert] = useState(null);
 
@@ -121,8 +123,12 @@ const Dashboard = () => {
     title: '',
     description: '',
     price: '',
+    isOnSale: false,
+    isNewArrival: false,
+    salePrice: '',
     type: 'personal_item',
     category: '',
+    offerType: 'Sale',
     handymanRates: '',
     jobRequirements: '',
     salaryRate: 'hour',
@@ -133,7 +139,37 @@ const Dashboard = () => {
     year: '',
     mileage: '',
     make: '',
-    model: ''
+    model: '',
+    brand: '',
+    sizes: '',
+    colors: '',
+    condition: 'New',
+    stock: '',
+    expirationDate: '',
+    weight: '',
+    volume: '',
+    alcoholPercentage: '',
+    modelNumber: '',
+    specifications: '',
+    warranty: '',
+    specialties: '',
+    consultationType: 'In-Person',
+    officeHours: '',
+    languagesSpoken: '',
+    taxServices: '',
+    taxYearsHandled: '',
+    documentsRequired: '',
+    clinicServices: '',
+    acceptedInsurances: '',
+    emergencyServices: false,
+    consultingDomains: '',
+    corporateServices: '',
+    consultantProfiles: '',
+    cleaningServices: '',
+    frequencies: '',
+    cleaningRates: '',
+    beautyServices: '',
+    stylists: ''
   });
   const [selectedImages, setSelectedImages] = useState([]);
 
@@ -149,8 +185,12 @@ const Dashboard = () => {
     title: '',
     description: '',
     price: '',
+    isOnSale: false,
+    isNewArrival: false,
+    salePrice: '',
     type: '',
     category: '',
+    offerType: 'Sale',
     handymanRates: '',
     jobRequirements: '',
     salaryRate: 'hour',
@@ -162,6 +202,36 @@ const Dashboard = () => {
     mileage: '',
     make: '',
     model: '',
+    brand: '',
+    sizes: '',
+    colors: '',
+    condition: 'New',
+    stock: '',
+    expirationDate: '',
+    weight: '',
+    volume: '',
+    alcoholPercentage: '',
+    modelNumber: '',
+    specifications: '',
+    warranty: '',
+    specialties: '',
+    consultationType: 'In-Person',
+    officeHours: '',
+    languagesSpoken: '',
+    taxServices: '',
+    taxYearsHandled: '',
+    documentsRequired: '',
+    clinicServices: '',
+    acceptedInsurances: '',
+    emergencyServices: false,
+    consultingDomains: '',
+    corporateServices: '',
+    consultantProfiles: '',
+    cleaningServices: '',
+    frequencies: '',
+    cleaningRates: '',
+    beautyServices: '',
+    stylists: '',
     images: []
   });
 
@@ -251,6 +321,31 @@ const Dashboard = () => {
     }
   };
 
+  const handleGalleryUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if ((profileForm.galleryPhotos || []).length + files.length > 10) {
+      alert("You can upload a maximum of 10 gallery photos.");
+      return;
+    }
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileForm(prev => ({
+          ...prev,
+          galleryPhotos: [...(prev.galleryPhotos || []), reader.result]
+        }));
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleRemoveGalleryPhoto = (index) => {
+    setProfileForm(prev => ({
+      ...prev,
+      galleryPhotos: (prev.galleryPhotos || []).filter((_, i) => i !== index)
+    }));
+  };
+
   const fetchInquiries = async () => {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -325,6 +420,8 @@ const Dashboard = () => {
         setProfileForm({
           storeName: userData.storeName || '',
           description: userData.description || '',
+          shopStory: userData.shopStory || '',
+          galleryPhotos: userData.galleryPhotos || [],
           address: userData.address || '',
           storeLogo: userData.storeLogo || '',
           storeImage: userData.storeImage || '',
@@ -419,7 +516,8 @@ const Dashboard = () => {
       if (!response.ok) throw new Error(data.message);
 
       setUser(data.user);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      const { galleryPhotos, shopStory, ...userToCache } = data.user;
+      localStorage.setItem('user', JSON.stringify(userToCache));
       setIsEditingProfile(false); // Switch back to read-only details view!
       alert('Store settings updated successfully!');
 
@@ -523,13 +621,45 @@ const Dashboard = () => {
     setSelectedImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleToggleSize = (size, isEdit = false) => {
+    const currentForm = isEdit ? editForm : listingForm;
+    const setForm = isEdit ? setEditForm : setListingForm;
+    let sizesArray = currentForm.sizes ? currentForm.sizes.split(',').map(s => s.trim()).filter(Boolean) : [];
+    
+    if (size === 'All Sizes') {
+      if (sizesArray.includes('All Sizes')) {
+        sizesArray = [];
+      } else {
+        sizesArray = ['All Sizes'];
+      }
+    } else {
+      sizesArray = sizesArray.filter(s => s !== 'All Sizes');
+      if (sizesArray.includes(size)) {
+        sizesArray = sizesArray.filter(s => s !== size);
+      } else {
+        sizesArray.push(size);
+      }
+    }
+    setForm({ ...currentForm, sizes: sizesArray.join(', ') });
+  };
+
   const handleCreateListing = async (e) => {
     e.preventDefault();
     const { 
       title, description, price, type, category,
+      isOnSale, isNewArrival, salePrice,
       handymanRates, jobRequirements, salaryRate,
       bedrooms, bathrooms, propertyType, address,
-      year, mileage, make, model 
+      year, mileage, make, model,
+      brand, sizes, colors, condition, stock,
+      expirationDate, weight, volume, alcoholPercentage,
+      modelNumber, specifications, warranty,
+      specialties, consultationType, officeHours, languagesSpoken,
+      taxServices, taxYearsHandled, documentsRequired,
+      clinicServices, acceptedInsurances, emergencyServices,
+      consultingDomains, corporateServices, consultantProfiles,
+      cleaningServices, frequencies, cleaningRates,
+      beautyServices, stylists
     } = listingForm;
 
     if (!title || !description) {
@@ -552,12 +682,68 @@ const Dashboard = () => {
       metadata.bathrooms = bathrooms ? Number(bathrooms) : undefined;
       metadata.propertyType = propertyType || 'House';
       metadata.address = address;
+      metadata.offerType = listingForm.offerType || 'Sale';
     }
     if (type === 'car') {
       metadata.year = year ? Number(year) : undefined;
       metadata.mileage = mileage ? Number(mileage) : undefined;
       metadata.make = make;
       metadata.model = model;
+      metadata.offerType = listingForm.offerType || 'Sale';
+    }
+
+    // Category-specific metadata packing
+    const activeCategory = (user?.role === 'business') ? user.category : category;
+    if (activeCategory === 'Boutique') {
+      metadata.brand = brand;
+      metadata.sizes = sizes ? sizes.split(',').map(s => s.trim()) : [];
+      metadata.colors = colors ? colors.split(',').map(s => s.trim()) : [];
+      metadata.condition = condition;
+      metadata.stock = Number(stock) || 0;
+    } else if (activeCategory === 'Grocery Store') {
+      metadata.expirationDate = expirationDate;
+      metadata.brand = brand;
+      metadata.weight = weight;
+      metadata.stock = Number(stock) || 0;
+    } else if (activeCategory === 'Liquor Store') {
+      metadata.volume = volume;
+      metadata.alcoholPercentage = Number(alcoholPercentage) || 0;
+      metadata.stock = Number(stock) || 0;
+    } else if (activeCategory === 'Electronics Shop') {
+      metadata.brand = brand;
+      metadata.modelNumber = modelNumber;
+      metadata.specifications = specifications;
+      metadata.warranty = warranty;
+      metadata.condition = condition;
+      metadata.stock = Number(stock) || 0;
+    } else if (activeCategory === 'Law Office') {
+      metadata.specialties = specialties ? specialties.split(',').map(s => s.trim()) : [];
+      metadata.consultationType = consultationType;
+      metadata.officeHours = officeHours;
+      metadata.languagesSpoken = languagesSpoken ? languagesSpoken.split(',').map(s => s.trim()) : [];
+    } else if (activeCategory === 'Tax Office') {
+      metadata.taxServices = taxServices ? taxServices.split(',').map(s => s.trim()) : [];
+      metadata.taxYearsHandled = taxYearsHandled ? taxYearsHandled.split(',').map(s => s.trim()) : [];
+      metadata.documentsRequired = documentsRequired ? documentsRequired.split(',').map(s => s.trim()) : [];
+    } else if (activeCategory === 'Dental Clinic') {
+      metadata.specialties = specialties ? specialties.split(',').map(s => s.trim()) : [];
+      metadata.clinicServices = clinicServices ? clinicServices.split(',').map(s => s.trim()) : [];
+      metadata.acceptedInsurances = acceptedInsurances ? acceptedInsurances.split(',').map(s => s.trim()) : [];
+      metadata.emergencyServices = !!emergencyServices;
+    } else if (activeCategory === 'Consulting Firm') {
+      metadata.consultingDomains = consultingDomains ? consultingDomains.split(',').map(s => s.trim()) : [];
+      metadata.corporateServices = corporateServices ? corporateServices.split(',').map(s => s.trim()) : [];
+      metadata.consultantProfiles = consultantProfiles ? consultantProfiles.split(',').map(s => s.trim()) : [];
+    } else if (activeCategory === 'Cleaning Agency') {
+      metadata.cleaningServices = cleaningServices ? cleaningServices.split(',').map(s => s.trim()) : [];
+      metadata.frequencies = frequencies ? frequencies.split(',').map(s => s.trim()) : [];
+      metadata.cleaningRates = cleaningRates;
+    } else if (activeCategory === 'Beauty Salon') {
+      metadata.beautyServices = beautyServices ? beautyServices.split(',').map(s => s.trim()) : [];
+      metadata.stylists = stylists ? stylists.split(',').map(s => s.trim()) : [];
+    } else if (type === 'personal_item') {
+      metadata.condition = condition;
+      metadata.availability = listingForm.availability;
     }
 
     try {
@@ -571,6 +757,9 @@ const Dashboard = () => {
           title,
           description,
           price: (price !== '' && price !== undefined && price !== null) ? Number(price) : null,
+          isOnSale: !!isOnSale,
+          isNewArrival: !!isNewArrival,
+          salePrice: (salePrice !== '' && salePrice !== undefined && salePrice !== null) ? Number(salePrice) : null,
           type,
           category,
           metadata,
@@ -597,6 +786,9 @@ const Dashboard = () => {
         title: '',
         description: '',
         price: '',
+        isOnSale: false,
+        isNewArrival: false,
+        salePrice: '',
         type: defaultType,
         category: '',
         handymanRates: '',
@@ -609,7 +801,37 @@ const Dashboard = () => {
         year: '',
         mileage: '',
         make: '',
-        model: ''
+        model: '',
+        brand: '',
+        sizes: '',
+        colors: '',
+        condition: 'New',
+        stock: '',
+        expirationDate: '',
+        weight: '',
+        volume: '',
+        alcoholPercentage: '',
+        modelNumber: '',
+        specifications: '',
+        warranty: '',
+        specialties: '',
+        consultationType: 'In-Person',
+        officeHours: '',
+        languagesSpoken: '',
+        taxServices: '',
+        taxYearsHandled: '',
+        documentsRequired: '',
+        clinicServices: '',
+        acceptedInsurances: '',
+        emergencyServices: false,
+        consultingDomains: '',
+        corporateServices: '',
+        consultantProfiles: '',
+        cleaningServices: '',
+        frequencies: '',
+        cleaningRates: '',
+        beautyServices: '',
+        stylists: ''
       });
       setSelectedImages([]);
       alert('Marketplace listing added successfully!');
@@ -646,20 +868,55 @@ const Dashboard = () => {
     setEditForm({
       title: listing.title || '',
       description: listing.description || '',
-      price: listing.price || '',
+      price: listing.price !== null && listing.price !== undefined ? listing.price : '',
+      isOnSale: !!listing.isOnSale,
+      isNewArrival: !!listing.isNewArrival,
+      salePrice: listing.salePrice !== null && listing.salePrice !== undefined ? listing.salePrice : '',
       type: listing.type || '',
       category: listing.category || '',
-      handymanRates: listing.metadata?.handymanRates || '',
-      jobRequirements: (listing.metadata?.jobRequirements || []).join('\n'),
-      salaryRate: listing.metadata?.salaryRate || 'hour',
-      bedrooms: listing.metadata?.bedrooms || '',
-      bathrooms: listing.metadata?.bathrooms || '',
-      propertyType: listing.metadata?.propertyType || 'House',
-      address: listing.metadata?.address || '',
-      year: listing.metadata?.year || '',
-      mileage: listing.metadata?.mileage || '',
-      make: listing.metadata?.make || '',
-      model: listing.metadata?.model || '',
+      offerType: listing.offerType || listing.metadata?.offerType || 'Sale',
+      handymanRates: listing.handymanRates || listing.metadata?.handymanRates || '',
+      jobRequirements: (listing.jobRequirements || listing.metadata?.jobRequirements || []).join('\n'),
+      salaryRate: listing.salaryRate || listing.metadata?.salaryRate || 'hour',
+      bedrooms: listing.bedrooms || listing.metadata?.bedrooms || '',
+      bathrooms: listing.bathrooms || listing.metadata?.bathrooms || '',
+      propertyType: listing.propertyType || listing.metadata?.propertyType || 'House',
+      address: listing.address || listing.metadata?.address || '',
+      year: listing.year || listing.metadata?.year || '',
+      mileage: listing.mileage || listing.metadata?.mileage || '',
+      make: listing.make || listing.metadata?.make || '',
+      model: listing.model || listing.metadata?.model || '',
+      // Load custom category fields
+      brand: listing.brand || listing.metadata?.brand || '',
+      sizes: (listing.sizes || listing.metadata?.sizes || []).join(', '),
+      colors: (listing.colors || listing.metadata?.colors || []).join(', '),
+      condition: listing.condition || listing.metadata?.condition || 'New',
+      stock: listing.stock !== undefined ? listing.stock : (listing.metadata?.stock || ''),
+      expirationDate: listing.expirationDate ? new Date(listing.expirationDate).toISOString().substring(0, 10) : (listing.metadata?.expirationDate ? new Date(listing.metadata.expirationDate).toISOString().substring(0, 10) : ''),
+      weight: listing.weight || listing.metadata?.weight || '',
+      volume: listing.volume || listing.metadata?.volume || '',
+      alcoholPercentage: listing.alcoholPercentage || listing.metadata?.alcoholPercentage || '',
+      modelNumber: listing.modelNumber || listing.metadata?.modelNumber || '',
+      specifications: listing.specifications || listing.metadata?.specifications || '',
+      warranty: listing.warranty || listing.metadata?.warranty || '',
+      specialties: (listing.specialties || listing.metadata?.specialties || []).join(', '),
+      consultationType: listing.consultationType || listing.metadata?.consultationType || 'In-Person',
+      officeHours: listing.officeHours || listing.metadata?.officeHours || '',
+      languagesSpoken: (listing.languagesSpoken || listing.metadata?.languagesSpoken || []).join(', '),
+      taxServices: (listing.taxServices || listing.metadata?.taxServices || []).join(', '),
+      taxYearsHandled: (listing.taxYearsHandled || listing.metadata?.taxYearsHandled || []).join(', '),
+      documentsRequired: (listing.documentsRequired || listing.metadata?.documentsRequired || []).join(', '),
+      clinicServices: (listing.clinicServices || listing.metadata?.clinicServices || []).join(', '),
+      acceptedInsurances: (listing.acceptedInsurances || listing.metadata?.acceptedInsurances || []).join(', '),
+      emergencyServices: listing.emergencyServices !== undefined ? !!listing.emergencyServices : !!listing.metadata?.emergencyServices,
+      consultingDomains: (listing.consultingDomains || listing.metadata?.consultingDomains || []).join(', '),
+      corporateServices: (listing.corporateServices || listing.metadata?.corporateServices || []).join(', '),
+      consultantProfiles: (listing.consultantProfiles || listing.metadata?.consultantProfiles || []).join(', '),
+      cleaningServices: (listing.cleaningServices || listing.metadata?.cleaningServices || []).join(', '),
+      frequencies: (listing.frequencies || listing.metadata?.frequencies || []).join(', '),
+      cleaningRates: listing.cleaningRates || listing.metadata?.cleaningRates || '',
+      beautyServices: (listing.beautyServices || listing.metadata?.beautyServices || []).join(', '),
+      stylists: (listing.stylists || listing.metadata?.stylists || []).join(', '),
       images: listing.images || []
     });
   };
@@ -670,9 +927,19 @@ const Dashboard = () => {
 
     const { 
       title, description, price, type, category,
+      isOnSale, isNewArrival, salePrice,
       handymanRates, jobRequirements, salaryRate,
       bedrooms, bathrooms, propertyType, address,
-      year, mileage, make, model, images 
+      year, mileage, make, model, images,
+      brand, sizes, colors, condition, stock,
+      expirationDate, weight, volume, alcoholPercentage,
+      modelNumber, specifications, warranty,
+      specialties, consultationType, officeHours, languagesSpoken,
+      taxServices, taxYearsHandled, documentsRequired,
+      clinicServices, acceptedInsurances, emergencyServices,
+      consultingDomains, corporateServices, consultantProfiles,
+      cleaningServices, frequencies, cleaningRates,
+      beautyServices, stylists
     } = editForm;
 
     const metadata = {};
@@ -690,12 +957,68 @@ const Dashboard = () => {
       metadata.bathrooms = bathrooms ? Number(bathrooms) : undefined;
       metadata.propertyType = propertyType || 'House';
       metadata.address = address;
+      metadata.offerType = editForm.offerType || 'Sale';
     }
     if (type === 'car') {
       metadata.year = year ? Number(year) : undefined;
       metadata.mileage = mileage ? Number(mileage) : undefined;
       metadata.make = make;
       metadata.model = model;
+      metadata.offerType = editForm.offerType || 'Sale';
+    }
+
+    // Category-specific metadata packing
+    const activeCategory = (user?.role === 'business') ? user.category : category;
+    if (activeCategory === 'Boutique') {
+      metadata.brand = brand;
+      metadata.sizes = sizes ? sizes.split(',').map(s => s.trim()) : [];
+      metadata.colors = colors ? colors.split(',').map(s => s.trim()) : [];
+      metadata.condition = condition;
+      metadata.stock = Number(stock) || 0;
+    } else if (activeCategory === 'Grocery Store') {
+      metadata.expirationDate = expirationDate;
+      metadata.brand = brand;
+      metadata.weight = weight;
+      metadata.stock = Number(stock) || 0;
+    } else if (activeCategory === 'Liquor Store') {
+      metadata.volume = volume;
+      metadata.alcoholPercentage = Number(alcoholPercentage) || 0;
+      metadata.stock = Number(stock) || 0;
+    } else if (activeCategory === 'Electronics Shop') {
+      metadata.brand = brand;
+      metadata.modelNumber = modelNumber;
+      metadata.specifications = specifications;
+      metadata.warranty = warranty;
+      metadata.condition = condition;
+      metadata.stock = Number(stock) || 0;
+    } else if (activeCategory === 'Law Office') {
+      metadata.specialties = specialties ? specialties.split(',').map(s => s.trim()) : [];
+      metadata.consultationType = consultationType;
+      metadata.officeHours = officeHours;
+      metadata.languagesSpoken = languagesSpoken ? languagesSpoken.split(',').map(s => s.trim()) : [];
+    } else if (activeCategory === 'Tax Office') {
+      metadata.taxServices = taxServices ? taxServices.split(',').map(s => s.trim()) : [];
+      metadata.taxYearsHandled = taxYearsHandled ? taxYearsHandled.split(',').map(s => s.trim()) : [];
+      metadata.documentsRequired = documentsRequired ? documentsRequired.split(',').map(s => s.trim()) : [];
+    } else if (activeCategory === 'Dental Clinic') {
+      metadata.specialties = specialties ? specialties.split(',').map(s => s.trim()) : [];
+      metadata.clinicServices = clinicServices ? clinicServices.split(',').map(s => s.trim()) : [];
+      metadata.acceptedInsurances = acceptedInsurances ? acceptedInsurances.split(',').map(s => s.trim()) : [];
+      metadata.emergencyServices = !!emergencyServices;
+    } else if (activeCategory === 'Consulting Firm') {
+      metadata.consultingDomains = consultingDomains ? consultingDomains.split(',').map(s => s.trim()) : [];
+      metadata.corporateServices = corporateServices ? corporateServices.split(',').map(s => s.trim()) : [];
+      metadata.consultantProfiles = consultantProfiles ? consultantProfiles.split(',').map(s => s.trim()) : [];
+    } else if (activeCategory === 'Cleaning Agency') {
+      metadata.cleaningServices = cleaningServices ? cleaningServices.split(',').map(s => s.trim()) : [];
+      metadata.frequencies = frequencies ? frequencies.split(',').map(s => s.trim()) : [];
+      metadata.cleaningRates = cleaningRates;
+    } else if (activeCategory === 'Beauty Salon') {
+      metadata.beautyServices = beautyServices ? beautyServices.split(',').map(s => s.trim()) : [];
+      metadata.stylists = stylists ? stylists.split(',').map(s => s.trim()) : [];
+    } else if (type === 'personal_item') {
+      metadata.condition = condition;
+      metadata.availability = editForm.availability;
     }
 
     try {
@@ -709,6 +1032,9 @@ const Dashboard = () => {
           title,
           description,
           price: (price !== '' && price !== undefined && price !== null) ? Number(price) : null,
+          isOnSale: !!isOnSale,
+          isNewArrival: !!isNewArrival,
+          salePrice: (salePrice !== '' && salePrice !== undefined && salePrice !== null) ? Number(salePrice) : null,
           status: editingListing.status,
           category,
           metadata,
@@ -893,11 +1219,11 @@ const Dashboard = () => {
                   </div>
 
                   <div className="form-group" style={{ marginBottom: '16px' }}>
-                    <label style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Business Type</label>
+                    <label style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Business Type (Set at Registration)</label>
                     <select
                       className="form-control"
                       value={profileForm.businessType}
-                      onChange={(e) => setProfileForm({ ...profileForm, businessType: e.target.value, category: '' })}
+                      disabled
                       required
                     >
                       <option value="store">Store (Sells Products)</option>
@@ -909,11 +1235,11 @@ const Dashboard = () => {
                   </div>
 
                   <div className="form-group" style={{ marginBottom: '16px' }}>
-                    <label style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Business Category Type</label>
+                    <label style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Business Category Type (Set at Registration)</label>
                     <select
                       className="form-control"
                       value={profileForm.category}
-                      onChange={(e) => setProfileForm({ ...profileForm, category: e.target.value })}
+                      disabled
                       required
                     >
                       <option value="">Select Category</option>
@@ -1025,6 +1351,70 @@ const Dashboard = () => {
                       className="form-control"
                       onChange={handleImageUpload}
                     />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '20px' }}>
+                    <label style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Shop Story & About Us</label>
+                    <textarea 
+                      className="form-control" 
+                      placeholder="Share the history, mission, or unique story of your store..."
+                      value={profileForm.shopStory || ''}
+                      onChange={(e) => setProfileForm({ ...profileForm, shopStory: e.target.value })}
+                      rows="4"
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '20px' }}>
+                    <label style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Store Gallery Photos (Max 10)</label>
+                    
+                    {profileForm.galleryPhotos && profileForm.galleryPhotos.length > 0 && (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px', marginBottom: '10px' }}>
+                        {profileForm.galleryPhotos.map((photo, idx) => (
+                          <div key={idx} style={{ position: 'relative', aspectRatio: '1', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--border-glass)' }}>
+                            <img 
+                              src={photo} 
+                              alt={`Gallery Preview ${idx + 1}`} 
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveGalleryPhoto(idx)}
+                              style={{
+                                position: 'absolute',
+                                top: '4px',
+                                right: '4px',
+                                background: '#ef4444',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '50%',
+                                width: '18px',
+                                height: '18px',
+                                fontSize: '10px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                padding: 0
+                              }}
+                              title="Delete photo"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      multiple
+                      className="form-control"
+                      onChange={handleGalleryUpload}
+                    />
+                    <small style={{ color: 'var(--text-muted)', display: 'block', marginTop: '6px' }}>
+                      Upload beautiful pictures of your shop, products, or service locations.
+                    </small>
                   </div>
 
                   <div className="social-links-section" style={{ borderTop: '1px solid var(--border-glass)', paddingTop: '20px', marginBottom: '24px' }}>
@@ -1641,7 +2031,7 @@ const Dashboard = () => {
                     />
                   </div>
                 </div>
-              ) : (
+              ) : !['Law Office', 'Tax Office', 'Dental Clinic', 'Consulting Firm'].includes(editingListing?.category || editForm.category) ? (
                 <div className="form-group">
                   <label>Price / Value Offered ($) <span style={{ fontWeight: 400, fontSize: '0.82rem', opacity: 0.8 }}>(Optional — Leave blank for "Contact for Price")</span></label>
                   <input 
@@ -1649,7 +2039,297 @@ const Dashboard = () => {
                     className="form-control" 
                     value={editForm.price}
                     onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                    required={['Boutique', 'Grocery Store', 'Liquor Store', 'Electronics Shop'].includes(editingListing?.category || editForm.category)}
                   />
+                </div>
+              ) : null}
+
+              {user?.role === 'business' && user.businessType === 'store' && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-glass)', padding: '12px', borderRadius: '8px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', margin: 0 }}>
+                    <input 
+                      type="checkbox" 
+                      checked={editForm.isNewArrival} 
+                      onChange={(e) => setEditForm({ ...editForm, isNewArrival: e.target.checked })} 
+                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                    />
+                    <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>New Arrival</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', margin: 0 }}>
+                    <input 
+                      type="checkbox" 
+                      checked={editForm.isOnSale} 
+                      onChange={(e) => setEditForm({ ...editForm, isOnSale: e.target.checked })} 
+                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                    />
+                    <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>On Sale</span>
+                  </label>
+                  {editForm.isOnSale && (
+                    <div style={{ gridColumn: 'span 2', marginTop: '8px' }}>
+                      <label style={{ fontSize: '0.82rem', color: 'var(--accent-secondary)' }}>Discounted Sale Price ($) *</label>
+                      <input 
+                        type="number" 
+                        className="form-control" 
+                        placeholder="e.g. 40" 
+                        value={editForm.salePrice} 
+                        onChange={(e) => setEditForm({ ...editForm, salePrice: e.target.value })} 
+                        required 
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Dynamic Category Specific Fields for Edit Modal */}
+              {(editingListing?.category || editForm.category) === 'Boutique' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Boutique Product Specs</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Brand</label>
+                      <input type="text" className="form-control" placeholder="e.g. Levi's" value={editForm.brand} onChange={(e) => setEditForm({ ...editForm, brand: e.target.value })} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Colors (comma-separated)</label>
+                      <input type="text" className="form-control" placeholder="e.g. Red, Blue" value={editForm.colors} onChange={(e) => setEditForm({ ...editForm, colors: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px' }}>Sizes (Select Optional Sizes)</label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {['All Sizes', 'XS', 'S', 'M', 'L', 'XL', 'XXL'].map((size) => {
+                        const sizesArray = (editForm.sizes || '').split(',').map(s => s.trim()).filter(Boolean);
+                        const isSelected = sizesArray.includes(size);
+                        return (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => handleToggleSize(size, true)}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '20px',
+                              border: '1px solid ' + (isSelected ? 'var(--accent-primary)' : 'var(--border-glass)'),
+                              background: isSelected ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
+                              color: isSelected ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                              fontSize: '0.85rem',
+                              fontWeight: isSelected ? '600' : 'normal',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            {size}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Stock Quantity *</label>
+                    <input type="number" className="form-control" placeholder="e.g. 15" value={editForm.stock} onChange={(e) => setEditForm({ ...editForm, stock: e.target.value })} required />
+                  </div>
+                </div>
+              )}
+
+              {(editingListing?.category || editForm.category) === 'Grocery Store' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Grocery Product Specs</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="form-group">
+                      <label>Brand</label>
+                      <input type="text" className="form-control" placeholder="e.g. organic" value={editForm.brand} onChange={(e) => setEditForm({ ...editForm, brand: e.target.value })} />
+                    </div>
+                    <div className="form-group">
+                      <label>Weight / Net Wt.</label>
+                      <input type="text" className="form-control" placeholder="e.g. 500g" value={editForm.weight} onChange={(e) => setEditForm({ ...editForm, weight: e.target.value })} />
+                    </div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: 0 }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Expiration Date</label>
+                      <input type="date" className="form-control" value={editForm.expirationDate} onChange={(e) => setEditForm({ ...editForm, expirationDate: e.target.value })} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Stock Quantity *</label>
+                      <input type="number" className="form-control" placeholder="e.g. 100" value={editForm.stock} onChange={(e) => setEditForm({ ...editForm, stock: e.target.value })} required />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {(editingListing?.category || editForm.category) === 'Liquor Store' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Liquor Product Specs</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="form-group">
+                      <label>Volume / Size</label>
+                      <input type="text" className="form-control" placeholder="e.g. 750ml" value={editForm.volume} onChange={(e) => setEditForm({ ...editForm, volume: e.target.value })} />
+                    </div>
+                    <div className="form-group">
+                      <label>Alcohol Content (%)</label>
+                      <input type="number" step="0.1" className="form-control" placeholder="e.g. 40" value={editForm.alcoholPercentage} onChange={(e) => setEditForm({ ...editForm, alcoholPercentage: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Stock Quantity *</label>
+                    <input type="number" className="form-control" placeholder="e.g. 24" value={editForm.stock} onChange={(e) => setEditForm({ ...editForm, stock: e.target.value })} required />
+                  </div>
+                </div>
+              )}
+
+              {(editingListing?.category || editForm.category) === 'Electronics Shop' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Electronics Specs</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="form-group">
+                      <label>Brand</label>
+                      <input type="text" className="form-control" placeholder="e.g. Apple" value={editForm.brand} onChange={(e) => setEditForm({ ...editForm, brand: e.target.value })} />
+                    </div>
+                    <div className="form-group">
+                      <label>Model Number</label>
+                      <input type="text" className="form-control" placeholder="e.g. A2633" value={editForm.modelNumber} onChange={(e) => setEditForm({ ...editForm, modelNumber: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label>Warranty Info</label>
+                    <input type="text" className="form-control" placeholder="e.g. 1 Year Apple Care" value={editForm.warranty} onChange={(e) => setEditForm({ ...editForm, warranty: e.target.value })} />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: 0 }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Condition</label>
+                      <select className="form-control" value={editForm.condition} onChange={(e) => setEditForm({ ...editForm, condition: e.target.value })}>
+                        <option value="New">New</option>
+                        <option value="Refurbished">Refurbished</option>
+                        <option value="Used - Like New">Used - Like New</option>
+                        <option value="Used - Good">Used - Good</option>
+                      </select>
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Stock Quantity *</label>
+                      <input type="number" className="form-control" placeholder="e.g. 5" value={editForm.stock} onChange={(e) => setEditForm({ ...editForm, stock: e.target.value })} required />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {(editingListing?.category || editForm.category) === 'Law Office' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Legal Service Info (No Price Required)</h4>
+                  <div className="form-group">
+                    <label>Specialties / Practice Areas (comma-separated)</label>
+                    <input type="text" className="form-control" placeholder="e.g. Family Law, Corporate Tax, Criminal Defense" value={editForm.specialties} onChange={(e) => setEditForm({ ...editForm, specialties: e.target.value })} />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="form-group">
+                      <label>Consultation Type</label>
+                      <select className="form-control" value={editForm.consultationType} onChange={(e) => setEditForm({ ...editForm, consultationType: e.target.value })}>
+                        <option value="In-Person">In-Person Only</option>
+                        <option value="Virtual / Remote">Virtual / Remote</option>
+                        <option value="Hybrid">Hybrid</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Languages Spoken</label>
+                      <input type="text" className="form-control" placeholder="e.g. English, Amharic" value={editForm.languagesSpoken} onChange={(e) => setEditForm({ ...editForm, languagesSpoken: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Office / Consulting Hours</label>
+                    <input type="text" className="form-control" placeholder="e.g. Mon-Fri 9AM-5PM" value={editForm.officeHours} onChange={(e) => setEditForm({ ...editForm, officeHours: e.target.value })} />
+                  </div>
+                </div>
+              )}
+
+              {(editingListing?.category || editForm.category) === 'Tax Office' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Tax & Accounting Service Specs</h4>
+                  <div className="form-group">
+                    <label>Tax Services Offered (comma-separated)</label>
+                    <input type="text" className="form-control" placeholder="e.g. Personal Return, Corporate Audits, Bookkeeping" value={editForm.taxServices} onChange={(e) => setEditForm({ ...editForm, taxServices: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label>Tax Years Handled (comma-separated)</label>
+                    <input type="text" className="form-control" placeholder="e.g. 2023, 2024, Back taxes" value={editForm.taxYearsHandled} onChange={(e) => setEditForm({ ...editForm, taxYearsHandled: e.target.value })} />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Required Onboarding Documents</label>
+                    <input type="text" className="form-control" placeholder="e.g. W2, 1099, Prior Year Return" value={editForm.documentsRequired} onChange={(e) => setEditForm({ ...editForm, documentsRequired: e.target.value })} />
+                  </div>
+                </div>
+              )}
+
+              {(editingListing?.category || editForm.category) === 'Dental Clinic' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Clinic / Medical Services Specs</h4>
+                  <div className="form-group">
+                    <label>Clinic Specialties (comma-separated)</label>
+                    <input type="text" className="form-control" placeholder="e.g. Orthodontics, Pediatrics, Cosmetic" value={editForm.specialties} onChange={(e) => setEditForm({ ...editForm, specialties: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label>Services Offered (comma-separated)</label>
+                    <input type="text" className="form-control" placeholder="e.g. Root Canal, Teeth Whitening, Routine Exam" value={editForm.clinicServices} onChange={(e) => setEditForm({ ...editForm, clinicServices: e.target.value })} />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', alignItems: 'center', marginBottom: 0 }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Accepted Insurances</label>
+                      <input type="text" className="form-control" placeholder="e.g. BlueCross, Aetna" value={editForm.acceptedInsurances} onChange={(e) => setEditForm({ ...editForm, acceptedInsurances: e.target.value })} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '20px' }}>
+                      <input type="checkbox" id="editEmergencyServices" checked={editForm.emergencyServices} onChange={(e) => setEditForm({ ...editForm, emergencyServices: e.target.checked })} />
+                      <label htmlFor="editEmergencyServices" style={{ margin: 0, cursor: 'pointer' }}>Offers 24/7 Emergency Care</label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {(editingListing?.category || editForm.category) === 'Consulting Firm' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Consulting Firm Specs</h4>
+                  <div className="form-group">
+                    <label>Consulting Domains (comma-separated)</label>
+                    <input type="text" className="form-control" placeholder="e.g. IT Strategy, HR Restructuring, Marketing Audit" value={editForm.consultingDomains} onChange={(e) => setEditForm({ ...editForm, consultingDomains: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label>Corporate Services (comma-separated)</label>
+                    <input type="text" className="form-control" placeholder="e.g. Merger Advice, Executive Coaching" value={editForm.corporateServices} onChange={(e) => setEditForm({ ...editForm, corporateServices: e.target.value })} />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Lead Consultant Profile Summary</label>
+                    <input type="text" className="form-control" placeholder="e.g. Led by ex-McKinsey Senior Partner" value={editForm.consultantProfiles} onChange={(e) => setEditForm({ ...editForm, consultantProfiles: e.target.value })} />
+                  </div>
+                </div>
+              )}
+
+              {(editingListing?.category || editForm.category) === 'Cleaning Agency' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Cleaning Agency Specs</h4>
+                  <div className="form-group">
+                    <label>Cleaning Services Offered (comma-separated)</label>
+                    <input type="text" className="form-control" placeholder="e.g. Deep Clean, Office Sanitation, Carpet wash" value={editForm.cleaningServices} onChange={(e) => setEditForm({ ...editForm, cleaningServices: e.target.value })} />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: 0 }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Frequencies Available</label>
+                      <input type="text" className="form-control" placeholder="e.g. Daily, Weekly, One-time" value={editForm.frequencies} onChange={(e) => setEditForm({ ...editForm, frequencies: e.target.value })} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Cleaning Rate Details (Optional)</label>
+                      <input type="text" className="form-control" placeholder="e.g. From $0.15/sqft or $35/hr" value={editForm.cleaningRates} onChange={(e) => setEditForm({ ...editForm, cleaningRates: e.target.value })} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {(editingListing?.category || editForm.category) === 'Beauty Salon' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Beauty Salon Services Specs</h4>
+                  <div className="form-group">
+                    <label>Beauty Services Offered (comma-separated)</label>
+                    <input type="text" className="form-control" placeholder="e.g. Gel Nails, Hair Coloring, Bridal Makeup" value={editForm.beautyServices} onChange={(e) => setEditForm({ ...editForm, beautyServices: e.target.value })} />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Stylists / Experts Names</label>
+                    <input type="text" className="form-control" placeholder="e.g. Stylist Selam, Nail Tech Almaz" value={editForm.stylists} onChange={(e) => setEditForm({ ...editForm, stylists: e.target.value })} />
+                  </div>
                 </div>
               )}
 
@@ -1750,49 +2430,141 @@ const Dashboard = () => {
                       required
                     />
                   </div>
+                  <div className="form-group" style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Listing Offer Type *</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setEditForm({ ...editForm, offerType: 'Sale' })}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid ' + (editForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--border-glass)'),
+                          background: editForm.offerType === 'Sale' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
+                          color: editForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>🏷️</span> For Sale (Buy)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditForm({ ...editForm, offerType: 'Rent' })}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid ' + (editForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--border-glass)'),
+                          background: editForm.offerType === 'Rent' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
+                          color: editForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>🔑</span> For Rent
+                      </button>
+                    </div>
+                  </div>
                 </>
               )}
 
               {/* Automotive Fields */}
               {editForm.type === 'car' && (
-                <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label>Make</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={editForm.make}
-                      onChange={(e) => setEditForm({ ...editForm, make: e.target.value })}
-                    />
+                <>
+                  <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Make</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={editForm.make}
+                        onChange={(e) => setEditForm({ ...editForm, make: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Model</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={editForm.model}
+                        onChange={(e) => setEditForm({ ...editForm, model: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Year</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={editForm.year}
+                        onChange={(e) => setEditForm({ ...editForm, year: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Mileage (mi)</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={editForm.mileage}
+                        onChange={(e) => setEditForm({ ...editForm, mileage: e.target.value })}
+                      />
+                    </div>
                   </div>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label>Model</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={editForm.model}
-                      onChange={(e) => setEditForm({ ...editForm, model: e.target.value })}
-                    />
+                  <div className="form-group" style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Listing Offer Type *</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setEditForm({ ...editForm, offerType: 'Sale' })}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid ' + (editForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--border-glass)'),
+                          background: editForm.offerType === 'Sale' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
+                          color: editForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>🏷️</span> For Sale
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditForm({ ...editForm, offerType: 'Rent' })}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid ' + (editForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--border-glass)'),
+                          background: editForm.offerType === 'Rent' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
+                          color: editForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>🔑</span> For Rent
+                      </button>
+                    </div>
                   </div>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label>Year</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      value={editForm.year}
-                      onChange={(e) => setEditForm({ ...editForm, year: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label>Mileage (mi)</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      value={editForm.mileage}
-                      onChange={(e) => setEditForm({ ...editForm, mileage: e.target.value })}
-                    />
-                  </div>
-                </div>
+                </>
               )}
 
               <div className="form-group">
@@ -1948,7 +2720,7 @@ const Dashboard = () => {
                     />
                   </div>
                 </div>
-              ) : (
+              ) : !['Law Office', 'Tax Office', 'Dental Clinic', 'Consulting Firm'].includes(user?.category) ? (
                 <div className="form-group">
                   <label>Price / Value Offered ($) <span style={{ fontWeight: 400, fontSize: '0.82rem', opacity: 0.8 }}>(Optional — Leave blank for "Contact for Price")</span></label>
                   <input 
@@ -1957,7 +2729,297 @@ const Dashboard = () => {
                     placeholder="e.g. 50 (Leave blank for call/inquire)"
                     value={listingForm.price}
                     onChange={(e) => setListingForm({ ...listingForm, price: e.target.value })}
+                    required={['Boutique', 'Grocery Store', 'Liquor Store', 'Electronics Shop'].includes(user?.category)}
                   />
+                </div>
+              ) : null}
+
+              {user?.role === 'business' && user.businessType === 'store' && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-glass)', padding: '12px', borderRadius: '8px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', margin: 0 }}>
+                    <input 
+                      type="checkbox" 
+                      checked={listingForm.isNewArrival} 
+                      onChange={(e) => setListingForm({ ...listingForm, isNewArrival: e.target.checked })} 
+                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                    />
+                    <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>New Arrival</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', margin: 0 }}>
+                    <input 
+                      type="checkbox" 
+                      checked={listingForm.isOnSale} 
+                      onChange={(e) => setListingForm({ ...listingForm, isOnSale: e.target.checked })} 
+                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                    />
+                    <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>On Sale</span>
+                  </label>
+                  {listingForm.isOnSale && (
+                    <div style={{ gridColumn: 'span 2', marginTop: '8px' }}>
+                      <label style={{ fontSize: '0.82rem', color: 'var(--accent-secondary)' }}>Discounted Sale Price ($) *</label>
+                      <input 
+                        type="number" 
+                        className="form-control" 
+                        placeholder="e.g. 40" 
+                        value={listingForm.salePrice} 
+                        onChange={(e) => setListingForm({ ...listingForm, salePrice: e.target.value })} 
+                        required 
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Dynamic Category Specific Fields for Create Modal */}
+              {user?.role === 'business' && user.category === 'Boutique' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Boutique Product Specs</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Brand</label>
+                      <input type="text" className="form-control" placeholder="e.g. Levi's" value={listingForm.brand} onChange={(e) => setListingForm({ ...listingForm, brand: e.target.value })} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Colors (comma-separated)</label>
+                      <input type="text" className="form-control" placeholder="e.g. Red, Blue" value={listingForm.colors} onChange={(e) => setListingForm({ ...listingForm, colors: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px' }}>Sizes (Select Optional Sizes)</label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {['All Sizes', 'XS', 'S', 'M', 'L', 'XL', 'XXL'].map((size) => {
+                        const sizesArray = (listingForm.sizes || '').split(',').map(s => s.trim()).filter(Boolean);
+                        const isSelected = sizesArray.includes(size);
+                        return (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => handleToggleSize(size, false)}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '20px',
+                              border: '1px solid ' + (isSelected ? 'var(--accent-primary)' : 'var(--border-glass)'),
+                              background: isSelected ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
+                              color: isSelected ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                              fontSize: '0.85rem',
+                              fontWeight: isSelected ? '600' : 'normal',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            {size}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Stock Quantity *</label>
+                    <input type="number" className="form-control" placeholder="e.g. 15" value={listingForm.stock} onChange={(e) => setListingForm({ ...listingForm, stock: e.target.value })} required />
+                  </div>
+                </div>
+              )}
+
+              {user?.role === 'business' && user.category === 'Grocery Store' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Grocery Product Specs</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="form-group">
+                      <label>Brand</label>
+                      <input type="text" className="form-control" placeholder="e.g. organic" value={listingForm.brand} onChange={(e) => setListingForm({ ...listingForm, brand: e.target.value })} />
+                    </div>
+                    <div className="form-group">
+                      <label>Weight / Net Wt.</label>
+                      <input type="text" className="form-control" placeholder="e.g. 500g" value={listingForm.weight} onChange={(e) => setListingForm({ ...listingForm, weight: e.target.value })} />
+                    </div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: 0 }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Expiration Date</label>
+                      <input type="date" className="form-control" value={listingForm.expirationDate} onChange={(e) => setListingForm({ ...listingForm, expirationDate: e.target.value })} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Stock Quantity *</label>
+                      <input type="number" className="form-control" placeholder="e.g. 100" value={listingForm.stock} onChange={(e) => setListingForm({ ...listingForm, stock: e.target.value })} required />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {user?.role === 'business' && user.category === 'Liquor Store' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Liquor Product Specs</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="form-group">
+                      <label>Volume / Size</label>
+                      <input type="text" className="form-control" placeholder="e.g. 750ml" value={listingForm.volume} onChange={(e) => setListingForm({ ...listingForm, volume: e.target.value })} />
+                    </div>
+                    <div className="form-group">
+                      <label>Alcohol Content (%)</label>
+                      <input type="number" step="0.1" className="form-control" placeholder="e.g. 40" value={listingForm.alcoholPercentage} onChange={(e) => setListingForm({ ...listingForm, alcoholPercentage: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Stock Quantity *</label>
+                    <input type="number" className="form-control" placeholder="e.g. 24" value={listingForm.stock} onChange={(e) => setListingForm({ ...listingForm, stock: e.target.value })} required />
+                  </div>
+                </div>
+              )}
+
+              {user?.role === 'business' && user.category === 'Electronics Shop' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Electronics Specs</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="form-group">
+                      <label>Brand</label>
+                      <input type="text" className="form-control" placeholder="e.g. Apple" value={listingForm.brand} onChange={(e) => setListingForm({ ...listingForm, brand: e.target.value })} />
+                    </div>
+                    <div className="form-group">
+                      <label>Model Number</label>
+                      <input type="text" className="form-control" placeholder="e.g. A2633" value={listingForm.modelNumber} onChange={(e) => setListingForm({ ...listingForm, modelNumber: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label>Warranty Info</label>
+                    <input type="text" className="form-control" placeholder="e.g. 1 Year Apple Care" value={listingForm.warranty} onChange={(e) => setListingForm({ ...listingForm, warranty: e.target.value })} />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: 0 }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Condition</label>
+                      <select className="form-control" value={listingForm.condition} onChange={(e) => setListingForm({ ...listingForm, condition: e.target.value })}>
+                        <option value="New">New</option>
+                        <option value="Refurbished">Refurbished</option>
+                        <option value="Used - Like New">Used - Like New</option>
+                        <option value="Used - Good">Used - Good</option>
+                      </select>
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Stock Quantity *</label>
+                      <input type="number" className="form-control" placeholder="e.g. 5" value={listingForm.stock} onChange={(e) => setListingForm({ ...listingForm, stock: e.target.value })} required />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {user?.role === 'business' && user.category === 'Law Office' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Legal Service Info (No Price Required)</h4>
+                  <div className="form-group">
+                    <label>Specialties / Practice Areas (comma-separated)</label>
+                    <input type="text" className="form-control" placeholder="e.g. Family Law, Corporate Tax, Criminal Defense" value={listingForm.specialties} onChange={(e) => setListingForm({ ...listingForm, specialties: e.target.value })} />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="form-group">
+                      <label>Consultation Type</label>
+                      <select className="form-control" value={listingForm.consultationType} onChange={(e) => setListingForm({ ...listingForm, consultationType: e.target.value })}>
+                        <option value="In-Person">In-Person Only</option>
+                        <option value="Virtual / Remote">Virtual / Remote</option>
+                        <option value="Hybrid">Hybrid</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Languages Spoken</label>
+                      <input type="text" className="form-control" placeholder="e.g. English, Amharic" value={listingForm.languagesSpoken} onChange={(e) => setListingForm({ ...listingForm, languagesSpoken: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Office / Consulting Hours</label>
+                    <input type="text" className="form-control" placeholder="e.g. Mon-Fri 9AM-5PM" value={listingForm.officeHours} onChange={(e) => setListingForm({ ...listingForm, officeHours: e.target.value })} />
+                  </div>
+                </div>
+              )}
+
+              {user?.role === 'business' && user.category === 'Tax Office' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Tax & Accounting Service Specs</h4>
+                  <div className="form-group">
+                    <label>Tax Services Offered (comma-separated)</label>
+                    <input type="text" className="form-control" placeholder="e.g. Personal Return, Corporate Audits, Bookkeeping" value={listingForm.taxServices} onChange={(e) => setListingForm({ ...listingForm, taxServices: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label>Tax Years Handled (comma-separated)</label>
+                    <input type="text" className="form-control" placeholder="e.g. 2023, 2024, Back taxes" value={listingForm.taxYearsHandled} onChange={(e) => setListingForm({ ...listingForm, taxYearsHandled: e.target.value })} />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Required Onboarding Documents</label>
+                    <input type="text" className="form-control" placeholder="e.g. W2, 1099, Prior Year Return" value={listingForm.documentsRequired} onChange={(e) => setListingForm({ ...listingForm, documentsRequired: e.target.value })} />
+                  </div>
+                </div>
+              )}
+
+              {user?.role === 'business' && user.category === 'Dental Clinic' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Clinic / Medical Services Specs</h4>
+                  <div className="form-group">
+                    <label>Clinic Specialties (comma-separated)</label>
+                    <input type="text" className="form-control" placeholder="e.g. Orthodontics, Pediatrics, Cosmetic" value={listingForm.specialties} onChange={(e) => setListingForm({ ...listingForm, specialties: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label>Services Offered (comma-separated)</label>
+                    <input type="text" className="form-control" placeholder="e.g. Root Canal, Teeth Whitening, Routine Exam" value={listingForm.clinicServices} onChange={(e) => setListingForm({ ...listingForm, clinicServices: e.target.value })} />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', alignItems: 'center', marginBottom: 0 }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Accepted Insurances</label>
+                      <input type="text" className="form-control" placeholder="e.g. BlueCross, Aetna" value={listingForm.acceptedInsurances} onChange={(e) => setListingForm({ ...listingForm, acceptedInsurances: e.target.value })} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '20px' }}>
+                      <input type="checkbox" id="emergencyServices" checked={listingForm.emergencyServices} onChange={(e) => setListingForm({ ...listingForm, emergencyServices: e.target.checked })} />
+                      <label htmlFor="emergencyServices" style={{ margin: 0, cursor: 'pointer' }}>Offers 24/7 Emergency Care</label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {user?.role === 'business' && user.category === 'Consulting Firm' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Consulting Firm Specs</h4>
+                  <div className="form-group">
+                    <label>Consulting Domains (comma-separated)</label>
+                    <input type="text" className="form-control" placeholder="e.g. IT Strategy, HR Restructuring, Marketing Audit" value={listingForm.consultingDomains} onChange={(e) => setListingForm({ ...listingForm, consultingDomains: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label>Corporate Services (comma-separated)</label>
+                    <input type="text" className="form-control" placeholder="e.g. Merger Advice, Executive Coaching" value={listingForm.corporateServices} onChange={(e) => setListingForm({ ...listingForm, corporateServices: e.target.value })} />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Lead Consultant Profile Summary</label>
+                    <input type="text" className="form-control" placeholder="e.g. Led by ex-McKinsey Senior Partner" value={listingForm.consultantProfiles} onChange={(e) => setListingForm({ ...listingForm, consultantProfiles: e.target.value })} />
+                  </div>
+                </div>
+              )}
+
+              {user?.role === 'business' && user.category === 'Cleaning Agency' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Cleaning Agency Specs</h4>
+                  <div className="form-group">
+                    <label>Cleaning Services Offered (comma-separated)</label>
+                    <input type="text" className="form-control" placeholder="e.g. Deep Clean, Office Sanitation, Carpet wash" value={listingForm.cleaningServices} onChange={(e) => setListingForm({ ...listingForm, cleaningServices: e.target.value })} />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: 0 }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Frequencies Available</label>
+                      <input type="text" className="form-control" placeholder="e.g. Daily, Weekly, One-time" value={listingForm.frequencies} onChange={(e) => setListingForm({ ...listingForm, frequencies: e.target.value })} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Cleaning Rate Details (Optional)</label>
+                      <input type="text" className="form-control" placeholder="e.g. From $0.15/sqft or $35/hr" value={listingForm.cleaningRates} onChange={(e) => setListingForm({ ...listingForm, cleaningRates: e.target.value })} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {user?.role === 'business' && user.category === 'Beauty Salon' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Beauty Salon Services Specs</h4>
+                  <div className="form-group">
+                    <label>Beauty Services Offered (comma-separated)</label>
+                    <input type="text" className="form-control" placeholder="e.g. Gel Nails, Hair Coloring, Bridal Makeup" value={listingForm.beautyServices} onChange={(e) => setListingForm({ ...listingForm, beautyServices: e.target.value })} />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Stylists / Experts Names</label>
+                    <input type="text" className="form-control" placeholder="e.g. Stylist Selam, Nail Tech Almaz" value={listingForm.stylists} onChange={(e) => setListingForm({ ...listingForm, stylists: e.target.value })} />
+                  </div>
                 </div>
               )}
 
@@ -2062,53 +3124,145 @@ const Dashboard = () => {
                       required
                     />
                   </div>
+                  <div className="form-group" style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Listing Offer Type *</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setListingForm({ ...listingForm, offerType: 'Sale' })}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid ' + (listingForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--border-glass)'),
+                          background: listingForm.offerType === 'Sale' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
+                          color: listingForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>🏷️</span> For Sale (Buy)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setListingForm({ ...listingForm, offerType: 'Rent' })}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid ' + (listingForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--border-glass)'),
+                          background: listingForm.offerType === 'Rent' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
+                          color: listingForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>🔑</span> For Rent
+                      </button>
+                    </div>
+                  </div>
                 </>
               )}
 
               {/* Automotive specific fields */}
               {listingForm.type === 'car' && (
-                <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label>Make</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="e.g. Toyota"
-                      value={listingForm.make}
-                      onChange={(e) => setListingForm({ ...listingForm, make: e.target.value })}
-                    />
+                <>
+                  <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Make</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="e.g. Toyota"
+                        value={listingForm.make}
+                        onChange={(e) => setListingForm({ ...listingForm, make: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Model</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="e.g. Camry"
+                        value={listingForm.model}
+                        onChange={(e) => setListingForm({ ...listingForm, model: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Year</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        placeholder="e.g. 2023"
+                        value={listingForm.year}
+                        onChange={(e) => setListingForm({ ...listingForm, year: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Mileage (mi)</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        placeholder="e.g. 15000"
+                        value={listingForm.mileage}
+                        onChange={(e) => setListingForm({ ...listingForm, mileage: e.target.value })}
+                      />
+                    </div>
                   </div>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label>Model</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="e.g. Camry"
-                      value={listingForm.model}
-                      onChange={(e) => setListingForm({ ...listingForm, model: e.target.value })}
-                    />
+                  <div className="form-group" style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Listing Offer Type *</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setListingForm({ ...listingForm, offerType: 'Sale' })}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid ' + (listingForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--border-glass)'),
+                          background: listingForm.offerType === 'Sale' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
+                          color: listingForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>🏷️</span> For Sale
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setListingForm({ ...listingForm, offerType: 'Rent' })}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid ' + (listingForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--border-glass)'),
+                          background: listingForm.offerType === 'Rent' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
+                          color: listingForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>🔑</span> For Rent
+                      </button>
+                    </div>
                   </div>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label>Year</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      placeholder="e.g. 2023"
-                      value={listingForm.year}
-                      onChange={(e) => setListingForm({ ...listingForm, year: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label>Mileage (mi)</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      placeholder="e.g. 15000"
-                      value={listingForm.mileage}
-                      onChange={(e) => setListingForm({ ...listingForm, mileage: e.target.value })}
-                    />
-                  </div>
-                </div>
+                </>
               )}
 
               <div className="form-group">
@@ -2620,20 +3774,43 @@ const Dashboard = () => {
         @media (max-width: 900px) {
           .dashboard-workspace {
             flex-direction: column;
+            gap: 16px;
+            width: 100%;
+            overflow-x: hidden;
           }
           .dashboard-sidebar {
             width: 100%;
             flex-direction: row;
             flex-wrap: wrap;
+            gap: 8px;
           }
           .sidebar-tab-btn {
-            flex: 1;
-            min-width: 120px;
-            padding: 10px 14px;
-            font-size: 0.85rem;
+            flex: 1 1 calc(50% - 8px);
+            min-width: unset;
+            padding: 10px 8px;
+            font-size: 0.82rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
           .dashboard-grid {
             grid-template-columns: 1fr;
+            width: 100%;
+          }
+          .stats-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px;
+          }
+          .stat-card {
+            padding: 16px;
+          }
+          .stat-val {
+            font-size: 1.8rem;
+          }
+        }
+        @media (max-width: 480px) {
+          .sidebar-tab-btn {
+            flex: 1 1 100%;
           }
         }
       `}</style>

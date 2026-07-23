@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const Inquiry = require('../models/Inquiry');
 const User = require('../models/User');
 const { verifyToken } = require('../middleware/auth');
+const { validateEmail, validatePhone } = require('../utils/validation');
 
 // CREATE INQUIRY (GUEST SUBMISSION)
 router.post('/', async (req, res) => {
@@ -12,6 +13,18 @@ router.post('/', async (req, res) => {
 
     if (!businessId || !customerName || !customerEmail || !customerPhone || !businessType) {
       return res.status(400).json({ message: 'Please provide all required customer and business details' });
+    }
+
+    // Validate customer email
+    const emailCheck = validateEmail(customerEmail);
+    if (!emailCheck.valid) {
+      return res.status(400).json({ message: emailCheck.reason });
+    }
+
+    // Validate customer phone
+    const phoneCheck = validatePhone(customerPhone);
+    if (!phoneCheck.valid) {
+      return res.status(400).json({ message: phoneCheck.reason });
     }
 
     const businessOwner = await User.findById(businessId);

@@ -29,6 +29,8 @@ const UserSchema = new mongoose.Schema({
   },
   category: { type: String },  // e.g., "Boutique", "Pharmacy", "Law Office", "Tax Office", "Liquor Store"
   description: { type: String }, // Store or handyman description
+  shopStory: { type: String, default: '' },
+  galleryPhotos: [{ type: String }],
   address: { type: String },
   storeLogo: { type: String, default: '' },
   storeImage: { type: String, default: '' },

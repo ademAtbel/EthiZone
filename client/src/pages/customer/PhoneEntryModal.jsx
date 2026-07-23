@@ -87,7 +87,13 @@ export default function PhoneEntryModal() {
         body: JSON.stringify({ email: email.trim(), password }),
       });
 
-      const data = await response.json();
+      let data;
+      const text = await response.text();
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (err) {
+        data = { message: "Unable to connect to the backend server. Please make sure the backend server is running on port 5001." };
+      }
 
       if (!response.ok) {
         throw new Error(data.message || "Login failed");
@@ -171,7 +177,13 @@ export default function PhoneEntryModal() {
         body: JSON.stringify({ phone: fullPhone }),
       });
 
-      const data = await response.json();
+      let data;
+      const text = await response.text();
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (err) {
+        data = { message: "Unable to connect to the backend server. Please make sure the backend server is running on port 5001." };
+      }
 
       if (!response.ok) {
         throw new Error(data.message || "User lookup failed");

@@ -16,10 +16,8 @@ const Breadcrumbs = () => {
     <div 
       className="breadcrumbs-wrapper"
       style={{ 
-        background: 'rgba(15, 23, 42, 0.85)', 
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        background: 'var(--bg-app)', 
+        borderBottom: '1px solid var(--border-glass)',
         paddingTop: '10px', 
         paddingBottom: '10px' 
       }}
@@ -53,9 +51,43 @@ const Breadcrumbs = () => {
                   text = 'Store Directory';
                 }
               }
-              if (value === 'dashboard') text = 'Dashboard';
+              if (value === 'dashboard') {
+                const searchParams = new URLSearchParams(location.search);
+                const tab = searchParams.get('tab');
+                if (tab) {
+                  if (tab === 'store_settings') text = 'Store Settings';
+                  else if (tab === 'overview') text = 'Dashboard';
+                  else if (tab === 'items') text = 'My Listings';
+                  else if (tab === 'settings') text = 'Storefront Navigation';
+                  else if (tab === 'reviews') text = 'Reference Log & Feedback';
+                  else if (tab === 'inquiries') text = 'Customer Requests';
+                  else text = tab.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                } else {
+                  text = 'Dashboard';
+                }
+              }
               if (value === 'admin') text = 'Admin Panel';
               if (value === 'inbox') text = 'Inbox';
+
+              if (isLast && location.pathname.startsWith('/store/') && !location.pathname.endsWith('/dashboard')) {
+                const searchParams = new URLSearchParams(location.search);
+                const storeTab = searchParams.get('tab');
+                if (storeTab && storeTab !== 'home') {
+                  const tabText = storeTab.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  return (
+                    <React.Fragment key={to}>
+                      <li className="breadcrumb-item">
+                        <Link to={to} style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>
+                          {text}
+                        </Link>
+                      </li>
+                      <li className="breadcrumb-item active" aria-current="page" style={{ color: 'var(--accent-secondary)' }}>
+                        {tabText}
+                      </li>
+                    </React.Fragment>
+                  );
+                }
+              }
 
               return isLast ? (
                 <li className="breadcrumb-item active" aria-current="page" key={to} style={{ color: 'var(--accent-secondary)' }}>

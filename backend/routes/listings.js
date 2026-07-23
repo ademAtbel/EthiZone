@@ -8,7 +8,7 @@ const { verifyToken } = require('../middleware/auth');
 // CREATE LISTING
 router.post('/', verifyToken, async (req, res) => {
   try {
-    const { title, description, price, type, category, metadata, images } = req.body;
+    const { title, description, price, type, category, metadata, images, isOnSale, isNewArrival, salePrice } = req.body;
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -46,17 +46,111 @@ router.post('/', verifyToken, async (req, res) => {
       return res.status(400).json({ message: 'Maximum 5 images allowed per listing.' });
     }
 
-    const newListing = new Listing({
+    const itemCategory = (['store_product', 'service', 'job_opening', 'house', 'car'].includes(type) && user.role === 'business') ? user.category : (category || 'Other');
+
+    let Model = Listing;
+    const modelProps = {};
+
+    if (type === 'personal_item') {
+      Model = require('../models/PersonalListing');
+      if (metadata) {
+        modelProps.condition = metadata.condition;
+        modelProps.availability = metadata.availability;
+      }
+    } else if (itemCategory === 'Boutique') {
+      Model = require('../models/BoutiqueListing');
+      if (metadata) {
+        modelProps.brand = metadata.brand;
+        modelProps.sizes = metadata.sizes;
+        modelProps.colors = metadata.colors;
+        modelProps.condition = metadata.condition;
+        modelProps.stock = metadata.stock;
+      }
+    } else if (itemCategory === 'Grocery Store') {
+      Model = require('../models/GroceryListing');
+      if (metadata) {
+        modelProps.expirationDate = metadata.expirationDate;
+        modelProps.brand = metadata.brand;
+        modelProps.weight = metadata.weight;
+        modelProps.stock = metadata.stock;
+      }
+    } else if (itemCategory === 'Liquor Store') {
+      Model = require('../models/LiquorListing');
+      if (metadata) {
+        modelProps.volume = metadata.volume;
+        modelProps.alcoholPercentage = metadata.alcoholPercentage;
+        modelProps.stock = metadata.stock;
+      }
+    } else if (itemCategory === 'Electronics Shop') {
+      Model = require('../models/ElectronicsListing');
+      if (metadata) {
+        modelProps.brand = metadata.brand;
+        modelProps.modelNumber = metadata.modelNumber;
+        modelProps.specifications = metadata.specifications;
+        modelProps.warranty = metadata.warranty;
+        modelProps.condition = metadata.condition;
+        modelProps.stock = metadata.stock;
+      }
+    } else if (itemCategory === 'Law Office') {
+      Model = require('../models/LawListing');
+      if (metadata) {
+        modelProps.specialties = metadata.specialties;
+        modelProps.consultationType = metadata.consultationType;
+        modelProps.officeHours = metadata.officeHours;
+        modelProps.languagesSpoken = metadata.languagesSpoken;
+      }
+    } else if (itemCategory === 'Tax Office') {
+      Model = require('../models/TaxListing');
+      if (metadata) {
+        modelProps.taxServices = metadata.taxServices;
+        modelProps.taxYearsHandled = metadata.taxYearsHandled;
+        modelProps.documentsRequired = metadata.documentsRequired;
+      }
+    } else if (itemCategory === 'Dental Clinic') {
+      Model = require('../models/ClinicListing');
+      if (metadata) {
+        modelProps.specialties = metadata.specialties;
+        modelProps.clinicServices = metadata.clinicServices;
+        modelProps.acceptedInsurances = metadata.acceptedInsurances;
+        modelProps.emergencyServices = metadata.emergencyServices;
+      }
+    } else if (itemCategory === 'Consulting Firm') {
+      Model = require('../models/ConsultingListing');
+      if (metadata) {
+        modelProps.consultingDomains = metadata.consultingDomains;
+        modelProps.corporateServices = metadata.corporateServices;
+        modelProps.consultantProfiles = metadata.consultantProfiles;
+      }
+    } else if (itemCategory === 'Cleaning Agency') {
+      Model = require('../models/CleaningListing');
+      if (metadata) {
+        modelProps.cleaningServices = metadata.cleaningServices;
+        modelProps.frequencies = metadata.frequencies;
+        modelProps.cleaningRates = metadata.cleaningRates;
+      }
+    } else if (itemCategory === 'Beauty Salon') {
+      Model = require('../models/BeautyListing');
+      if (metadata) {
+        modelProps.beautyServices = metadata.beautyServices;
+        modelProps.stylists = metadata.stylists;
+      }
+    }
+
+    const newListing = new Model({
       ownerId: user._id,
       ownerName: user.username,
       ownerPhone: user.phone,
       title,
       description,
       price: (price !== undefined && price !== null && price !== '') ? price : null,
+      isOnSale: !!isOnSale,
+      isNewArrival: !!isNewArrival,
+      salePrice: (salePrice !== undefined && salePrice !== null && salePrice !== '') ? salePrice : null,
       type,
-      category: (['store_product', 'service', 'job_opening', 'house', 'car'].includes(type) && user.role === 'business') ? user.category : (category || 'Other'),
-      metadata,
-      images: images || []
+      category: itemCategory,
+      images: images || [],
+      metadata: metadata || {},
+      ...modelProps
     });
 
     const savedListing = await newListing.save();
@@ -174,7 +268,7 @@ router.get('/:id', async (req, res) => {
 // UPDATE LISTING
 router.put('/:id', verifyToken, async (req, res) => {
   try {
-    const { title, description, price, status, category, metadata, images } = req.body;
+    const { title, description, price, status, category, metadata, images, isOnSale, isNewArrival, salePrice } = req.body;
     let listing = await Listing.findById(req.params.id);
 
     if (!listing) {
@@ -196,9 +290,22 @@ router.put('/:id', verifyToken, async (req, res) => {
     listing.price = (price !== undefined && price !== null && price !== '') ? price : null;
     listing.status = status || listing.status;
     listing.category = category !== undefined ? category : listing.category;
-    listing.metadata = metadata || listing.metadata;
+    
+    if (isOnSale !== undefined) listing.isOnSale = isOnSale;
+    if (isNewArrival !== undefined) listing.isNewArrival = isNewArrival;
+    if (salePrice !== undefined) {
+      listing.salePrice = (salePrice !== null && salePrice !== '') ? salePrice : null;
+    }
+
     if (images) {
       listing.images = images;
+    }
+
+    if (metadata) {
+      listing.metadata = metadata;
+      for (const [key, val] of Object.entries(metadata)) {
+        listing[key] = val;
+      }
     }
 
     const updatedListing = await listing.save();

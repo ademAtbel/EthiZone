@@ -21,7 +21,7 @@ export default function HousesPage() {
   const [houses, setHouses] = useState([]);
 
   useEffect(() => {
-    fetch("/api/houses")
+    fetch("/api/listings?type=house")
       .then((res) => {
         if (!res.ok) throw new Error("API response not OK");
         return res.json();
@@ -37,14 +37,23 @@ export default function HousesPage() {
   }, []);
 
   const filteredHouses = houses.filter((house) => {
-    if (propertyStatus !== "All" && house.type !== propertyStatus) return false;
-    if (propertyType !== "All" && house.propertyType !== propertyType)
-      return false;
-    if (house.beds < minBeds) return false;
-    if (house.baths < minBaths) return false;
+    // Resolve offerType (Rent vs Buy/Sale)
+    const houseOfferStatus = house.metadata?.offerType || house.type || 'Rent';
+    if (propertyStatus !== "All" && houseOfferStatus.toLowerCase() !== propertyStatus.toLowerCase()) return false;
+
+    // Resolve propertyType
+    const housePropType = house.metadata?.propertyType || house.propertyType || 'Apartment';
+    if (propertyType !== "All" && housePropType.toLowerCase() !== propertyType.toLowerCase()) return false;
+
+    // Resolve beds and baths
+    const houseBeds = house.metadata?.bedrooms || house.beds || 0;
+    const houseBaths = house.metadata?.bathrooms || house.baths || 0;
+    if (houseBeds < minBeds) return false;
+    if (houseBaths < minBaths) return false;
+
     if (nearMe && house.distance > radius) return false;
     if (locationFilter) {
-      const addressVal = (house.metadata?.address || house.ownerId?.address || '').toLowerCase();
+      const addressVal = (house.metadata?.address || house.location || '').toLowerCase();
       const textVal = ((house.description || '') + ' ' + (house.title || '') + ' ' + (house.category || '')).toLowerCase();
       if (!addressVal.includes(locationFilter.toLowerCase()) && !textVal.includes(locationFilter.toLowerCase())) {
         return false;
@@ -55,7 +64,7 @@ export default function HousesPage() {
       if (
         !house.title.toLowerCase().includes(q) &&
         !house.description.toLowerCase().includes(q) &&
-        !house.tags.some((tag) => tag.toLowerCase().includes(q))
+        !(house.tags && house.tags.some((tag) => tag.toLowerCase().includes(q)))
       ) {
         return false;
       }
@@ -143,39 +152,12 @@ export default function HousesPage() {
             </div>
 
             <div className="flex flex-col md:flex-row gap-xl">
-              {/* Sidebar Filters */}
               <aside
                 className={`w-full md:w-64 flex-shrink-0 space-y-xl md:border-r border-outline-variant pr-md ${isFilterOpen ? "block" : "hidden md:block"}`}
               >
                 <h2 className="text-h3 font-h3 text-on-surface border-b border-outline-variant pb-sm">
                   Filters
                 </h2>
-
-                {/* Status */}
-                <section>
-                  <h3 className="text-label-md font-label-md text-on-surface uppercase tracking-wider mb-md">
-                    Status
-                  </h3>
-                  <div className="space-y-sm">
-                    {["All", "Rent", "Buy"].map((status) => (
-                      <label
-                        key={status}
-                        className="flex items-center gap-sm cursor-pointer group"
-                      >
-                        <input
-                          type="radio"
-                          name="status"
-                          className="w-4 h-4 text-primary focus:ring-primary-container"
-                          checked={propertyStatus === status}
-                          onChange={() => setPropertyStatus(status)}
-                        />
-                        <span className="text-body-sm text-on-surface-variant group-hover:text-on-surface">
-                          {status}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </section>
 
                 {/* Property Type */}
                 <section>
@@ -325,92 +307,130 @@ export default function HousesPage() {
               </aside>
 
               {/* Grid */}
-              <div className="flex-grow">
+              <div className="flex-grow flex flex-col gap-lg">
+                {/* Sale / Rent Toggle Tabs */}
+                <div className="flex border-b border-outline-variant pb-xs gap-md mb-md">
+                  {[
+                    { label: "All Properties", value: "All", icon: "home" },
+                    { label: "For Sale", value: "Buy", icon: "sell" },
+                    { label: "For Rent", value: "Rent", icon: "key" }
+                  ].map((tab) => {
+                    const isActive = propertyStatus === tab.value;
+                    return (
+                      <button
+                        key={tab.value}
+                        onClick={() => setPropertyStatus(tab.value)}
+                        className={`flex items-center gap-xs pb-sm px-sm font-label-md transition-all border-b-2 relative ${
+                          isActive 
+                            ? "text-primary border-primary font-semibold" 
+                            : "text-on-surface-variant border-transparent hover:text-on-surface hover:border-outline-variant"
+                        }`}
+                        style={{ outline: 'none' }}
+                      >
+                        <span className="material-symbols-outlined text-[18px]">
+                          {tab.icon}
+                        </span>
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
-                  {filteredHouses.map((house) => (
-                    <div
-                      key={house._id || house.id}
-                      onClick={() => setSelectedHouse(house)}
-                      className="bg-surface rounded-xl border border-outline-variant overflow-hidden hover:shadow-lg transition-all group flex flex-col cursor-pointer"
-                    >
-                      <div className="relative h-56 overflow-hidden shrink-0">
-                        <img
-                          src={house.image}
-                          alt={house.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute top-sm left-sm bg-surface/90 backdrop-blur-sm px-sm py-xs rounded-md">
-                          <span className="text-label-sm font-label-sm text-on-surface font-bold">
-                            {house.type}
-                          </span>
+                  {filteredHouses.map((house) => {
+                    const houseImg = house.images?.[0] || house.image || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80';
+                    const housePrice = typeof house.price === 'number' ? `$${house.price.toLocaleString()}` : (house.price || 'Contact for Price');
+                    const houseLoc = house.metadata?.address || house.location || 'Addis Ababa';
+                    const houseAgent = house.ownerName || house.agent || 'Verified Agent';
+                    const houseType = house.metadata?.propertyType || house.propertyType || house.type || 'Apartment';
+                    const houseBeds = house.metadata?.bedrooms || house.beds || 0;
+                    const houseBaths = house.metadata?.bathrooms || house.baths || 0;
+                    const houseSqft = house.metadata?.sqft || house.sqft || '1,800';
+
+                    return (
+                      <div
+                        key={house._id || house.id}
+                        onClick={() => setSelectedHouse(house)}
+                        className="bg-surface rounded-xl border border-outline-variant overflow-hidden hover:shadow-lg transition-all group flex flex-col cursor-pointer"
+                      >
+                        <div className="relative h-56 overflow-hidden shrink-0">
+                          <img
+                            src={houseImg}
+                            alt={house.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                          <div className="absolute top-sm left-sm bg-surface/90 backdrop-blur-sm px-sm py-xs rounded-md">
+                            <span className="text-label-sm font-label-sm text-on-surface font-bold">
+                              {houseType}
+                            </span>
+                          </div>
+                          <button
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute top-sm right-sm bg-surface/80 backdrop-blur-sm p-xs rounded-full hover:bg-primary hover:text-on-primary transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">
+                              favorite
+                            </span>
+                          </button>
                         </div>
-                        <button
-                          onClick={(e) => e.stopPropagation()}
-                          className="absolute top-sm right-sm bg-surface/80 backdrop-blur-sm p-xs rounded-full hover:bg-primary hover:text-on-primary transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">
-                            favorite
-                          </span>
-                        </button>
+                        <div className="p-md flex flex-col flex-grow">
+                          <h3 className="text-h3 font-h3 text-primary mb-xs">
+                            {housePrice}
+                          </h3>
+                          <h4 className="text-body-lg font-body-lg font-semibold text-on-surface mb-md">
+                            {house.title}
+                          </h4>
+
+                          <div className="flex items-center gap-md text-on-surface-variant mb-md border-b border-outline-variant pb-md">
+                            <div className="flex items-center gap-xs">
+                              <span className="material-symbols-outlined text-[18px]">
+                                bed
+                              </span>
+                              <span className="text-label-sm font-label-sm">
+                                {houseBeds} Beds
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-xs">
+                              <span className="material-symbols-outlined text-[18px]">
+                                shower
+                              </span>
+                              <span className="text-label-sm font-label-sm">
+                                {houseBaths} Baths
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-xs">
+                              <span className="material-symbols-outlined text-[18px]">
+                                square_foot
+                              </span>
+                              <span className="text-label-sm font-label-sm">
+                                {houseSqft} sqft
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-xs text-on-surface-variant mb-sm mt-auto">
+                            <span className="material-symbols-outlined text-[16px]">
+                              location_on
+                            </span>
+                            <span className="text-label-sm font-label-sm">
+                              {houseLoc}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-xs text-on-surface-variant mb-lg">
+                            <span className="material-symbols-outlined text-[16px]">
+                              real_estate_agent
+                            </span>
+                            <span className="text-label-sm font-label-sm">
+                              {houseAgent}
+                            </span>
+                          </div>
+
+                          <button className="w-full bg-surface-container-low text-primary py-sm rounded-lg font-label-md group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                            View Property
+                          </button>
+                        </div>
                       </div>
-                      <div className="p-md flex flex-col flex-grow">
-                        <h3 className="text-h3 font-h3 text-primary mb-xs">
-                          {house.price}
-                        </h3>
-                        <h4 className="text-body-lg font-body-lg font-semibold text-on-surface mb-md">
-                          {house.title}
-                        </h4>
-
-                        <div className="flex items-center gap-md text-on-surface-variant mb-md border-b border-outline-variant pb-md">
-                          <div className="flex items-center gap-xs">
-                            <span className="material-symbols-outlined text-[18px]">
-                              bed
-                            </span>
-                            <span className="text-label-sm font-label-sm">
-                              {house.beds} Beds
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-xs">
-                            <span className="material-symbols-outlined text-[18px]">
-                              shower
-                            </span>
-                            <span className="text-label-sm font-label-sm">
-                              {house.baths} Baths
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-xs">
-                            <span className="material-symbols-outlined text-[18px]">
-                              square_foot
-                            </span>
-                            <span className="text-label-sm font-label-sm">
-                              {house.sqft} sqft
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-xs text-on-surface-variant mb-sm mt-auto">
-                          <span className="material-symbols-outlined text-[16px]">
-                            location_on
-                          </span>
-                          <span className="text-label-sm font-label-sm">
-                            {house.location}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-xs text-on-surface-variant mb-lg">
-                          <span className="material-symbols-outlined text-[16px]">
-                            real_estate_agent
-                          </span>
-                          <span className="text-label-sm font-label-sm">
-                            {house.agent}
-                          </span>
-                        </div>
-
-                        <button className="w-full bg-surface-container-low text-primary py-sm rounded-lg font-label-md group-hover:bg-primary group-hover:text-on-primary transition-colors">
-                          View Property
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                   {filteredHouses.length === 0 && (
                     <div className="col-span-full text-center py-xl text-on-surface-variant">

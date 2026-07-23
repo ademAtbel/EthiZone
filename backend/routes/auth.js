@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { verifyToken } = require('../middleware/auth');
 const { sendOtpEmail } = require('../utils/email');
+const { validateEmail, validatePhone } = require('../utils/validation');
 
 
 
@@ -12,6 +13,18 @@ const { sendOtpEmail } = require('../utils/email');
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password, phone, role, businessType, category, storeName, description, address } = req.body;
+
+    // Validate email
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.valid) {
+      return res.status(400).json({ message: emailCheck.reason });
+    }
+
+    // Validate phone number
+    const phoneCheck = validatePhone(phone);
+    if (!phoneCheck.valid) {
+      return res.status(400).json({ message: phoneCheck.reason });
+    }
 
     // Check if user already exists
     let user = await User.findOne({ email });
@@ -270,7 +283,7 @@ router.patch('/update-navbar', verifyToken, async (req, res) => {
 // UPDATE STORE PROFILE DETAILS (STORES/SERVICES ONLY)
 router.patch('/update-profile', verifyToken, async (req, res) => {
   try {
-    const { storeName, description, address, socialLinks, storeLogo, storeImage, businessType, category, workingDays, businessHours } = req.body;
+    const { storeName, description, shopStory, galleryPhotos, address, socialLinks, storeLogo, storeImage, businessType, category, workingDays, businessHours } = req.body;
 
     const user = await User.findById(req.user.id);
     if (!user || user.role !== 'business') {
@@ -279,6 +292,13 @@ router.patch('/update-profile', verifyToken, async (req, res) => {
 
     if (storeName) user.storeName = storeName;
     if (description !== undefined) user.description = description;
+    if (shopStory !== undefined) user.shopStory = shopStory;
+    if (galleryPhotos !== undefined) {
+      if (!Array.isArray(galleryPhotos)) {
+        return res.status(400).json({ message: 'Gallery photos must be an array' });
+      }
+      user.galleryPhotos = galleryPhotos;
+    }
     if (address !== undefined) user.address = address;
     if (storeLogo !== undefined) user.storeLogo = storeLogo;
     if (storeImage !== undefined) user.storeImage = storeImage;
@@ -316,6 +336,8 @@ router.patch('/update-profile', verifyToken, async (req, res) => {
         category: user.category,
         storeName: user.storeName,
         description: user.description,
+        shopStory: user.shopStory || '',
+        galleryPhotos: user.galleryPhotos || [],
         address: user.address,
         socialLinks: user.socialLinks || [],
         storeLogo: user.storeLogo || '',
@@ -387,10 +409,19 @@ router.get('/store-profile/:storeName', async (req, res) => {
     const slug = req.params.storeName.toLowerCase().trim();
     
     // Look up business by unique storeSlug directly
-    const store = await User.findOne({
+    let store = await User.findOne({
       role: 'business',
       storeSlug: slug
     }).select('-password');
+
+    // Fallback: search by username slug if storeSlug doesn't match
+    if (!store) {
+      const cleanUsername = slug.replace(/-/g, ' ');
+      store = await User.findOne({
+        role: 'business',
+        username: { $regex: new RegExp('^' + cleanUsername + '$', 'i') }
+      }).select('-password');
+    }
 
     if (!store) {
       return res.status(404).json({ message: 'Store not found' });

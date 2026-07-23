@@ -178,7 +178,7 @@ const Navbar = () => {
           </div>
         )}
 
-        {/* Always Visible Actions (Language & Theme Toggle) */}
+        {/* Always Visible Actions (Language Toggle) */}
         <div className="nav-global-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto', marginRight: '10px' }}>
           {/* Language Toggle Button */}
           <button 
@@ -189,9 +189,6 @@ const Navbar = () => {
           >
             {language === 'en' ? 'አማ' : 'EN'}
           </button>
-          
-          {/* Dark / Light Toggle Button */}
-          <ThemeToggle />
         </div>
 
         {/* Right Nav Links */}
@@ -241,15 +238,25 @@ const Navbar = () => {
                       onClick={() => setUserMenuOpen(false)}
                       style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1005, background: 'transparent', cursor: 'default' }}
                     />
-                    <div className="navbar-user-dropdown glass-panel" style={{ position: 'absolute', top: '50px', right: 0, width: '240px', padding: '16px 0', zIndex: 1010, background: 'rgba(15, 23, 42, 0.98)', border: '1px solid var(--border-glass)', borderRadius: 'var(--radius-lg)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)' }}>
+                    <div className="navbar-user-dropdown glass-panel" style={{ position: 'absolute', top: '50px', right: 0, width: '240px', padding: '16px 0', zIndex: 1010, background: 'var(--bg-navbar)', border: '1px solid var(--border-glass)', borderRadius: 'var(--radius-lg)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08)' }}>
                       <div className="dropdown-user-header" style={{ padding: '0 16px 12px 16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <h6 style={{ margin: 0, fontSize: '0.95rem', color: '#ffffff' }}>{user.username}</h6>
+                        <h6 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-main)' }}>{user.username}</h6>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{user.email || 'User Account'}</span>
-                        <span className={`role-badge-mini ${user.role}`} style={{ display: 'inline-block', width: 'fit-content', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', padding: '1px 6px', borderRadius: '4px', marginTop: '4px', background: user.role === 'business' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(99, 102, 241, 0.15)', color: user.role === 'business' ? '#6ee7b7' : '#a5b4fc' }}>
+                        <span className={`role-badge-mini ${user.role}`} style={{ display: 'inline-block', width: 'fit-content', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', padding: '1px 6px', borderRadius: '4px', marginTop: '4px', background: user.role === 'business' ? 'rgba(197, 168, 90, 0.15)' : 'rgba(0, 0, 0, 0.05)', color: user.role === 'business' ? 'var(--accent-secondary)' : 'var(--text-main)' }}>
                           {user.role === 'business' ? user.businessType : user.role}
                         </span>
                       </div>
                       <div className="dropdown-divider" style={{ height: '1px', background: 'var(--border-glass)', margin: '8px 0' }}></div>
+                       {(user.role === 'business' || user.role === 'handyman') && (
+                        <button 
+                          type="button" 
+                          onClick={() => { setQrOpen(true); setUserMenuOpen(false); }} 
+                          className="dropdown-item d-flex align-items-center gap-2"
+                          style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }}
+                        >
+                          <Printer size={16} /> QR Code
+                        </button>
+                      )}
                       <button 
                         type="button" 
                         onClick={() => { setChangePasswordOpen(true); setUserMenuOpen(false); }} 
@@ -398,20 +405,11 @@ const Navbar = () => {
         }
         .logo img {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          mix-blend-mode: screen;
-          filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.6)) drop-shadow(0 2px 5px rgba(255, 255, 255, 0.4));
+          filter: invert(1) drop-shadow(0 2px 5px rgba(0, 0, 0, 0.1));
         }
         .logo:hover img {
           transform: scale(1.05);
-          filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 12px rgba(255, 255, 255, 0.5));
-        }
-        body.light-theme .logo img {
-          mix-blend-mode: multiply;
-          filter: invert(1) drop-shadow(0 0 15px rgba(0, 0, 0, 0.4)) drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3));
-        }
-        body.light-theme .logo:hover img {
-          transform: scale(1.05);
-          filter: invert(1) drop-shadow(0 0 25px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 12px rgba(0, 0, 0, 0.3));
+          filter: invert(1) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
         }
         .logo-icon {
           font-size: 1.8rem;
@@ -492,7 +490,7 @@ const Navbar = () => {
         }
 
         .filter-badge {
-          background: rgba(255, 255, 255, 0.03);
+          background: rgba(0, 0, 0, 0.03);
           border: 1px solid var(--border-glass);
           color: var(--text-secondary);
           padding: 6px 14px;
@@ -503,28 +501,17 @@ const Navbar = () => {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .filter-badge:hover {
-          color: #fff;
-          background: rgba(255, 255, 255, 0.08);
-          border-color: rgba(255, 255, 255, 0.2);
+          color: var(--text-main);
+          background: rgba(0, 0, 0, 0.06);
+          border-color: var(--accent-secondary);
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
         .filter-badge.active {
           background: var(--accent-primary);
           color: #ffffff;
           border-color: var(--accent-primary);
-          box-shadow: 0 4px 14px var(--accent-primary-glow);
-        }
-        body.light-theme .filter-badge {
-          background: rgba(0, 0, 0, 0.03);
-          border-color: rgba(0, 0, 0, 0.08);
-          color: var(--text-secondary);
-        }
-        body.light-theme .filter-badge:hover {
-          color: var(--text-main);
-          background: rgba(0, 0, 0, 0.06);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
         }
 
         /* Responsive Mobile Styling */
@@ -595,6 +582,12 @@ const Navbar = () => {
           .logo-motto {
             display: none !important;
           }
+          .logo img {
+            height: 48px !important;
+          }
+          .store-dashboard-shortcuts {
+            display: none !important;
+          }
           .mobile-bottom-tabbar {
             display: flex !important;
           }
@@ -648,11 +641,7 @@ const Navbar = () => {
         }
         
         .mobile-tab-btn.active {
-          color: var(--accent-primary);
-        }
-        
-        body:not(.dark-theme) .mobile-tab-btn.active {
-          background-color: #1e3a8a;
+          background-color: var(--accent-primary);
           color: #ffffff;
         }
         

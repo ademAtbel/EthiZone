@@ -1,6 +1,7 @@
 // Ultimate Master Marketplace - Register Page (Optimized for High Scale)
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { validateEmail, validatePhone } from '../utils/validation';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -112,6 +113,20 @@ const Register = () => {
       return;
     }
 
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.valid) {
+      setError(emailCheck.reason);
+      setLoading(false);
+      return;
+    }
+
+    const phoneCheck = validatePhone(phone);
+    if (!phoneCheck.valid) {
+      setError(phoneCheck.reason);
+      setLoading(false);
+      return;
+    }
+
     if (role === 'business' && (!category || !formData.businessType)) {
       setError('Please select Business Type and Category.');
       setLoading(false);
@@ -127,7 +142,14 @@ const Register = () => {
         body: JSON.stringify(formData)
       });
 
-      const data = await response.json();
+      let data;
+      const text = await response.text();
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (err) {
+        data = { message: 'Unable to connect to the backend server. Please make sure the backend server is running on port 5001.' };
+      }
+
       if (!response.ok) {
         throw new Error(data.message || 'Registration failed.');
       }
@@ -208,55 +230,248 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="role">Account Type</label>
-            <select
-              id="role"
-              name="role"
-              className="form-control"
-              value={formData.role}
-              onChange={handleChange}
-            >
-              <option value="individual">Individual (Sell personal items)</option>
-              <option value="handyman">Handyman (List professional skills)</option>
-              <option value="business">Business (Store, Service, Organization, etc.)</option>
-            </select>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: '500', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Account Type</label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginTop: '4px' }}>
+              <button
+                type="button"
+                className={`role-select-btn ${formData.role === 'individual' ? 'active' : ''}`}
+                onClick={() => setFormData(prev => ({ ...prev, role: 'individual' }))}
+                style={{
+                  background: formData.role === 'individual' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.02)',
+                  border: formData.role === 'individual' ? '2px solid #3b82f6' : '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '10px',
+                  padding: '14px 10px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '6px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  outline: 'none'
+                }}
+              >
+                <span style={{ fontSize: '1.6rem' }}>👤</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: '600', color: formData.role === 'individual' ? '#3b82f6' : '#ffffff' }}>Individual</span>
+                  <span style={{ fontSize: '0.65rem', color: '#94a3b8', marginTop: '2px', textAlign: 'center', lineHeight: '1.2' }}>Sell personal items</span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                className={`role-select-btn ${formData.role === 'handyman' ? 'active' : ''}`}
+                onClick={() => setFormData(prev => ({ ...prev, role: 'handyman' }))}
+                style={{
+                  background: formData.role === 'handyman' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.02)',
+                  border: formData.role === 'handyman' ? '2px solid #3b82f6' : '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '10px',
+                  padding: '14px 10px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '6px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  outline: 'none'
+                }}
+              >
+                <span style={{ fontSize: '1.6rem' }}>🛠️</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: '600', color: formData.role === 'handyman' ? '#3b82f6' : '#ffffff' }}>Handyman</span>
+                  <span style={{ fontSize: '0.65rem', color: '#94a3b8', marginTop: '2px', textAlign: 'center', lineHeight: '1.2' }}>List skills</span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                className={`role-select-btn ${formData.role === 'business' ? 'active' : ''}`}
+                onClick={() => setFormData(prev => ({ ...prev, role: 'business' }))}
+                style={{
+                  background: formData.role === 'business' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.02)',
+                  border: formData.role === 'business' ? '2px solid #3b82f6' : '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '10px',
+                  padding: '14px 10px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '6px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  outline: 'none'
+                }}
+              >
+                <span style={{ fontSize: '1.6rem' }}>🏢</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: '600', color: formData.role === 'business' ? '#3b82f6' : '#ffffff' }}>Business</span>
+                  <span style={{ fontSize: '0.65rem', color: '#94a3b8', marginTop: '2px', textAlign: 'center', lineHeight: '1.2' }}>Stores & agencies</span>
+                </div>
+              </button>
+            </div>
           </div>
 
           {/* Conditional store registration fields */}
           {formData.role === 'business' && (
-            <div className="conditional-fields">
+            <div className="conditional-fields" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div className="form-group">
-                <label htmlFor="businessType">Business Type</label>
-                <select
-                  id="businessType"
-                  name="businessType"
-                  className="form-control"
-                  value={formData.businessType}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="store">Store (Sells Products)</option>
-                  <option value="service">Service (Offers Professional Services)</option>
-                  <option value="organization">Organization (Hiring Only / Job Openings)</option>
-                  <option value="real_estate">Real Estate (Housing Listings)</option>
-                  <option value="automotive">Automotive (Car Listings)</option>
-                </select>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: '500', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Business Type</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '4px' }}>
+                  <button
+                    type="button"
+                    className={`biz-type-btn ${formData.businessType === 'store' ? 'active' : ''}`}
+                    onClick={() => setFormData(prev => ({ ...prev, businessType: 'store' }))}
+                    style={{
+                      background: formData.businessType === 'store' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.02)',
+                      border: formData.businessType === 'store' ? '2px solid #3b82f6' : '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '10px',
+                      padding: '12px 6px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '4px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      outline: 'none'
+                    }}
+                  >
+                    <span style={{ fontSize: '1.4rem' }}>🛒</span>
+                    <span style={{ fontSize: '0.8rem', fontWeight: '600', color: formData.businessType === 'store' ? '#3b82f6' : '#ffffff' }}>Store</span>
+                    <span style={{ fontSize: '0.62rem', color: '#94a3b8', textAlign: 'center' }}>Sells Products</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`biz-type-btn ${formData.businessType === 'service' ? 'active' : ''}`}
+                    onClick={() => setFormData(prev => ({ ...prev, businessType: 'service' }))}
+                    style={{
+                      background: formData.businessType === 'service' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.02)',
+                      border: formData.businessType === 'service' ? '2px solid #3b82f6' : '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '10px',
+                      padding: '12px 6px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '4px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      outline: 'none'
+                    }}
+                  >
+                    <span style={{ fontSize: '1.4rem' }}>💼</span>
+                    <span style={{ fontSize: '0.8rem', fontWeight: '600', color: formData.businessType === 'service' ? '#3b82f6' : '#ffffff' }}>Service</span>
+                    <span style={{ fontSize: '0.62rem', color: '#94a3b8', textAlign: 'center' }}>Offers Services</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`biz-type-btn ${formData.businessType === 'organization' ? 'active' : ''}`}
+                    onClick={() => setFormData(prev => ({ ...prev, businessType: 'organization' }))}
+                    style={{
+                      background: formData.businessType === 'organization' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.02)',
+                      border: formData.businessType === 'organization' ? '2px solid #3b82f6' : '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '10px',
+                      padding: '12px 6px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '4px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      outline: 'none'
+                    }}
+                  >
+                    <span style={{ fontSize: '1.4rem' }}>🏢</span>
+                    <span style={{ fontSize: '0.8rem', fontWeight: '600', color: formData.businessType === 'organization' ? '#3b82f6' : '#ffffff' }}>Organization</span>
+                    <span style={{ fontSize: '0.62rem', color: '#94a3b8', textAlign: 'center' }}>Hiring & Jobs</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`biz-type-btn ${formData.businessType === 'real_estate' ? 'active' : ''}`}
+                    onClick={() => setFormData(prev => ({ ...prev, businessType: 'real_estate' }))}
+                    style={{
+                      background: formData.businessType === 'real_estate' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.02)',
+                      border: formData.businessType === 'real_estate' ? '2px solid #3b82f6' : '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '10px',
+                      padding: '12px 6px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '4px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      outline: 'none'
+                    }}
+                  >
+                    <span style={{ fontSize: '1.4rem' }}>🏠</span>
+                    <span style={{ fontSize: '0.8rem', fontWeight: '600', color: formData.businessType === 'real_estate' ? '#3b82f6' : '#ffffff' }}>Real Estate</span>
+                    <span style={{ fontSize: '0.62rem', color: '#94a3b8', textAlign: 'center' }}>Housing Listings</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`biz-type-btn ${formData.businessType === 'automotive' ? 'active' : ''}`}
+                    onClick={() => setFormData(prev => ({ ...prev, businessType: 'automotive' }))}
+                    style={{
+                      background: formData.businessType === 'automotive' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.02)',
+                      border: formData.businessType === 'automotive' ? '2px solid #3b82f6' : '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '10px',
+                      padding: '12px 6px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '4px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      outline: 'none'
+                    }}
+                  >
+                    <span style={{ fontSize: '1.4rem' }}>🚗</span>
+                    <span style={{ fontSize: '0.8rem', fontWeight: '600', color: formData.businessType === 'automotive' ? '#3b82f6' : '#ffffff' }}>Automotive</span>
+                    <span style={{ fontSize: '0.62rem', color: '#94a3b8', textAlign: 'center' }}>Car Listings</span>
+                  </button>
+                </div>
               </div>
 
               <div className="form-group">
-                <label htmlFor="category">Business Category Type</label>
-                <select
-                  id="category"
-                  name="category"
-                  className="form-control"
-                  value={formData.category}
-                  onChange={handleChange}
-                  required
-                >
-                  {categories.map((cat, idx) => (
-                    <option key={idx} value={cat.name}>{cat.name}</option>
-                  ))}
-                </select>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: '500', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Business Category Type</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '4px' }}>
+                  {categories.map((cat, idx) => {
+                    const isActive = formData.category === cat.name;
+                    const categoryEmojiMap = {
+                      'Boutique': '👗', 'Pharmacy': '💊', 'Liquor Store': '🍷', 'Grocery Store': '🍎', 'Electronics Shop': '💻', 'Bookstore': '📚',
+                      'Law Office': '⚖️', 'Tax Office': '📊', 'Dental Clinic': '🦷', 'Consulting Firm': '🤝', 'Cleaning Agency': '🧹', 'Beauty Salon': '💅',
+                      'Tech Corporation': '🚀', 'Construction Company': '🏗️', 'Healthcare Group': '🏥', 'Educational Institution': '🏫', 'Non-Profit Org': '🌱', 'Other': '❓',
+                      'Residential Homes': '🏡', 'Rental Apartments': '🏢', 'Commercial Real Estate': '🏬', 'Land & Lots': '🌄',
+                      'Used Car Dealership': '🚗', 'Car Rental Service': '🔑', 'Auto Repair Workshop': '🔧', 'Spare Parts Dealer': '⚙️'
+                    };
+                    const emoji = categoryEmojiMap[cat.name] || '💼';
+
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        className={`cat-type-btn ${isActive ? 'active' : ''}`}
+                        onClick={() => setFormData(prev => ({ ...prev, category: cat.name }))}
+                        style={{
+                          background: isActive ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.02)',
+                          border: isActive ? '2px solid #3b82f6' : '1px solid rgba(255, 255, 255, 0.1)',
+                          borderRadius: '10px',
+                          padding: '12px 6px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '4px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          outline: 'none'
+                        }}
+                      >
+                        <span style={{ fontSize: '1.4rem' }}>{emoji}</span>
+                        <span style={{ fontSize: '0.8rem', fontWeight: '600', color: isActive ? '#3b82f6' : '#ffffff', textAlign: 'center' }}>{cat.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
@@ -330,3 +545,5 @@ const Register = () => {
 };
 
 export default Register;
+
+// Lorem ipsum dolor sit amet consectetur, adipisicing elit. Voluptas maxime maiores amet, eius blanditiis molestias sunt vitae excepturi saepe deleniti, optio repudiandae, temporibus totam voluptate cum voluptatibus numquam doloremque possimus!

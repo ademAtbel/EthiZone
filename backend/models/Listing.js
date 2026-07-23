@@ -13,6 +13,9 @@ const ListingSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
   price: { type: Number }, // Price or rate
+  isOnSale: { type: Boolean, default: false },
+  isNewArrival: { type: Boolean, default: false },
+  salePrice: { type: Number },
   status: {
     type: String,
     enum: ['active', 'sold', 'busy', 'inactive'],

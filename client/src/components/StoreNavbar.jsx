@@ -117,17 +117,15 @@ const StoreNavbar = ({
             </button>
           </li>
 
-          {businessType !== 'store' && (
-            <li>
-              <button 
-                type="button"
+          <li>
+            <button 
+              type="button"
               onClick={() => handleTabClick('about')} 
-                className={`store-nav-link-btn ${activeTab === 'about' ? 'active' : ''}`}
-              >
-                {t('about_tab')}
-              </button>
-            </li>
-          )}
+              className={`store-nav-link-btn ${activeTab === 'about' ? 'active' : ''}`}
+            >
+              {t('about_tab')}
+            </button>
+          </li>
 
           <li>
             <button 
@@ -202,14 +200,12 @@ const StoreNavbar = ({
           <span className="tab-label">{getCatalogTabName()}</span>
         </button>
 
-        {businessType !== 'store' && (
-          <button 
-            onClick={() => handleTabClick('about')} 
-            className={`store-mobile-tab-btn ${activeTab === 'about' ? 'active' : ''}`}
-          >
-            <span className="tab-label">{t('about_tab')}</span>
-          </button>
-        )}
+        <button 
+          onClick={() => handleTabClick('about')} 
+          className={`store-mobile-tab-btn ${activeTab === 'about' ? 'active' : ''}`}
+        >
+          <span className="tab-label">{t('about_tab')}</span>
+        </button>
 
         <button 
           onClick={() => handleTabClick('gallery')} 
@@ -242,10 +238,10 @@ const StoreNavbar = ({
 
       <style>{`
         .store-navbar {
-          background: rgba(15, 23, 42, 0.95);
+          background: var(--bg-navbar);
           border-bottom: 2px solid var(--accent-secondary);
           padding: 14px 0;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
           z-index: 990;
         }
         @media (min-width: 992px) {
@@ -274,7 +270,7 @@ const StoreNavbar = ({
           font-family: var(--font-heading);
           font-weight: 800;
           font-size: 1.25rem;
-          color: #ffffff;
+          color: var(--text-main);
           line-height: 1.2;
         }
         .store-category-badge {
@@ -303,7 +299,7 @@ const StoreNavbar = ({
           align-items: center;
         }
         .store-nav-link-btn:hover {
-          color: #ffffff;
+          color: var(--text-main);
         }
         .store-nav-link-btn.active {
           color: var(--accent-secondary);
@@ -313,7 +309,7 @@ const StoreNavbar = ({
           color: var(--accent-secondary);
         }
         .custom-link:hover {
-          color: #67e8f9;
+          color: #fcd34d;
         }
         .store-nav-actions {
           display: flex;
@@ -321,23 +317,21 @@ const StoreNavbar = ({
           gap: 12px;
         }
         .qr-btn {
-          background: linear-gradient(135deg, var(--accent-secondary) 0%, #0891b2 100%);
+          background: linear-gradient(135deg, var(--accent-secondary) 0%, #a1823a 100%);
           box-shadow: 0 4px 15px var(--accent-secondary-glow);
         }
         .qr-btn:hover {
           box-shadow: 0 6px 20px var(--accent-secondary-glow);
         }
         @media (max-width: 900px) {
+          .store-navbar {
+            background: none !important;
+            border-bottom: none !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+          }
           .store-nav-container {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-          .store-nav-links {
             display: none !important;
-          }
-          .store-nav-actions {
-            width: 100%;
-            justify-content: flex-end;
           }
           
           /* Show mobile tab bar on small screens */
@@ -347,7 +341,7 @@ const StoreNavbar = ({
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(15, 23, 42, 0.95);
+            background: var(--bg-navbar);
             backdrop-filter: var(--blur-glass);
             -webkit-backdrop-filter: var(--blur-glass);
             border-top: 1px solid var(--accent-secondary);
@@ -356,7 +350,7 @@ const StoreNavbar = ({
             padding-bottom: env(safe-area-inset-bottom, 8px);
             overflow-x: auto;
             gap: 6px;
-            box-shadow: 0 -4px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
             justify-content: flex-start;
             align-items: center;
           }
@@ -392,7 +386,7 @@ const StoreNavbar = ({
         
         .store-mobile-tab-btn.active {
           color: var(--accent-secondary);
-          background-color: rgba(var(--accent-secondary-rgb), 0.15);
+          background-color: rgba(197, 168, 90, 0.15);
         }
         
         .store-mobile-tab-btn span.tab-label {

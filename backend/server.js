@@ -186,6 +186,20 @@ if (isClustered && cluster.isMaster) {
   const chatbotRoutes = require('./routes/chatbot');
   const messageRoutes = require('./routes/messages');
   const contactRoutes = require('./routes/contact');
+  const productRoutes = require('./routes/products');
+
+  // Pre-load all Mongoose discriminators to register them
+  require('./models/BoutiqueListing');
+  require('./models/GroceryListing');
+  require('./models/LiquorListing');
+  require('./models/ElectronicsListing');
+  require('./models/LawListing');
+  require('./models/TaxListing');
+  require('./models/ClinicListing');
+  require('./models/ConsultingListing');
+  require('./models/CleaningListing');
+  require('./models/BeautyListing');
+  require('./models/PersonalListing');
 
   // Security & Scaling Middlewares
   app.use(cors({
@@ -221,6 +235,7 @@ if (isClustered && cluster.isMaster) {
   // API Route mounts
   app.use('/api/auth', authRoutes);
   app.use('/api/listings', listingRoutes);
+  app.use('/api/products', productRoutes);
   app.use('/api/ratings', ratingRoutes);
   app.use('/api/categories', categoryRoutes);
   app.use('/api/admin', adminRoutes);

@@ -21,7 +21,7 @@ export default function CarsPage() {
   const [cars, setCars] = useState([]);
 
   useEffect(() => {
-    fetch("/api/cars")
+    fetch("/api/listings?type=car")
       .then((res) => {
         if (!res.ok) throw new Error("API response not OK");
         return res.json();
@@ -37,14 +37,25 @@ export default function CarsPage() {
   }, []);
 
   const filteredCars = cars.filter((car) => {
-    if (status !== "All" && car.status !== status) return false;
-    if (condition !== "All" && car.condition !== condition) return false;
-    if (bodyType !== "All" && !car.tags.includes(bodyType)) return false;
-    if (transmission !== "All" && car.transmission !== transmission)
-      return false;
+    // Resolve offerType (Sale vs Rent)
+    const carOfferStatus = car.metadata?.offerType || car.status || 'Sale';
+    if (status !== "All" && carOfferStatus.toLowerCase() !== status.toLowerCase()) return false;
+
+    // Resolve condition
+    const carCondition = car.metadata?.condition || car.condition || 'Used';
+    if (condition !== "All" && carCondition.toLowerCase() !== condition.toLowerCase()) return false;
+
+    // Resolve body type
+    const carBodyType = car.metadata?.bodyType || car.type || 'Sedan';
+    if (bodyType !== "All" && carBodyType.toLowerCase() !== bodyType.toLowerCase()) return false;
+
+    // Resolve transmission
+    const carTransmission = car.metadata?.transmission || car.transmission || 'Automatic';
+    if (transmission !== "All" && carTransmission.toLowerCase() !== transmission.toLowerCase()) return false;
+
     if (nearMe && car.distance > radius) return false;
     if (locationFilter) {
-      const addressVal = (car.metadata?.address || car.ownerId?.address || '').toLowerCase();
+      const addressVal = (car.metadata?.address || car.location || '').toLowerCase();
       const textVal = ((car.description || '') + ' ' + (car.title || '') + ' ' + (car.category || '')).toLowerCase();
       if (!addressVal.includes(locationFilter.toLowerCase()) && !textVal.includes(locationFilter.toLowerCase())) {
         return false;
@@ -55,7 +66,7 @@ export default function CarsPage() {
       if (
         !car.title.toLowerCase().includes(q) &&
         !car.description.toLowerCase().includes(q) &&
-        !car.tags.some((tag) => tag.toLowerCase().includes(q))
+        !(car.tags && car.tags.some((tag) => tag.toLowerCase().includes(q)))
       ) {
         return false;
       }
@@ -150,32 +161,6 @@ export default function CarsPage() {
                 <h2 className="text-h3 font-h3 text-on-surface border-b border-outline-variant pb-sm">
                   Filters
                 </h2>
-
-                {/* Status */}
-                <section>
-                  <h3 className="text-label-md font-label-md text-on-surface uppercase tracking-wider mb-md">
-                    Status
-                  </h3>
-                  <div className="space-y-sm">
-                    {["All", "Rent", "Sale"].map((s) => (
-                      <label
-                        key={s}
-                        className="flex items-center gap-sm cursor-pointer group"
-                      >
-                        <input
-                          type="radio"
-                          name="status"
-                          className="w-4 h-4 text-primary focus:ring-primary-container"
-                          checked={status === s}
-                          onChange={() => setStatus(s)}
-                        />
-                        <span className="text-body-sm text-on-surface-variant group-hover:text-on-surface">
-                          {s}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </section>
 
                 {/* Condition */}
                 <section>
@@ -331,57 +316,92 @@ export default function CarsPage() {
               </aside>
 
               {/* Grid */}
-              <div className="flex-grow">
+              <div className="flex-grow flex flex-col gap-lg">
+                {/* Sale / Rent Toggle Tabs */}
+                <div className="flex border-b border-outline-variant pb-xs gap-md mb-md">
+                  {[
+                    { label: "All Vehicles", value: "All", icon: "directions_car" },
+                    { label: "For Sale", value: "Sale", icon: "sell" },
+                    { label: "For Rent", value: "Rent", icon: "key" }
+                  ].map((tab) => {
+                    const isActive = status === tab.value;
+                    return (
+                      <button
+                        key={tab.value}
+                        onClick={() => setStatus(tab.value)}
+                        className={`flex items-center gap-xs pb-sm px-sm font-label-md transition-all border-b-2 relative ${
+                          isActive 
+                            ? "text-primary border-primary font-semibold" 
+                            : "text-on-surface-variant border-transparent hover:text-on-surface hover:border-outline-variant"
+                        }`}
+                        style={{ outline: 'none' }}
+                      >
+                        <span className="material-symbols-outlined text-[18px]">
+                          {tab.icon}
+                        </span>
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
-                  {filteredCars.map((car) => (
-                    <div
-                      key={car._id || car.id}
-                      onClick={() => setSelectedCar(car)}
-                      className="bg-surface rounded-xl border border-outline-variant overflow-hidden hover:shadow-lg transition-all group cursor-pointer flex flex-col"
-                    >
-                      <div className="relative h-48 overflow-hidden shrink-0">
-                        <img
-                          src={car.image}
-                          alt={car.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute top-sm left-sm bg-surface/90 backdrop-blur-sm px-sm py-xs rounded-md">
-                          <span className="text-label-sm font-label-sm text-on-surface font-bold">
-                            {car.type}
-                          </span>
+                  {filteredCars.map((car) => {
+                    const carImg = car.images?.[0] || car.image || 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80';
+                    const carPrice = typeof car.price === 'number' ? `$${car.price.toLocaleString()}` : (car.price || 'Contact for Price');
+                    const carLoc = car.metadata?.address || car.location || 'Addis Ababa';
+                    const carDealer = car.ownerName || car.dealer || 'Verified Dealer';
+                    const carType = car.metadata?.bodyType || car.type || 'Sedan';
+
+                    return (
+                      <div
+                        key={car._id || car.id}
+                        onClick={() => setSelectedCar(car)}
+                        className="bg-surface rounded-xl border border-outline-variant overflow-hidden hover:shadow-lg transition-all group cursor-pointer flex flex-col"
+                      >
+                        <div className="relative h-48 overflow-hidden shrink-0">
+                          <img
+                            src={carImg}
+                            alt={car.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                          <div className="absolute top-sm left-sm bg-surface/90 backdrop-blur-sm px-sm py-xs rounded-md">
+                            <span className="text-label-sm font-label-sm text-on-surface font-bold">
+                              {carType}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="p-md flex flex-col flex-grow">
+                          <h3 className="text-h4 font-h4 text-on-surface mb-xs truncate">
+                            {car.title}
+                          </h3>
+                          <p className="text-h3 font-h3 text-primary mb-md">
+                            {carPrice}
+                          </p>
+
+                          <div className="flex items-center gap-xs text-on-surface-variant mb-sm mt-auto">
+                            <span className="material-symbols-outlined text-[16px]">
+                              location_on
+                            </span>
+                            <span className="text-label-sm font-label-sm">
+                              {carLoc}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-xs text-on-surface-variant mb-lg">
+                            <span className="material-symbols-outlined text-[16px]">
+                              storefront
+                            </span>
+                            <span className="text-label-sm font-label-sm">
+                              {carDealer}
+                            </span>
+                          </div>
+
+                          <button className="w-full border border-primary text-primary py-sm rounded-lg font-label-md group-hover:bg-primary-container transition-colors mt-auto">
+                            View Details
+                          </button>
                         </div>
                       </div>
-                      <div className="p-md flex flex-col flex-grow">
-                        <h3 className="text-h4 font-h4 text-on-surface mb-xs truncate">
-                          {car.title}
-                        </h3>
-                        <p className="text-h3 font-h3 text-primary mb-md">
-                          {car.price}
-                        </p>
-
-                        <div className="flex items-center gap-xs text-on-surface-variant mb-sm mt-auto">
-                          <span className="material-symbols-outlined text-[16px]">
-                            location_on
-                          </span>
-                          <span className="text-label-sm font-label-sm">
-                            {car.location}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-xs text-on-surface-variant mb-lg">
-                          <span className="material-symbols-outlined text-[16px]">
-                            storefront
-                          </span>
-                          <span className="text-label-sm font-label-sm">
-                            {car.dealer}
-                          </span>
-                        </div>
-
-                        <button className="w-full border border-primary text-primary py-sm rounded-lg font-label-md group-hover:bg-primary-container transition-colors mt-auto">
-                          View Details
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                   {filteredCars.length === 0 && (
                     <div className="col-span-full text-center py-xl text-on-surface-variant">
@@ -415,7 +435,7 @@ export default function CarsPage() {
 
               <div className="w-full md:w-1/2 h-64 md:h-auto shrink-0 relative">
                 <img
-                  src={selectedCar.image}
+                  src={selectedCar.images?.[0] || selectedCar.image || 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80'}
                   alt={selectedCar.title}
                   className="w-full h-full object-cover"
                 />
@@ -425,7 +445,7 @@ export default function CarsPage() {
                     {selectedCar.title}
                   </h2>
                   <p className="text-h3 font-h3 text-primary-container">
-                    {selectedCar.price}
+                    {typeof selectedCar.price === 'number' ? `$${selectedCar.price.toLocaleString()}` : (selectedCar.price || 'Contact for Price')}
                   </p>
                 </div>
               </div>
@@ -436,7 +456,7 @@ export default function CarsPage() {
                     {selectedCar.title}
                   </h2>
                   <p className="text-h2 font-h2 text-primary">
-                    {selectedCar.price}
+                    {typeof selectedCar.price === 'number' ? `$${selectedCar.price.toLocaleString()}` : (selectedCar.price || 'Contact for Price')}
                   </p>
                 </div>
 
@@ -450,7 +470,7 @@ export default function CarsPage() {
                         Mileage
                       </p>
                       <p className="text-body-md font-body-md font-semibold">
-                        {selectedCar.mileage}
+                        {selectedCar.metadata?.mileage ? `${selectedCar.metadata.mileage.toLocaleString()} mi` : (selectedCar.mileage || '15,000 mi')}
                       </p>
                     </div>
                   </div>
@@ -463,7 +483,7 @@ export default function CarsPage() {
                         Transmission
                       </p>
                       <p className="text-body-md font-body-md font-semibold">
-                        {selectedCar.transmission}
+                        {selectedCar.metadata?.transmission || selectedCar.transmission || 'Automatic'}
                       </p>
                     </div>
                   </div>
@@ -476,7 +496,7 @@ export default function CarsPage() {
                         Body Type
                       </p>
                       <p className="text-body-md font-body-md font-semibold">
-                        {selectedCar.type}
+                        {selectedCar.metadata?.bodyType || selectedCar.type || 'Sedan'}
                       </p>
                     </div>
                   </div>
@@ -490,9 +510,9 @@ export default function CarsPage() {
                       </p>
                       <p
                         className="text-body-md font-body-md font-semibold truncate max-w-[100px]"
-                        title={selectedCar.location}
+                        title={selectedCar.metadata?.address || selectedCar.location || 'Addis Ababa'}
                       >
-                        {selectedCar.location}
+                        {selectedCar.metadata?.address || selectedCar.location || 'Addis Ababa'}
                       </p>
                     </div>
                   </div>
@@ -507,11 +527,11 @@ export default function CarsPage() {
 
                 <div className="flex items-center gap-md mb-xl p-md bg-surface-container-high rounded-xl">
                   <div className="w-12 h-12 bg-primary text-on-primary rounded-full flex items-center justify-center font-bold text-h4 shrink-0">
-                    {selectedCar.dealer.charAt(0)}
+                    {(selectedCar.ownerName || selectedCar.dealer || 'V').charAt(0)}
                   </div>
                   <div>
                     <h4 className="font-label-lg text-on-surface">
-                      {selectedCar.dealer}
+                      {selectedCar.ownerName || selectedCar.dealer || 'Verified Dealer'}
                     </h4>
                     <p className="text-body-sm text-on-surface-variant flex items-center gap-xs">
                       <span className="material-symbols-outlined text-[14px] text-primary">

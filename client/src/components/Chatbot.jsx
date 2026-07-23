@@ -172,17 +172,17 @@ const Chatbot = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 8px 32px rgba(13, 148, 136, 0.3);
+          box-shadow: 0 8px 32px rgba(197, 168, 90, 0.3);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .chatbot-toggle-btn:hover {
           transform: scale(1.1) rotate(5deg);
-          box-shadow: 0 12px 40px rgba(13, 148, 136, 0.5);
+          box-shadow: 0 12px 40px rgba(197, 168, 90, 0.5);
         }
 
         .chatbot-toggle-btn.active {
-          background: #1e293b;
+          background: #000000;
           font-size: 1.2rem;
           border: 1px solid var(--border-glass);
         }
@@ -215,7 +215,7 @@ const Chatbot = () => {
 
         .chatbot-header {
           padding: 16px;
-          background: rgba(13, 148, 136, 0.1);
+          background: rgba(197, 168, 90, 0.1);
           border-bottom: 1px solid var(--border-glass);
           display: flex;
           align-items: center;
@@ -245,16 +245,16 @@ const Chatbot = () => {
         .status-dot {
           width: 6px;
           height: 6px;
-          background: #10b981;
+          background: #c5a85a;
           border-radius: 50%;
           display: inline-block;
-          animation: pulseGreen 2s infinite;
+          animation: pulseGold 2s infinite;
         }
 
-        @keyframes pulseGreen {
-          0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-          70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-          100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        @keyframes pulseGold {
+          0% { box-shadow: 0 0 0 0 rgba(197, 168, 90, 0.7); }
+          70% { box-shadow: 0 0 0 6px rgba(197, 168, 90, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(197, 168, 90, 0); }
         }
 
         .btn-close-chat {
@@ -278,7 +278,7 @@ const Chatbot = () => {
           display: flex;
           flex-direction: column;
           gap: 12px;
-          background: rgba(0, 0, 0, 0.15);
+          background: var(--bg-app);
         }
 
         .message-row {
@@ -317,7 +317,7 @@ const Chatbot = () => {
         }
 
         .message-row.ai .message-bubble {
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(0, 0, 0, 0.03);
           border: 1px solid var(--border-glass);
           border-bottom-left-radius: 2px;
         }
@@ -376,7 +376,7 @@ const Chatbot = () => {
         }
 
         .quick-reply-pill:hover {
-          background: rgba(13, 148, 136, 0.15);
+          background: rgba(197, 168, 90, 0.15);
           color: var(--text-main);
           border-color: var(--accent-primary);
         }
@@ -386,25 +386,25 @@ const Chatbot = () => {
           border-top: 1px solid var(--border-glass);
           display: flex;
           gap: 8px;
-          background: rgba(15, 23, 42, 0.4);
+          background: var(--bg-app);
         }
 
         .chat-input {
           margin: 0;
           font-size: 0.88rem;
           border-radius: 8px !important;
-          background: rgba(255, 255, 255, 0.08) !important;
-          border: 1px solid rgba(255, 255, 255, 0.1) !important;
-          color: #ffffff !important;
+          background: var(--bg-app) !important;
+          border: 1px solid var(--border-glass) !important;
+          color: var(--text-main) !important;
         }
         .chat-input::placeholder {
-          color: rgba(255, 255, 255, 0.45) !important;
+          color: var(--text-muted) !important;
         }
         .chat-input:focus {
-          background: rgba(255, 255, 255, 0.12) !important;
+          background: #ffffff !important;
           border-color: var(--accent-primary) !important;
-          color: #ffffff !important;
-          box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.25) !important;
+          color: var(--text-main) !important;
+          box-shadow: 0 0 0 2px rgba(197, 168, 90, 0.25) !important;
           outline: none;
         }
 
@@ -418,17 +418,11 @@ const Chatbot = () => {
         }
 
         .chatbot-logo-img {
-          mix-blend-mode: screen;
-          filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.6)) drop-shadow(0 1px 3px rgba(255, 255, 255, 0.4));
+          filter: invert(1) drop-shadow(0 0 10px rgba(0, 0, 0, 0.1));
           width: 100%;
           height: 100%;
           object-fit: contain;
           transition: all 0.3s ease;
-        }
-
-        body.light-theme .chatbot-logo-img {
-          mix-blend-mode: multiply;
-          filter: invert(1) drop-shadow(0 0 10px rgba(0, 0, 0, 0.4)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.25));
         }
 
         @media (max-width: 992px) {

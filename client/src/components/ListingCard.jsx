@@ -139,10 +139,18 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
       >
         {getStatusOverlay()}
         
-        <div className="card-header">
-          <span className={`badge ${getBadgeTypeClass(type)}`}>
-            {getLabel(type)}
-          </span>
+        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <span className={`badge ${getBadgeTypeClass(type)}`}>
+              {getLabel(type)}
+            </span>
+            {listing.isOnSale && (
+              <span className="badge" style={{ background: '#ef4444', color: '#fff', fontSize: '0.7rem', padding: '2px 6px', fontWeight: 'bold', borderRadius: '4px' }}>SALE</span>
+            )}
+            {listing.isNewArrival && (
+              <span className="badge" style={{ background: 'var(--accent-primary)', color: '#000', fontSize: '0.7rem', padding: '2px 6px', fontWeight: 'bold', borderRadius: '4px' }}>NEW</span>
+            )}
+          </div>
           {category && (
             <span className="listing-category-text">{category}</span>
           )}
@@ -213,11 +221,24 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
             </div>
           )}
           
-          <div className="listing-price-container">
+          <div className="listing-price-container" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
             <span className="price-label">{type === 'job_opening' ? t('salary_offered') : t('price')}</span>
-            <span className="price-value">
-              {type === 'job_opening' ? formatSalary(price, metadata?.salaryRate) : (price ? `$${price.toLocaleString()}` : t('contact_for_price'))}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="price-value" style={{ color: listing.isOnSale ? '#ef4444' : 'var(--text-main)' }}>
+                {type === 'job_opening' 
+                  ? formatSalary(price, metadata?.salaryRate) 
+                  : (listing.isOnSale && listing.salePrice 
+                      ? `$${listing.salePrice.toLocaleString()}` 
+                      : (price ? `$${price.toLocaleString()}` : t('contact_for_price'))
+                    )
+                }
+              </span>
+              {listing.isOnSale && price && (
+                <span style={{ textDecoration: 'line-through', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  {`$${price.toLocaleString()}`}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Average Rating Display */}

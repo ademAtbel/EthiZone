@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ContactInquiry = require('../models/ContactInquiry');
+const { validateEmail, validatePhone } = require('../utils/validation');
 
 router.post('/', async (req, res) => {
   try {
@@ -11,6 +12,26 @@ router.post('/', async (req, res) => {
         success: false,
         message: 'Please provide full name, email, topic, and message.',
       });
+    }
+
+    // Validate email
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.valid) {
+      return res.status(400).json({
+        success: false,
+        message: emailCheck.reason,
+      });
+    }
+
+    // Validate phone if provided
+    if (phone) {
+      const phoneCheck = validatePhone(phone);
+      if (!phoneCheck.valid) {
+        return res.status(400).json({
+          success: false,
+          message: phoneCheck.reason,
+        });
+      }
     }
 
     const inquiry = await ContactInquiry.create({

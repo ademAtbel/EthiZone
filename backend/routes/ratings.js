@@ -4,6 +4,7 @@ const Rating = require('../models/Rating');
 const User = require('../models/User');
 const RatingVerification = require('../models/RatingVerification');
 const { sendOtpEmail } = require('../utils/email');
+const { validateEmail, validatePhone } = require('../utils/validation');
 
 // POST: GENERATE AND SEND VERIFICATION CODE
 router.post('/send-code', async (req, res) => {
@@ -17,9 +18,9 @@ router.post('/send-code', async (req, res) => {
     const normalizedEmail = email.toLowerCase().trim();
 
     // Verify correct email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(normalizedEmail)) {
-      return res.status(400).json({ message: 'Please provide a valid email address.' });
+    const emailCheck = validateEmail(normalizedEmail);
+    if (!emailCheck.valid) {
+      return res.status(400).json({ message: emailCheck.reason });
     }
 
     // Check if target user exists
@@ -94,16 +95,16 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'Rating must be between 1 and 5' });
     }
 
-    // Email regex validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: 'Please provide a valid email address' });
+    // Email validation
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.valid) {
+      return res.status(400).json({ message: emailCheck.reason });
     }
 
-    // Phone regex validation (basic verification)
-    const phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
-    if (!phoneRegex.test(phone.replace(/\s+/g, ''))) {
-      return res.status(400).json({ message: 'Please provide a valid phone number' });
+    // Phone validation
+    const phoneCheck = validatePhone(phone);
+    if (!phoneCheck.valid) {
+      return res.status(400).json({ message: phoneCheck.reason });
     }
 
     // Check if target user exists
