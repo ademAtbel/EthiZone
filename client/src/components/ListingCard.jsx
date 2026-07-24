@@ -194,12 +194,6 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
             </div>
           )}
 
-          {type === 'handyman_skill' && metadata?.handymanRates && (
-            <div className="card-metadata handyman-rate" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-              <span>⏱️ Rate: <strong>{metadata.handymanRates}</strong></span>
-            </div>
-          )}
-
           {type === 'house' && (
             <div className="card-metadata" style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
               <div style={{ display: 'flex', gap: '12px' }}>
@@ -221,16 +215,20 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
             </div>
           )}
           
-          <div className="listing-price-container" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <span className="price-label">{type === 'job_opening' ? t('salary_offered') : t('price')}</span>
+          <div className="listing-price-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '0.82rem' }}>
+            <span className="price-label" style={{ color: 'var(--text-muted)' }}>
+              {type === 'job_opening' ? t('salary_offered') : (type === 'handyman_skill' ? t('hourly_rate') : t('price'))}
+            </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="price-value" style={{ color: listing.isOnSale ? '#ef4444' : 'var(--text-main)' }}>
+              <span className="price-value" style={{ color: listing.isOnSale ? '#ef4444' : 'var(--text-main)', fontWeight: 700 }}>
                 {type === 'job_opening' 
                   ? formatSalary(price, metadata?.salaryRate) 
-                  : (listing.isOnSale && listing.salePrice 
-                      ? `$${listing.salePrice.toLocaleString()}` 
-                      : (price ? `$${price.toLocaleString()}` : t('contact_for_price'))
-                    )
+                  : type === 'handyman_skill'
+                    ? (metadata?.handymanRates || (price ? `$${price.toLocaleString()}/hr` : t('contact_for_price')))
+                    : (listing.isOnSale && listing.salePrice 
+                        ? `$${listing.salePrice.toLocaleString()}` 
+                        : (price ? `$${price.toLocaleString()}` : t('contact_for_price'))
+                      )
                 }
               </span>
               {listing.isOnSale && price && (
@@ -243,7 +241,7 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
 
           {/* Average Rating Display */}
           <div className="listing-rating-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', fontSize: '0.82rem' }}>
-            <span className="price-label">{t('rate')}</span>
+            <span className="price-label" style={{ color: 'var(--text-muted)' }}>{t('rating_label') || 'Rating'}</span>
             <span style={{ color: 'var(--accent-warning)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
               ★ {avgRating ? `${avgRating} (${ratingsCount} ${ratingsCount === 1 ? t('review') : t('reviews')})` : t('new_status')}
             </span>
@@ -424,9 +422,15 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
 
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                      <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{type === 'job_opening' ? t('salary_offered') : t('price')}</span>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        {type === 'job_opening' ? t('salary_offered') : (type === 'handyman_skill' ? t('hourly_rate') : t('price'))}
+                      </span>
                       <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent-secondary)' }}>
-                        {type === 'job_opening' ? formatSalary(price, metadata?.salaryRate) : (price ? `$${price.toLocaleString()}` : t('contact_for_price'))}
+                        {type === 'job_opening' 
+                          ? formatSalary(price, metadata?.salaryRate) 
+                          : type === 'handyman_skill'
+                            ? (metadata?.handymanRates || (price ? `$${price.toLocaleString()}/hr` : t('contact_for_price')))
+                            : (price ? `$${price.toLocaleString()}` : t('contact_for_price'))}
                       </span>
                     </div>
 

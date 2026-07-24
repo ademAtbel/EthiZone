@@ -202,6 +202,8 @@ const translations = {
     landing_book_service: 'Book Service',
     open_salary: 'Open Salary',
     employer: 'Employer',
+    rating_label: 'Rating',
+    hourly_rate: 'Hourly Rate',
 
     // Storefront Tabs & Labels
     home_tab: 'Home',
@@ -564,6 +566,8 @@ const translations = {
     landing_book_service: 'አገልግሎት አስይዝ',
     open_salary: 'ክፍት ደሞዝ',
     employer: 'ቀጣሪ',
+    rating_label: 'ደረጃ',
+    hourly_rate: 'የሰዓት ዋጋ',
 
     // Storefront Tabs & Labels
     home_tab: 'መነሻ',
