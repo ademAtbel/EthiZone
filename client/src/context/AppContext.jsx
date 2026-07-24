@@ -102,6 +102,107 @@ const translations = {
     login_account: 'Login to Account',
     no_account: 'New to the platform? Register here',
 
+    // Registration page specific (4-color unified theme)
+    reg_title: 'Create Account',
+    reg_subtitle: 'Join the direct-connect local marketplace',
+    reg_fullname: 'Full Name',
+    reg_email: 'Email Address',
+    reg_phone: 'Phone Number (For direct customer calls)',
+    reg_password: 'Password',
+    reg_account_type: 'Account Type',
+    reg_individual: 'Individual',
+    reg_sell_personal: 'Sell personal items',
+    reg_handyman: 'Handyman',
+    reg_list_skills: 'List skills',
+    reg_business: 'Business',
+    reg_stores_agencies: 'Stores & agencies',
+    reg_business_type: 'Business Type',
+    reg_store: 'Store',
+    reg_sells_products: 'Sells Products',
+    reg_service: 'Service',
+    reg_offers_services: 'Offers Services',
+    reg_organization: 'Organization',
+    reg_hiring_jobs: 'Hiring & Jobs',
+    reg_real_estate: 'Real Estate',
+    reg_housing_listings: 'Housing Listings',
+    reg_automotive: 'Automotive',
+    reg_car_listings: 'Car Listings',
+    reg_category_type: 'Business Category Type',
+    reg_btn: 'Register Now',
+    reg_creating: 'Creating Account...',
+    reg_login_here: 'Login Here',
+    reg_already_have: 'Already have an account?',
+
+    // Category names
+    boutique: 'Boutique',
+    pharmacy: 'Pharmacy',
+    liquor_store: 'Liquor Store',
+    grocery_store: 'Grocery Store',
+    electronics_shop: 'Electronics Shop',
+    bookstore: 'Bookstore',
+    law_office: 'Law Office',
+    tax_office: 'Tax Office',
+    dental_clinic: 'Dental Clinic',
+    consulting_firm: 'Consulting Firm',
+    cleaning_agency: 'Cleaning Agency',
+    beauty_salon: 'Beauty Salon',
+    tech_corporation: 'Tech Corporation',
+    construction_company: 'Construction Company',
+    healthcare_group: 'Healthcare Group',
+    educational_institution: 'Educational Institution',
+    non_profit_org: 'Non-Profit Org',
+    other: 'Other',
+    residential_homes: 'Residential Homes',
+    rental_apartments: 'Rental Apartments',
+    commercial_real_estate: 'Commercial Real Estate',
+    land_slots: 'Land & Lots',
+    used_car_dealership: 'Used Car Dealership',
+    car_rental_service: 'Car Rental Service',
+    auto_repair_workshop: 'Auto Repair Workshop',
+    spare_parts_dealer: 'Spare Parts Dealer',
+
+    // Login page specific
+    login_title_pw: 'Welcome Back',
+    login_title_otp: 'Verification Login',
+    login_subtitle_pw: 'Login to access your dashboard and listings',
+    login_subtitle_otp: 'Enter your email to receive a 6-digit login code',
+    login_email: 'Email Address',
+    login_password: 'Password',
+    login_forgot: 'Forgot Password? Log in with One-Time Code',
+    login_btn_loading: 'Logging in...',
+    login_btn_pw: 'Sign In',
+    login_otp_label: 'One-Time Code (6-Digits)',
+    login_expires_in: 'Code expires in',
+    login_seconds: 'seconds',
+    login_expired: 'Code expired.',
+    login_resend: 'Resend Code',
+    login_processing: 'Processing...',
+    login_verify_signin: 'Verify & Sign In',
+    login_send_otp: 'Send One-Time Code',
+    login_back_standard: 'Back to Standard Password Login',
+    login_no_account: "Don't have an account?",
+    login_register_here: 'Register Here',
+
+    // Homepage Landing specific
+    landing_hero_title: 'Everything You Need in One Marketplace',
+    landing_hero_desc: "Shop products, discover stores, find services, browse houses, cars, jobs, and more on the world's most versatile ethical marketplace.",
+    landing_start_shopping: 'Start Shopping',
+    landing_become_seller: 'Become a Seller',
+    landing_browse_category: 'Browse by Category',
+    landing_view_all: 'View All →',
+    landing_popular_marketplace: 'Popular in Marketplace',
+    landing_view_details: 'View Details',
+    landing_popular_vehicles: 'Popular Vehicles',
+    landing_view_vehicle: 'View Vehicle',
+    landing_popular_real_estate: 'Popular Real Estate',
+    landing_view_property: 'View Property',
+    landing_popular_jobs: 'Popular Job Openings',
+    landing_view_job: 'View Job',
+    landing_featured_professionals: 'Featured Professionals',
+    landing_book_service: 'Book Service',
+    open_salary: 'Open Salary',
+    employer: 'Employer',
+
     // Storefront Tabs & Labels
     home_tab: 'Home',
     about_tab: 'About',
@@ -363,6 +464,107 @@ const translations = {
     login_account: 'ወደ አካውንትዎ ይግቡ',
     no_account: 'አዲስ ተጠቃሚ ነዎት? እዚህ ይመዝገቡ',
 
+    // Registration page specific (4-color unified theme)
+    reg_title: 'አካውንት ይፍጠሩ',
+    reg_subtitle: 'ቀጥተኛ ግንኙነት ያለው የአካባቢ መገበያያ ይቀላቀሉ',
+    reg_fullname: 'ሙሉ ስም',
+    reg_email: 'ኢሜይል አድራሻ',
+    reg_phone: 'ስልክ ቁጥር (ለቀጥታ የደንበኞች ጥሪ)',
+    reg_password: 'የይለፍ ቃል',
+    reg_account_type: 'የአካውንት አይነት',
+    reg_individual: 'ግለሰብ',
+    reg_sell_personal: 'ያገለገሉ ዕቃዎችን ለመሸጥ',
+    reg_handyman: 'ባለሙያ',
+    reg_list_skills: 'የእጅ ስራዎችን ለመዘርዘር',
+    reg_business: 'ድርጅት',
+    reg_stores_agencies: 'ሱቆች እና ኤጀንሲዎች',
+    reg_business_type: 'የንግድ ዘርፍ',
+    reg_store: 'ሱቅ',
+    reg_sells_products: 'ምርቶችን የሚሸጥ',
+    reg_service: 'አገልግሎት',
+    reg_offers_services: 'አገልግሎት የሚሰጥ',
+    reg_organization: 'ኩባንያ',
+    reg_hiring_jobs: 'ቅጥር እና ስራዎች',
+    reg_real_estate: 'ቤትና መሬት',
+    reg_housing_listings: 'የቤትና ቦታዎች ማስታወቂያ',
+    reg_automotive: 'መኪና',
+    reg_car_listings: 'የመኪና ሽያጭ/ኪራይ',
+    reg_category_type: 'የንግድ ዘርፍ ምድብ',
+    reg_btn: 'አሁን ይመዝገቡ',
+    reg_creating: 'በመመዝገብ ላይ...',
+    reg_login_here: 'እዚህ ይግቡ',
+    reg_already_have: 'ቀደም ሲል አካውንት አለዎት?',
+
+    // Category names
+    boutique: 'ቡቲክ',
+    pharmacy: 'ፋርማሲ',
+    liquor_store: 'የመጠጥ ሱቅ',
+    grocery_store: 'የግሮሰሪ ሱቅ',
+    electronics_shop: 'የኤሌክትሮኒክስ ሱቅ',
+    bookstore: 'የመጽሐፍ ሱቅ',
+    law_office: 'የህግ ቢሮ',
+    tax_office: 'የታክስ አገልግሎት',
+    dental_clinic: 'የጥርስ ህክምና ክሊኒክ',
+    consulting_firm: 'የማማከር አገልግሎት',
+    cleaning_agency: 'የፅዳት አገልግሎት',
+    beauty_salon: 'የውበት ሳሎን',
+    tech_corporation: 'የቴክኖሎጂ ኩባንያ',
+    construction_company: 'የኮንስትራክሽን ኩባንያ',
+    healthcare_group: 'የጤና ጥበቃ ድርጅት',
+    educational_institution: 'የትምህርት ተቋም',
+    non_profit_org: 'ሰብአዊ ድርጅት',
+    other: 'ሌላ',
+    residential_homes: 'የመኖሪያ ቤቶች',
+    rental_apartments: 'የኪራይ አፓርታማዎች',
+    commercial_real_estate: 'የንግድ ህንፃዎች',
+    land_slots: 'ባዶ ቦታዎች',
+    used_car_dealership: 'ያገለገሉ መኪናዎች መሸጫ',
+    car_rental_service: 'የመኪና ኪራይ አገልግሎት',
+    auto_repair_workshop: 'የመኪና ጥገና ጋራዥ',
+    spare_parts_dealer: 'የመኪና መለዋወጫ መሸጫ',
+
+    // Login page specific
+    login_title_pw: 'እንኳን ደህና መጡ',
+    login_title_otp: 'በማረጋገጫ ኮድ መግቢያ',
+    login_subtitle_pw: 'ዳሽቦርድዎን እና ማስታወቂያዎችዎን ለማየት ይግቡ',
+    login_subtitle_otp: 'ባለ 6-አሃዝ መግቢያ ኮድ ለመቀበል ኢሜይልዎን ያስገቡ',
+    login_email: 'ኢሜይል አድራሻ',
+    login_password: 'የይለፍ ቃል',
+    login_forgot: 'የይለፍ ቃል ረሱ? በአንድ ጊዜ ኮድ ይግቡ',
+    login_btn_loading: 'በመግባት ላይ...',
+    login_btn_pw: 'ይግቡ',
+    login_otp_label: 'ባለ 6-አሃዝ ኮድ',
+    login_expires_in: 'ኮዱ የሚያበቃው ከ',
+    login_seconds: 'ሰከንዶች በኋላ ነው',
+    login_expired: 'ኮዱ አልፎበታል።',
+    login_resend: 'ኮዱን ድጋሚ ላክ',
+    login_processing: 'በማቀናበር ላይ...',
+    login_verify_signin: 'አረጋግጥና ግባ',
+    login_send_otp: 'የአንድ ጊዜ ኮድ ላክ',
+    login_back_standard: 'ወደ መደበኛ የይለፍ ቃል መግቢያ ተመለስ',
+    login_no_account: 'አካውንት የለዎትም?',
+    login_register_here: 'እዚህ ይመዝገቡ',
+
+    // Homepage Landing specific
+    landing_hero_title: 'የሚፈልጉትን ሁሉ በአንድ መገበያያ',
+    landing_hero_desc: 'ምርቶችን ይግዙ፣ ሱቆችን ያግኙ፣ አገልግሎቶችን ያግኙ፣ ቤቶችን፣ መኪናዎችን፣ ስራዎችን እና ሌሎችንም በአለማችን ሁለገብ እና ደህንነቱ የተጠበቀ መገበያያ ላይ ያስሱ።',
+    landing_start_shopping: 'መገበያየት ጀምር',
+    landing_become_seller: 'ሻጭ ሁን',
+    landing_browse_category: 'በምድብ ፈልግ',
+    landing_view_all: 'ሁሉንም አሳይ →',
+    landing_popular_marketplace: 'በመገበያያው ተወዳጅ የሆኑ',
+    landing_view_details: 'ዝርዝር መረጃ',
+    landing_popular_vehicles: 'ተወዳጅ መኪናዎች',
+    landing_view_vehicle: 'መኪናውን አሳይ',
+    landing_popular_real_estate: 'ተወዳጅ ቤትና ቦታዎች',
+    landing_view_property: 'ንብረቱን አሳይ',
+    landing_popular_jobs: 'ተወዳጅ የስራ ማስታወቂያዎች',
+    landing_view_job: 'ስራውን አሳይ',
+    landing_featured_professionals: 'የተመረጡ ባለሙያዎች',
+    landing_book_service: 'አገልግሎት አስይዝ',
+    open_salary: 'ክፍት ደሞዝ',
+    employer: 'ቀጣሪ',
+
     // Storefront Tabs & Labels
     home_tab: 'መነሻ',
     about_tab: 'ስለ እኛ',
@@ -528,25 +730,21 @@ const translations = {
 };
 
 export const AppProvider = ({ children }) => {
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  const [theme, setTheme] = useState('light');
   const [language, setLanguage] = useState(localStorage.getItem('language') || 'en');
   const [activeStoreType, setActiveStoreType] = useState('');
 
   useEffect(() => {
-    localStorage.setItem('theme', theme);
-    if (theme === 'light') {
-      document.body.classList.add('light-theme');
-    } else {
-      document.body.classList.remove('light-theme');
-    }
-  }, [theme]);
+    localStorage.setItem('theme', 'light');
+    document.body.classList.add('light-theme');
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('language', language);
   }, [language]);
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    // Theme is always light
   };
 
   const toggleLanguage = () => {

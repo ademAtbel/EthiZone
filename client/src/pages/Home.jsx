@@ -605,11 +605,11 @@ const Home = () => {
           <section className="landing-hero container">
             <div className="hero-grid">
               <div className="hero-text-col">
-                <h1>Everything You Need in One Marketplace</h1>
-                <p>Shop products, discover stores, find services, browse houses, cars, jobs, and more on the world's most versatile ethical marketplace.</p>
+                <h1>{t('landing_hero_title')}</h1>
+                <p>{t('landing_hero_desc')}</p>
                 <div className="hero-btn-row">
-                  <button onClick={() => handleTypeSelect('store_product')} className="btn-hero-shopping">Start Shopping</button>
-                  <Link to="/register" className="btn-hero-seller">Become a Seller</Link>
+                  <button onClick={() => handleTypeSelect('store_product')} className="btn-hero-shopping">{t('landing_start_shopping')}</button>
+                  <Link to="/register" className="btn-hero-seller">{t('landing_become_seller')}</Link>
                 </div>
               </div>
               <div className="hero-img-col">
@@ -626,8 +626,8 @@ const Home = () => {
           {/* Browse by Category Grid */}
           <section className="category-browse-grid container">
             <div className="section-header-row">
-              <h3>Browse by Category</h3>
-              <button onClick={() => handleTypeSelect('store_product')} className="btn-view-all">View All →</button>
+              <h3>{t('landing_browse_category')}</h3>
+              <button onClick={() => handleTypeSelect('store_product')} className="btn-view-all">{t('landing_view_all')}</button>
             </div>
             <div className="grid-categories">
               {/* Left Large Card */}
@@ -672,29 +672,27 @@ const Home = () => {
 
           {/* Popular Marketplace */}
           <section className="featured-section container">
-            <h3 className="section-title">Popular in Marketplace</h3>
+            <h3 className="section-title">{t('landing_popular_marketplace')}</h3>
             <div className="horizontal-scroll-row">
               {activeProducts.map(item => {
                 const ownerSlug = item.ownerName ? item.ownerName.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-') : '';
+                const cardUrl = item.type === 'personal_item' ? `/?type=personal_item&query=${encodeURIComponent(item.title)}` : `/store/${ownerSlug}`;
                 return (
-                  <div key={item._id} className="home-featured-card">
+                  <Link key={item._id} to={cardUrl} className="home-featured-card" style={{ textDecoration: 'none', color: 'inherit' }}>
                     {item.images && item.images[0] ? (
                       <img src={item.images[0]} alt={item.title} className="featured-card-avatar" />
                     ) : (
                       <div className="featured-card-icon">🛍️</div>
                     )}
-                    <div style={{ width: '100%' }}>
+                    <div style={{ width: '100%', textAlign: 'center' }}>
                       <h5>{item.title}</h5>
                       <span className="featured-card-subtitle">{item.category || 'Product'}</span>
                       <span className="featured-card-price">${item.price}</span>
                     </div>
-                    <Link 
-                      to={item.type === 'personal_item' ? `/?type=personal_item&query=${encodeURIComponent(item.title)}` : `/store/${ownerSlug}`} 
-                      className="btn-featured-card-action"
-                    >
-                      View Details
-                    </Link>
-                  </div>
+                    <span className="btn-featured-card-action">
+                      {t('landing_view_details')}
+                    </span>
+                  </Link>
                 );
               })}
             </div>
@@ -702,25 +700,26 @@ const Home = () => {
  
           {/* Popular Vehicles */}
           <section className="featured-section container">
-            <h3 className="section-title">Popular Vehicles</h3>
+            <h3 className="section-title">{t('landing_popular_vehicles')}</h3>
             <div className="horizontal-scroll-row">
               {activeCars.map(item => {
                 const ownerSlug = item.ownerName ? item.ownerName.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-') : '';
                 const subtitle = item.metadata ? `${item.metadata.year || ''} • ${item.metadata.mileage ? item.metadata.mileage.toLocaleString() + ' mi' : ''}` : 'Vehicle';
+                const cardUrl = `/store/${ownerSlug}`;
                 return (
-                  <div key={item._id} className="home-featured-card">
+                  <Link key={item._id} to={cardUrl} className="home-featured-card" style={{ textDecoration: 'none', color: 'inherit' }}>
                     {item.images && item.images[0] ? (
                       <img src={item.images[0]} alt={item.title} className="featured-card-avatar" />
                     ) : (
                       <div className="featured-card-icon">🚗</div>
                     )}
-                    <div style={{ width: '100%' }}>
+                    <div style={{ width: '100%', textAlign: 'center' }}>
                       <h5>{item.title}</h5>
                       <span className="featured-card-subtitle">{subtitle}</span>
                       <span className="featured-card-price">${item.price ? item.price.toLocaleString() : 'Open'}</span>
                     </div>
-                    <Link to={`/store/${ownerSlug}`} className="btn-featured-card-action">View Vehicle</Link>
-                  </div>
+                    <span className="btn-featured-card-action">{t('landing_view_vehicle')}</span>
+                  </Link>
                 );
               })}
             </div>
@@ -728,25 +727,26 @@ const Home = () => {
  
           {/* Popular Real Estate */}
           <section className="featured-section container">
-            <h3 className="section-title">Popular Real Estate</h3>
+            <h3 className="section-title">{t('landing_popular_real_estate')}</h3>
             <div className="horizontal-scroll-row">
               {activeHouses.map(item => {
                 const ownerSlug = item.ownerName ? item.ownerName.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-') : '';
                 const subtitle = item.metadata ? `${item.metadata.bedrooms || 0} Beds • ${item.metadata.bathrooms || 0} Baths` : 'Property';
+                const cardUrl = `/store/${ownerSlug}`;
                 return (
-                  <div key={item._id} className="home-featured-card">
+                  <Link key={item._id} to={cardUrl} className="home-featured-card" style={{ textDecoration: 'none', color: 'inherit' }}>
                     {item.images && item.images[0] ? (
                       <img src={item.images[0]} alt={item.title} className="featured-card-avatar" />
                     ) : (
                       <div className="featured-card-icon">🏠</div>
                     )}
-                    <div style={{ width: '100%' }}>
+                    <div style={{ width: '100%', textAlign: 'center' }}>
                       <h5>{item.title}</h5>
                       <span className="featured-card-subtitle">{subtitle}</span>
                       <span className="featured-card-price">${item.price ? item.price.toLocaleString() : 'Open'}</span>
                     </div>
-                    <Link to={`/store/${ownerSlug}`} className="btn-featured-card-action">View Property</Link>
-                  </div>
+                    <span className="btn-featured-card-action">{t('landing_view_property')}</span>
+                  </Link>
                 );
               })}
             </div>
@@ -754,20 +754,21 @@ const Home = () => {
  
           {/* Popular Job Openings */}
           <section className="featured-section container">
-            <h3 className="section-title">Popular Job Openings</h3>
+            <h3 className="section-title">{t('landing_popular_jobs')}</h3>
             <div className="horizontal-scroll-row">
               {activeJobs.map(item => {
                 const ownerSlug = item.ownerName ? item.ownerName.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-') : '';
+                const cardUrl = `/store/${ownerSlug}`;
                 return (
-                  <div key={item._id} className="home-featured-card">
+                  <Link key={item._id} to={cardUrl} className="home-featured-card" style={{ textDecoration: 'none', color: 'inherit' }}>
                     <div className="featured-card-icon">💼</div>
-                    <div style={{ width: '100%' }}>
+                    <div style={{ width: '100%', textAlign: 'center' }}>
                       <h5>{item.title}</h5>
-                      <span className="featured-card-subtitle">{item.ownerName || 'Employer'}</span>
-                      <span className="featured-card-price">Open Salary</span>
+                      <span className="featured-card-subtitle">{item.ownerName || t('employer')}</span>
+                      <span className="featured-card-price">{t('open_salary')}</span>
                     </div>
-                    <Link to={`/store/${ownerSlug}`} className="btn-featured-card-action">View Job</Link>
-                  </div>
+                    <span className="btn-featured-card-action">{t('landing_view_job')}</span>
+                  </Link>
                 );
               })}
             </div>
@@ -775,23 +776,28 @@ const Home = () => {
  
           {/* Featured Professionals */}
           <section className="featured-section container">
-            <h3 className="section-title">Featured Professionals</h3>
+            <h3 className="section-title">{t('landing_featured_professionals')}</h3>
             <div className="professionals-row">
-              {activeProfessionals.map((prof) => (
-                <div key={prof._id} className="home-featured-card">
-                  <img src={prof.images[0]} alt={prof.name} className="featured-card-avatar" />
-                  <div style={{ width: '100%' }}>
-                    <h5>{prof.name}</h5>
-                    <span className="featured-card-subtitle">{prof.title}</span>
-                    <span className="featured-card-price" style={{ fontSize: '0.8rem', color: '#eab308' }}>{prof.rating}</span>
+              {activeProfessionals.map((prof) => {
+                const handleClick = () => {
+                  if (prof.isReal) {
+                    window.location.href = `tel:${prof.phone}`;
+                  } else {
+                    handleTypeSelect('handyman_skill');
+                  }
+                };
+                return (
+                  <div key={prof._id} className="home-featured-card" style={{ cursor: 'pointer' }} onClick={handleClick}>
+                    <img src={prof.images[0]} alt={prof.name} className="featured-card-avatar" />
+                    <div style={{ width: '100%', textAlign: 'center' }}>
+                      <h5>{prof.name}</h5>
+                      <span className="featured-card-subtitle">{prof.title}</span>
+                      <span className="featured-card-price" style={{ fontSize: '0.8rem', color: '#eab308' }}>{prof.rating}</span>
+                    </div>
+                    <span className="btn-featured-card-action">{t('landing_book_service')}</span>
                   </div>
-                  {prof.isReal ? (
-                    <a href={`tel:${prof.phone}`} className="btn-featured-card-action" style={{ textDecoration: 'none' }}>Book Service</a>
-                  ) : (
-                    <button onClick={() => handleTypeSelect('handyman_skill')} className="btn-featured-card-action" style={{ border: 'none' }}>Book Service</button>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
 
@@ -1639,14 +1645,17 @@ const Home = () => {
               {error && <div className="alert alert-danger">{error}</div>}
 
               {loading ? (
-                <div className="loading-container flex-center">
-                  <div className="spinner"></div>
-                  <p style={{ marginTop: '16px' }}>Searching active directories...</p>
+                <div className="loading-container flex-center" style={{ flexDirection: 'column', padding: '60px 0' }}>
+                  <div className="animated-logo-spinner">
+                    <img src="/logo.png" alt="Loading" className="logo-pulse" />
+                  </div>
+                  <p style={{ marginTop: '16px', fontWeight: '500', color: 'var(--text-secondary)' }}>{t('searching_active_directories') || 'Searching active directories...'}</p>
                 </div>
+              ) : error ? (
+                null
               ) : sortedListings.length === 0 ? (
-                <div className="loading-container flex-center">
-                  <div className="spinner"></div>
-                  <p style={{ marginTop: '16px' }}>Searching...</p>
+                <div className="loading-container flex-center" style={{ flexDirection: 'column', padding: '60px 0' }}>
+                  <p style={{ marginTop: '16px', color: 'var(--text-secondary)' }}>{t('no_listings_found') || 'No listings match your selection.'}</p>
                 </div>
               ) : (
                 <>
@@ -2723,6 +2732,35 @@ const Home = () => {
             display: none;
           }
         }
+        @keyframes pulseLogo {
+          0% {
+            transform: scale(0.9);
+            opacity: 0.6;
+          }
+          50% {
+            transform: scale(1.1);
+            opacity: 1;
+            filter: drop-shadow(0 0 15px rgba(197, 168, 90, 0.6));
+          }
+          100% {
+            transform: scale(0.9);
+            opacity: 0.6;
+          }
+        }
+        .logo-pulse {
+          width: 80px;
+          height: 80px;
+          object-fit: contain;
+          animation: pulseLogo 1.5s infinite ease-in-out;
+          filter: invert(1);
+        }
+        .animated-logo-spinner {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 12px;
+        }
+
         @keyframes slideInLeft {
           from { transform: translateX(-100%); }
           to { transform: translateX(0); }

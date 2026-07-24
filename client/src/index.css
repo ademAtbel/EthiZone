@@ -65,6 +65,7 @@ body.light-theme {
     radial-gradient(at 100% 0%, rgba(197, 168, 90, 0.01) 0px, transparent 50%);
 }
 
+
 body.light-theme .form-control {
   background: rgba(0, 0, 0, 0.02);
   color: var(--text-main) !important;
@@ -747,12 +748,12 @@ input:checked + .slider:before {
   outline: none;
   box-shadow: 0 0 0 2px #2f6f3a;
 }
-body.dark-theme .reusable-filter-btn {
+body:not(.light-theme) .reusable-filter-btn {
   background-color: rgba(255, 255, 255, 0.08);
   color: #ffffff;
   border-color: var(--border-glass);
 }
-body.dark-theme .reusable-filter-btn:hover {
+body:not(.light-theme) .reusable-filter-btn:hover {
   background-color: rgba(255, 255, 255, 0.15);
 }
 
@@ -779,12 +780,12 @@ body.dark-theme .reusable-filter-btn:hover {
   outline: none;
   box-shadow: 0 0 0 2px #16a34a;
 }
-body.dark-theme .reusable-theme-toggle-btn {
+body:not(.light-theme) .reusable-theme-toggle-btn {
   border-color: #374151;
   background-color: #0a1128;
   color: #ffffff;
 }
-body.dark-theme .reusable-theme-toggle-btn:hover {
+body:not(.light-theme) .reusable-theme-toggle-btn:hover {
   background-color: #152447;
 }
 

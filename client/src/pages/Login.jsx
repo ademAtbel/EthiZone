@@ -1,8 +1,10 @@
 // Ultimate Master Marketplace - Login Page (Optimized for High Scale)
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
 
 const Login = () => {
+  const { t } = useApp();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -139,11 +141,11 @@ const Login = () => {
   return (
     <div className="login-page container flex-center">
       <div className="glass-panel auth-card">
-        <h2>{loginMode === 'password' ? 'Welcome Back' : 'Verification Login'}</h2>
+        <h2>{loginMode === 'password' ? t('login_title_pw') : t('login_title_otp')}</h2>
         <p className="auth-subtitle">
           {loginMode === 'password' 
-            ? 'Login to access your dashboard and listings' 
-            : 'Enter your email to receive a 6-digit login code'}
+            ? t('login_subtitle_pw') 
+            : t('login_subtitle_otp')}
         </p>
 
         {error && <div className="alert alert-danger">{error}</div>}
@@ -152,7 +154,7 @@ const Login = () => {
           // STANDARD PASSWORD LOGIN FORM
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="email">Email Address</label>
+              <label htmlFor="email">{t('login_email')}</label>
               <input
                 type="email"
                 id="email"
@@ -165,7 +167,7 @@ const Login = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password">{t('login_password')}</label>
               <input
                 type="password"
                 id="password"
@@ -188,19 +190,19 @@ const Login = () => {
                   setError('');
                 }}
               >
-                Forgot Password? Log in with One-Time Code
+                {t('login_forgot')}
               </button>
             </div>
 
             <button type="submit" className="btn btn-primary w-full" disabled={loading}>
-              {loading ? 'Logging in...' : 'Sign In'}
+              {loading ? t('login_btn_loading') : t('login_btn_pw')}
             </button>
           </form>
         ) : (
           // OTP LOGIN FORM
           <form onSubmit={otpSent ? handleOtpLogin : handleRequestOtp}>
             <div className="form-group">
-              <label htmlFor="otp-email">Email Address</label>
+              <label htmlFor="otp-email">{t('login_email')}</label>
               <input
                 type="email"
                 id="otp-email"
@@ -215,7 +217,7 @@ const Login = () => {
 
             {otpSent && (
               <div className="form-group otp-group">
-                <label htmlFor="otp-code">One-Time Code (6-Digits)</label>
+                <label htmlFor="otp-code">{t('login_otp_label')}</label>
                 <input
                   type="text"
                   id="otp-code"
@@ -232,18 +234,18 @@ const Login = () => {
                 <div className="otp-timer-row">
                   {timer > 0 ? (
                     <span className="timer-text warning">
-                      Code expires in <strong>{timer}</strong> seconds
+                      {t('login_expires_in')} <strong>{timer}</strong> {t('login_seconds')}
                     </span>
                   ) : (
                     <div className="timer-expired">
-                      <span className="error-text">Code expired. </span>
+                      <span className="error-text">{t('login_expired')} </span>
                       <button
                         type="button"
                         className="link-btn text-accent font-semibold"
                         onClick={handleRequestOtp}
                         disabled={loading}
                       >
-                        Resend Code
+                        {t('login_resend')}
                       </button>
                     </div>
                   )}
@@ -253,10 +255,10 @@ const Login = () => {
 
             <button type="submit" className="btn btn-primary w-full" disabled={loading}>
               {loading 
-                ? 'Processing...' 
+                ? t('login_processing') 
                 : otpSent 
-                  ? 'Verify & Sign In' 
-                  : 'Send One-Time Code'}
+                  ? t('login_verify_signin') 
+                  : t('login_send_otp')}
             </button>
 
             <div className="form-helper-row text-center mt-4">
@@ -269,14 +271,14 @@ const Login = () => {
                   setOtpSent(false);
                 }}
               >
-                Back to Standard Password Login
+                {t('login_back_standard')}
               </button>
             </div>
           </form>
         )}
 
         <p className="auth-footer">
-          Don't have an account? <Link to="/register">Register Here</Link>
+          {t('login_no_account')} <Link to="/register">{t('login_register_here')}</Link>
         </p>
       </div>
 

@@ -446,11 +446,20 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
 
               {/* Feedbacks Grid */}
               <div className="modal-feedbacks-section" style={{ borderTop: '1px solid var(--border-glass)', paddingTop: '24px' }}>
-                <h4 style={{ fontSize: '1.15rem', color: 'var(--text-main)', marginBottom: '20px', borderLeft: '3px solid var(--accent-primary)', paddingLeft: '10px' }}>
-                  {t('verified_reviews_title')} ({modalRatings.length})
-                </h4>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '16px', flexWrap: 'wrap' }}>
+                  <h4 style={{ fontSize: '1.15rem', color: 'var(--text-main)', margin: 0, borderLeft: '3px solid var(--accent-primary)', paddingLeft: '10px' }}>
+                    {t('verified_reviews_title')} ({modalRatings.length})
+                  </h4>
+                  <button 
+                    onClick={() => setShowReviewForm(true)} 
+                    className="btn btn-primary"
+                    style={{ padding: '8px 20px', fontSize: '0.88rem', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    ★ {t('write_reference')}
+                  </button>
+                </div>
 
-                <div className="modal-reviews-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', alignItems: 'start' }}>
+                <div className="modal-reviews-grid-full" style={{ width: '100%' }}>
                   
                   {/* Reviews List */}
                   <div className="reviews-scroll-area" style={{ maxHeight: '380px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px', paddingRight: '6px' }}>
@@ -459,30 +468,83 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                     ) : modalRatings.length === 0 ? (
                       <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontStyle: 'italic' }}>{t('no_reviews_modal')}</p>
                     ) : (
-                      modalRatings.map((rev) => (
-                        <div key={rev._id} className="reference-log-card" style={{ padding: '16px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-glass)', borderRadius: 'var(--radius-md)' }}>
-                          <div className="ref-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
+                        {modalRatings.map((rev) => (
+                          <div key={rev._id} className="reference-log-card" style={{ padding: '16px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-glass)', borderRadius: 'var(--radius-md)' }}>
+                            <div className="ref-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                               <strong style={{ fontSize: '0.92rem' }}>{rev.name}</strong>
+                              <span style={{ color: 'var(--accent-warning)', fontSize: '0.95rem' }}>{'★'.repeat(rev.rating)}</span>
                             </div>
-                            <span style={{ color: 'var(--accent-warning)', fontSize: '0.95rem' }}>{'★'.repeat(rev.rating)}</span>
+                            <p style={{ fontSize: '0.85rem', fontStyle: 'italic', color: 'var(--text-secondary)', lineHeight: 1.4 }}>"{rev.comment}"</p>
+                            <span style={{ display: 'block', fontSize: '0.68rem', color: 'var(--text-muted)', textAlign: 'right', marginTop: '6px' }}>
+                              {new Date(rev.createdAt).toLocaleDateString()}
+                            </span>
                           </div>
-                          <p style={{ fontSize: '0.85rem', fontStyle: 'italic', color: 'var(--text-secondary)', lineHeight: 1.4 }}>"{rev.comment}"</p>
-                          <span style={{ display: 'block', fontSize: '0.68rem', color: 'var(--text-muted)', textAlign: 'right', marginTop: '6px' }}>
-                            {new Date(rev.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      ))
+                        ))}
+                      </div>
                     )}
-                  </div>
-
-                  {/* Rating Form Panel */}
-                  <div>
-                    <RatingForm targetId={ownerId?._id || ownerId} onRatingSubmitted={handleRatingAdded} />
                   </div>
 
                 </div>
               </div>
+
+              {/* Nested Feedback Modal */}
+              {showReviewForm && (
+                <div className="nested-modal-overlay" 
+                  onClick={() => setShowReviewForm(false)}
+                  style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    background: 'rgba(0, 0, 0, 0.65)',
+                    backdropFilter: 'blur(4px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 2100
+                  }}
+                >
+                  <div className="nested-modal-content glass-panel" 
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      width: '90%',
+                      maxWidth: '500px',
+                      padding: '32px',
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border-glass)',
+                      borderRadius: 'var(--radius-lg)',
+                      boxShadow: 'var(--shadow-premium)',
+                      position: 'relative'
+                    }}
+                  >
+                    <button 
+                      onClick={() => setShowReviewForm(false)} 
+                      style={{
+                        position: 'absolute',
+                        top: '16px',
+                        right: '16px',
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-secondary)',
+                        fontSize: '1.6rem',
+                        cursor: 'pointer',
+                        lineHeight: 1
+                      }}
+                    >
+                      &times;
+                    </button>
+                    <RatingForm 
+                      targetId={ownerId?._id || ownerId} 
+                      onRatingSubmitted={(newRating) => {
+                        handleRatingAdded(newRating);
+                        setShowReviewForm(false);
+                      }} 
+                    />
+                  </div>
+                </div>
+              )}
 
             </div>
           </div>

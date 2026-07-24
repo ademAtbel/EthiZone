@@ -415,6 +415,9 @@ const Navbar = () => {
           font-size: 1.8rem;
         }
         .navbar-center-filters {
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
           display: flex;
           gap: 10px;
           align-items: center;

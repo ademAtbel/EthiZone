@@ -164,9 +164,9 @@ const Chatbot = () => {
           width: 56px;
           height: 56px;
           border-radius: 50%;
-          background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
-          border: none;
-          color: white;
+          background: #c5a85a;
+          border: 1px solid #c5a85a;
+          color: #ffffff;
           font-size: 1.8rem;
           cursor: pointer;
           display: flex;
@@ -179,12 +179,22 @@ const Chatbot = () => {
         .chatbot-toggle-btn:hover {
           transform: scale(1.1) rotate(5deg);
           box-shadow: 0 12px 40px rgba(197, 168, 90, 0.5);
+          background: #b4964c;
+          border-color: #b4964c;
         }
 
         .chatbot-toggle-btn.active {
-          background: #000000;
+          background: #c5a85a;
+          color: #ffffff;
           font-size: 1.2rem;
-          border: 1px solid var(--border-glass);
+          border: 1px solid #c5a85a;
+        }
+
+        .chatbot-logo-img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          filter: brightness(0) invert(1);
         }
 
         .chatbot-window {
