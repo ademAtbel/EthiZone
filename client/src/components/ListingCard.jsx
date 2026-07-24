@@ -224,7 +224,7 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                 {type === 'job_opening' 
                   ? formatSalary(price, metadata?.salaryRate) 
                   : type === 'handyman_skill'
-                    ? (metadata?.handymanRates || (price ? `$${price.toLocaleString()}/hr` : t('contact_for_price')))
+                    ? (price ? `$${price.toLocaleString()}` : (metadata?.handymanRates || t('contact_for_price')))
                     : (listing.isOnSale && listing.salePrice 
                         ? `$${listing.salePrice.toLocaleString()}` 
                         : (price ? `$${price.toLocaleString()}` : t('contact_for_price'))
@@ -429,7 +429,7 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                         {type === 'job_opening' 
                           ? formatSalary(price, metadata?.salaryRate) 
                           : type === 'handyman_skill'
-                            ? (metadata?.handymanRates || (price ? `$${price.toLocaleString()}/hr` : t('contact_for_price')))
+                            ? (price ? `$${price.toLocaleString()}` : (metadata?.handymanRates || t('contact_for_price')))
                             : (price ? `$${price.toLocaleString()}` : t('contact_for_price'))}
                       </span>
                     </div>
