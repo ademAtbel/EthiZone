@@ -259,7 +259,7 @@ a {
 .form-control {
   width: 100%;
   padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.03);
+  background: #ffffff;
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-md);
   color: var(--text-main);
@@ -270,32 +270,18 @@ a {
 
 .form-control:focus {
   outline: none !important;
-  border-color: var(--accent-primary) !important;
-  background-color: rgba(255, 255, 255, 0.08) !important;
-  color: #ffffff !important;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25) !important;
-}
-
-body.light-theme .form-control:focus {
+  border-color: var(--accent-secondary) !important;
   background-color: #ffffff !important;
-  color: #0a0f1d !important;
-  border-color: var(--accent-primary) !important;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+  color: var(--text-main) !important;
+  box-shadow: 0 0 0 3px rgba(197, 168, 90, 0.25) !important;
 }
 
 .form-control:disabled {
-  background-color: rgba(255, 255, 255, 0.03) !important;
+  background-color: #f3f4f6 !important;
   color: var(--text-muted) !important;
   opacity: 0.6;
   cursor: not-allowed;
   border-color: var(--border-glass) !important;
-  -webkit-text-fill-color: var(--text-muted) !important;
-}
-
-body.light-theme .form-control:disabled {
-  background-color: rgba(0, 0, 0, 0.05) !important;
-  color: var(--text-muted) !important;
-  border-color: rgba(0, 0, 0, 0.1) !important;
   -webkit-text-fill-color: var(--text-muted) !important;
 }
 
@@ -316,13 +302,8 @@ select:-webkit-autofill:focus {
 
 /* Dropdown <option> text color visibility overrides */
 select.form-control option {
-  background-color: #111827 !important; /* Dark Gray 900 */
-  color: #f3f4f6 !important; /* White Gray 100 */
-}
-
-body.light-theme select.form-control option {
   background-color: #ffffff !important; /* Solid White */
-  color: #0a0f1d !important; /* Deep Slate */
+  color: #000000 !important; /* Solid Black */
 }
 
 .form-row {
