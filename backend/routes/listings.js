@@ -180,7 +180,7 @@ router.get('/', async (req, res) => {
     }
 
     if (category) {
-      filter.category = category;
+      filter.category = { $regex: category, $options: 'i' };
     }
 
     if (status && status !== 'all') {

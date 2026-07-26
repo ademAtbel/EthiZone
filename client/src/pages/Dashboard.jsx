@@ -270,7 +270,7 @@ const Dashboard = () => {
           }
         } else {
           const fallbacks = {
-            store: ['Boutique', 'Pharmacy', 'Liquor Store', 'Grocery Store', 'Electronics Shop', 'Bookstore'],
+            store: ['Boutique', 'Pharmacy', 'Liquor Store', 'Grocery Store', 'Electronics Shop', 'Bookstore', 'Furniture', 'Hardware Store', 'Cafe & Restaurant', 'Jewelry & Accessories', 'Gift & Toy Shop', 'Other'],
             service: ['Law Office', 'Tax Office', 'Dental Clinic', 'Consulting Firm', 'Cleaning Agency', 'Beauty Salon'],
             organization: ['Tech Corporation', 'Construction Company', 'Healthcare Group', 'Educational Institution', 'Non-Profit Org', 'Other'],
             real_estate: ['Residential Homes', 'Rental Apartments', 'Commercial Real Estate', 'Land & Lots'],
@@ -285,7 +285,7 @@ const Dashboard = () => {
       })
       .catch(() => {
         const fallbacks = {
-          store: ['Boutique', 'Pharmacy', 'Liquor Store', 'Grocery Store', 'Electronics Shop', 'Bookstore'],
+          store: ['Boutique', 'Pharmacy', 'Liquor Store', 'Grocery Store', 'Electronics Shop', 'Bookstore', 'Furniture', 'Hardware Store', 'Cafe & Restaurant', 'Jewelry & Accessories', 'Gift & Toy Shop', 'Other'],
           service: ['Law Office', 'Tax Office', 'Dental Clinic', 'Consulting Firm', 'Cleaning Agency', 'Beauty Salon'],
           organization: ['Tech Corporation', 'Construction Company', 'Healthcare Group', 'Educational Institution', 'Non-Profit Org', 'Other'],
           real_estate: ['Residential Homes', 'Rental Apartments', 'Commercial Real Estate', 'Land & Lots'],
@@ -1916,6 +1916,21 @@ const Dashboard = () => {
                               ⏰ <strong>Pickup Scheduled Time:</strong> {inq.details.pickupTime}
                             </div>
                           )}
+                          {inq.businessType === 'grocery' && (
+                             <div>
+                               🛒 <strong>Grocery Items:</strong>
+                               <p style={{ margin: '4px 0 8px 0', fontStyle: 'italic' }}>{inq.details.groceryItems}</p>
+                               🚚 <strong>Option:</strong> {inq.details.groceryServiceType === 'delivery' ? 'Home Delivery' : 'In-Store Pickup'}<br/>
+                               ⏰ <strong>Time Requested:</strong> {inq.details.groceryTime}
+                               {inq.details.groceryNotes && <p style={{ marginTop: '8px', marginBottom: 0 }}>💬 <strong>Instructions:</strong> {inq.details.groceryNotes}</p>}
+                             </div>
+                           )}
+                           {inq.businessType === 'handyman' && (
+                             <div>
+                               🛠️ <strong>Service Request details:</strong>
+                               <p style={{ margin: '4px 0 0 0', fontStyle: 'italic' }}>{inq.details.message}</p>
+                             </div>
+                           )}
                           {inq.businessType === 'general' && (
                             <div>
                               💬 {inq.details.message}
@@ -1996,6 +2011,72 @@ const Dashboard = () => {
             <h3>✏️ Edit Listing</h3>
             
             <form onSubmit={handleUpdateListing} className="modal-body-scroll">
+              
+              {/* Handyman Specialties Checkboxes at the Top */}
+              {editForm.type === 'handyman_skill' && (
+                <div className="form-group" style={{ marginBottom: '24px' }}>
+                  <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>
+                    {t('experties') || 'Skill Specialty Category'} (Select all that apply)
+                  </label>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
+                    gap: '12px 8px', 
+                    background: 'rgba(255,255,255,0.01)', 
+                    border: '1px solid var(--border-glass)', 
+                    padding: '16px', 
+                    borderRadius: '8px'
+                  }}>
+                    {[
+                      { value: 'Housekeeper', key: 'specialty_housekeeper' },
+                      { value: 'Childcare Provider', key: 'specialty_childcare' },
+                      { value: 'Property Manager', key: 'specialty_property_manager' },
+                      { value: 'Cook', key: 'specialty_cook' },
+                      { value: 'Caretaker', key: 'specialty_caretaker' },
+                      { value: 'Electrician', key: 'specialty_electrician' },
+                      { value: 'Plumber', key: 'specialty_plumber' },
+                      { value: 'Carpenter', key: 'specialty_carpenter' },
+                      { value: 'Handyman', key: 'specialty_handyman' },
+                      { value: 'Painter', key: 'specialty_painter' },
+                      { value: 'HVAC Specialist', key: 'specialty_hvac' },
+                      { value: 'Pest Control', key: 'specialty_pest_control' },
+                      { value: 'Contractor', key: 'specialty_contractor' },
+                      { value: 'Mason', key: 'specialty_mason' },
+                      { value: 'Roofer', key: 'specialty_roofer' },
+                      { value: 'Drywall Specialist', key: 'specialty_drywall' },
+                      { value: 'Flooring Specialist', key: 'specialty_flooring' },
+                      { value: 'Landscaper', key: 'specialty_landscaper' },
+                      { value: 'Window Installer', key: 'specialty_window_installer' },
+                      { value: 'Tiler', key: 'specialty_tiler' },
+                      { value: 'Architect', key: 'specialty_architect' },
+                      { value: 'Designer', key: 'specialty_designer' }
+                    ].map((spec) => {
+                      const selectedList = (editForm.category || '').split(',').map(s => s.trim()).filter(Boolean);
+                      const isChecked = selectedList.includes(spec.value);
+                      return (
+                        <label key={spec.value} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', margin: 0, fontSize: '0.85rem' }}>
+                          <input 
+                            type="checkbox" 
+                            checked={isChecked}
+                            style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                            onChange={(e) => {
+                              let newList;
+                              if (e.target.checked) {
+                                newList = [...selectedList, spec.value];
+                              } else {
+                                newList = selectedList.filter(s => s !== spec.value);
+                              }
+                              setEditForm({ ...editForm, category: newList.join(', ') });
+                            }}
+                          />
+                          <span>{t(spec.key) || spec.value}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="form-group">
                 <label>Listing Title</label>
                 <input 
@@ -2337,28 +2418,6 @@ const Dashboard = () => {
               {editForm.type === 'handyman_skill' && (
                 <>
                   <div className="form-group">
-                    <label>Skill Specialty Category</label>
-                    <select 
-                      className="form-control"
-                      value={editForm.category || ''}
-                      onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-                      required
-                    >
-                      <option value="">Select Specialty</option>
-                      <option value="Plumbing">Plumbing</option>
-                      <option value="Electrical Work">Electrical Work</option>
-                      <option value="Carpentry">Carpentry</option>
-                      <option value="Painting & Plastering">Painting & Plastering</option>
-                      <option value="Roofing">Roofing</option>
-                      <option value="HVAC & Heating">HVAC & Heating</option>
-                      <option value="Appliance Repair">Appliance Repair</option>
-                      <option value="Gardening & Landscaping">Gardening & Landscaping</option>
-                      <option value="Cleaning & Housekeeping">Cleaning & Housekeeping</option>
-                      <option value="Locksmith & Security">Locksmith & Security</option>
-                      <option value="Masonry & Tiling">Masonry & Tiling</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
                     <label>Service Rate Estimate</label>
                     <input 
                       type="text" 
@@ -2568,7 +2627,7 @@ const Dashboard = () => {
               )}
 
               <div className="form-group">
-                <label>Listing Description</label>
+                <label>{t('label_listing_description') || 'Listing Description'}</label>
                 <textarea 
                   className="form-control" 
                   value={editForm.description}
@@ -2579,7 +2638,7 @@ const Dashboard = () => {
               </div>
 
               <div className="form-group">
-                <label>Listing Images (Max 5)</label>
+                <label>{t('label_listing_images') || 'Listing Images (Max 5)'}</label>
                 <input 
                   type="file" 
                   className="form-control" 
@@ -2608,8 +2667,8 @@ const Dashboard = () => {
               </div>
 
               <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-                <button type="submit" className="btn btn-primary flex-grow-1">Save Changes</button>
-                <button type="button" onClick={() => setEditingListing(null)} className="btn btn-secondary">Cancel</button>
+                <button type="submit" className="btn btn-primary flex-grow-1">{t('btn_save_changes') || 'Save Changes'}</button>
+                <button type="button" onClick={() => setEditingListing(null)} className="btn btn-secondary">{t('btn_cancel') || 'Cancel'}</button>
               </div>
             </form>
           </div>
@@ -2628,27 +2687,92 @@ const Dashboard = () => {
               setIsCreateModalOpen(false); // Close modal on success!
             }} className="modal-body-scroll" style={{ maxHeight: '80vh', overflowY: 'auto', paddingRight: '6px' }}>
               
+              {/* Handyman Specialties Checkboxes at the Top */}
+              {(user?.role === 'handyman' || listingForm.type === 'handyman_skill') && (
+                <div className="form-group" style={{ marginBottom: '24px' }}>
+                  <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>
+                    {t('experties') || 'Skill Specialty Category'} (Select all that apply)
+                  </label>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
+                    gap: '12px 8px', 
+                    background: 'rgba(255,255,255,0.01)', 
+                    border: '1px solid var(--border-glass)', 
+                    padding: '16px', 
+                    borderRadius: '8px'
+                  }}>
+                    {[
+                      { value: 'Housekeeper', key: 'specialty_housekeeper' },
+                      { value: 'Childcare Provider', key: 'specialty_childcare' },
+                      { value: 'Property Manager', key: 'specialty_property_manager' },
+                      { value: 'Cook', key: 'specialty_cook' },
+                      { value: 'Caretaker', key: 'specialty_caretaker' },
+                      { value: 'Electrician', key: 'specialty_electrician' },
+                      { value: 'Plumber', key: 'specialty_plumber' },
+                      { value: 'Carpenter', key: 'specialty_carpenter' },
+                      { value: 'Handyman', key: 'specialty_handyman' },
+                      { value: 'Painter', key: 'specialty_painter' },
+                      { value: 'HVAC Specialist', key: 'specialty_hvac' },
+                      { value: 'Pest Control', key: 'specialty_pest_control' },
+                      { value: 'Contractor', key: 'specialty_contractor' },
+                      { value: 'Mason', key: 'specialty_mason' },
+                      { value: 'Roofer', key: 'specialty_roofer' },
+                      { value: 'Drywall Specialist', key: 'specialty_drywall' },
+                      { value: 'Flooring Specialist', key: 'specialty_flooring' },
+                      { value: 'Landscaper', key: 'specialty_landscaper' },
+                      { value: 'Window Installer', key: 'specialty_window_installer' },
+                      { value: 'Tiler', key: 'specialty_tiler' },
+                      { value: 'Architect', key: 'specialty_architect' },
+                      { value: 'Designer', key: 'specialty_designer' }
+                    ].map((spec) => {
+                      const selectedList = (listingForm.category || '').split(',').map(s => s.trim()).filter(Boolean);
+                      const isChecked = selectedList.includes(spec.value);
+                      return (
+                        <label key={spec.value} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', margin: 0, fontSize: '0.85rem' }}>
+                          <input 
+                            type="checkbox" 
+                            checked={isChecked}
+                            style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                            onChange={(e) => {
+                              let newList;
+                              if (e.target.checked) {
+                                newList = [...selectedList, spec.value];
+                              } else {
+                                newList = selectedList.filter(s => s !== spec.value);
+                              }
+                              setListingForm({ ...listingForm, category: newList.join(', ') });
+                            }}
+                          />
+                          <span>{t(spec.key) || spec.value}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="form-group">
                 <label>
-                  {user?.role === 'handyman' ? 'Service / Skill Title' :
-                   user?.role === 'business' && user.businessType === 'store' ? 'Product Name' :
-                   user?.role === 'business' && user.businessType === 'service' ? 'Service Name' :
-                   user?.role === 'business' && user.businessType === 'organization' ? 'Job Position Title' :
-                   user?.role === 'business' && user.businessType === 'real_estate' ? 'Property Title' :
-                   user?.role === 'business' && user.businessType === 'automotive' ? 'Vehicle Title' :
-                   'Listing Title'}
+                  {user?.role === 'handyman' ? t('label_service_title') :
+                   user?.role === 'business' && user.businessType === 'store' ? t('label_product_name') :
+                   user?.role === 'business' && user.businessType === 'service' ? t('label_service_name') :
+                   user?.role === 'business' && user.businessType === 'organization' ? t('label_job_title') :
+                   user?.role === 'business' && user.businessType === 'real_estate' ? t('label_property_title') :
+                   user?.role === 'business' && user.businessType === 'automotive' ? t('label_vehicle_title') :
+                   t('label_listing_title')}
                 </label>
                 <input 
                   type="text" 
                   className="form-control" 
                   placeholder={
-                    user?.role === 'handyman' ? 'e.g. Master Pipe Leak Repair' :
-                    user?.role === 'business' && user.businessType === 'store' ? 'e.g. Organic Multivitamins Bottle' :
-                    user?.role === 'business' && user.businessType === 'service' ? 'e.g. Professional Tax Advisory' :
-                    user?.role === 'business' && user.businessType === 'organization' ? 'e.g. Senior Software Engineer' :
-                    user?.role === 'business' && user.businessType === 'real_estate' ? 'e.g. Cozy 3-Bedroom Suburban House' :
-                    user?.role === 'business' && user.businessType === 'automotive' ? 'e.g. 2022 Honda Civic LX' :
-                    'e.g. Vintage Leather Jacket'
+                    user?.role === 'handyman' ? t('placeholder_service_title') :
+                    user?.role === 'business' && user.businessType === 'store' ? t('placeholder_product_name') :
+                    user?.role === 'business' && user.businessType === 'service' ? t('placeholder_service_name') :
+                    user?.role === 'business' && user.businessType === 'organization' ? t('placeholder_job_title') :
+                    user?.role === 'business' && user.businessType === 'real_estate' ? t('placeholder_property_title') :
+                    user?.role === 'business' && user.businessType === 'automotive' ? t('placeholder_vehicle_title') :
+                    t('placeholder_listing_title')
                   }
                   value={listingForm.title}
                   onChange={(e) => setListingForm({ ...listingForm, title: e.target.value })}
@@ -2722,11 +2846,11 @@ const Dashboard = () => {
                 </div>
               ) : !['Law Office', 'Tax Office', 'Dental Clinic', 'Consulting Firm'].includes(user?.category) ? (
                 <div className="form-group">
-                  <label>Price / Value Offered ($) <span style={{ fontWeight: 400, fontSize: '0.82rem', opacity: 0.8 }}>(Optional — Leave blank for "Contact for Price")</span></label>
+                  <label>{t('label_price_optional') || 'Price / Value Offered ($) (Optional — Leave blank for "Contact for Price")'}</label>
                   <input 
                     type="number" 
                     className="form-control" 
-                    placeholder="e.g. 50 (Leave blank for call/inquire)"
+                    placeholder={t('placeholder_price') || 'e.g. 50 (Leave blank for call/inquire)'}
                     value={listingForm.price}
                     onChange={(e) => setListingForm({ ...listingForm, price: e.target.value })}
                     required={['Boutique', 'Grocery Store', 'Liquor Store', 'Electronics Shop'].includes(user?.category)}
@@ -3027,33 +3151,11 @@ const Dashboard = () => {
               {listingForm.type === 'handyman_skill' && (
                 <>
                   <div className="form-group">
-                    <label>Skill Specialty Category</label>
-                    <select 
-                      className="form-control"
-                      value={listingForm.category || ''}
-                      onChange={(e) => setListingForm({ ...listingForm, category: e.target.value })}
-                      required
-                    >
-                      <option value="">Select Specialty</option>
-                      <option value="Plumbing">Plumbing</option>
-                      <option value="Electrical Work">Electrical Work</option>
-                      <option value="Carpentry">Carpentry</option>
-                      <option value="Painting & Plastering">Painting & Plastering</option>
-                      <option value="Roofing">Roofing</option>
-                      <option value="HVAC & Heating">HVAC & Heating</option>
-                      <option value="Appliance Repair">Appliance Repair</option>
-                      <option value="Gardening & Landscaping">Gardening & Landscaping</option>
-                      <option value="Cleaning & Housekeeping">Cleaning & Housekeeping</option>
-                      <option value="Locksmith & Security">Locksmith & Security</option>
-                      <option value="Masonry & Tiling">Masonry & Tiling</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Service Rate Estimate</label>
+                    <label>{t('label_rate_estimate') || 'Service Rate Estimate'}</label>
                     <input 
                       type="text" 
                       className="form-control" 
-                      placeholder="e.g. $45/hour, Flat rate based on scale"
+                      placeholder={t('placeholder_rate_estimate') || 'e.g. $45/hour, Flat rate based on scale'}
                       value={listingForm.handymanRates}
                       onChange={(e) => setListingForm({ ...listingForm, handymanRates: e.target.value })}
                     />
@@ -3266,10 +3368,10 @@ const Dashboard = () => {
               )}
 
               <div className="form-group">
-                <label>Listing Description</label>
+                <label>{t('label_listing_description') || 'Listing Description'}</label>
                 <textarea 
                   className="form-control" 
-                  placeholder="Describe your offer, specifications, terms and options clearly..."
+                  placeholder={t('placeholder_description') || 'Describe your offer, specifications, terms and options clearly...'}
                   value={listingForm.description}
                   onChange={(e) => setListingForm({ ...listingForm, description: e.target.value })}
                   rows="4"
@@ -3278,7 +3380,7 @@ const Dashboard = () => {
               </div>
 
               <div className="form-group">
-                <label>Listing Images (Max 5)</label>
+                <label>{t('label_listing_images') || 'Listing Images (Max 5)'}</label>
                 <input 
                   type="file" 
                   className="form-control" 
@@ -3287,7 +3389,7 @@ const Dashboard = () => {
                   onChange={handleImageChange}
                   disabled={selectedImages.length >= 5}
                 />
-                <p className="help-text">Select up to 5 images. Stored locally via base64 encoding.</p>
+                <p className="help-text">{t('label_select_files_info') || 'Select up to 5 images. Stored locally via base64 encoding.'}</p>
                 
                 {selectedImages.length > 0 && (
                   <div className="image-previews-grid">
@@ -3308,8 +3410,8 @@ const Dashboard = () => {
               </div>
 
               <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-                <button type="submit" className="btn btn-primary flex-grow-1">{t('publish_btn')}</button>
-                <button type="button" onClick={() => setIsCreateModalOpen(false)} className="btn btn-secondary">Cancel</button>
+                <button type="submit" className="btn btn-primary flex-grow-1">{t('btn_publish_listing') || '+ Publish Listing'}</button>
+                <button type="button" onClick={() => setIsCreateModalOpen(false)} className="btn btn-secondary">{t('btn_cancel') || 'Cancel'}</button>
               </div>
             </form>
           </div>

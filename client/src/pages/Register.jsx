@@ -39,7 +39,9 @@ const Register = () => {
           const fallbacks = {
             store: [
               { name: 'Boutique' }, { name: 'Pharmacy' }, { name: 'Liquor Store' },
-              { name: 'Grocery Store' }, { name: 'Electronics Shop' }, { name: 'Bookstore' }
+              { name: 'Grocery Store' }, { name: 'Electronics Shop' }, { name: 'Bookstore' },
+              { name: 'Furniture' }, { name: 'Hardware Store' }, { name: 'Cafe & Restaurant' },
+              { name: 'Jewelry & Accessories' }, { name: 'Gift & Toy Shop' }, { name: 'Other' }
             ],
             service: [
               { name: 'Law Office' }, { name: 'Tax Office' }, { name: 'Dental Clinic' },
@@ -69,7 +71,9 @@ const Register = () => {
         const fallbacks = {
           store: [
             { name: 'Boutique' }, { name: 'Pharmacy' }, { name: 'Liquor Store' },
-            { name: 'Grocery Store' }, { name: 'Electronics Shop' }, { name: 'Bookstore' }
+            { name: 'Grocery Store' }, { name: 'Electronics Shop' }, { name: 'Bookstore' },
+            { name: 'Furniture' }, { name: 'Hardware Store' }, { name: 'Cafe & Restaurant' },
+            { name: 'Jewelry & Accessories' }, { name: 'Gift & Toy Shop' }, { name: 'Other' }
           ],
           service: [
             { name: 'Law Office' }, { name: 'Tax Office' }, { name: 'Dental Clinic' },

@@ -5,14 +5,47 @@ const Inquiry = require('../models/Inquiry');
 const User = require('../models/User');
 const { verifyToken } = require('../middleware/auth');
 const { validateEmail, validatePhone } = require('../utils/validation');
+const { sendOtpEmail } = require('../utils/email');
+
+// In-memory OTP storage for guest inquiries
+const otpStore = new Map();
+
+// SEND OTP FOR INQUIRY EMAIL VERIFICATION
+router.post('/send-otp', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email address is required' });
+    }
+
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.valid) {
+      return res.status(400).json({ message: emailCheck.reason });
+    }
+
+    // Generate 6-digit OTP
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    otpStore.set(email.toLowerCase().trim(), {
+      code,
+      expires: Date.now() + 5 * 60 * 1000 // Valid for 5 minutes
+    });
+
+    await sendOtpEmail(email, code);
+
+    res.json({ message: 'Verification code sent to your email!' });
+  } catch (error) {
+    console.error('Error sending OTP for inquiry:', error);
+    res.status(500).json({ message: 'Error sending verification code', error: error.message });
+  }
+});
 
 // CREATE INQUIRY (GUEST SUBMISSION)
 router.post('/', async (req, res) => {
   try {
-    const { businessId, customerName, customerEmail, customerPhone, businessType, details } = req.body;
+    const { businessId, customerName, customerEmail, customerPhone, businessType, details, otpCode } = req.body;
 
-    if (!businessId || !customerName || !customerEmail || !customerPhone || !businessType) {
-      return res.status(400).json({ message: 'Please provide all required customer and business details' });
+    if (!businessId || !customerName || !customerEmail || !customerPhone || !businessType || !otpCode) {
+      return res.status(400).json({ message: 'Please provide all details, including email verification code.' });
     }
 
     // Validate customer email
@@ -20,6 +53,15 @@ router.post('/', async (req, res) => {
     if (!emailCheck.valid) {
       return res.status(400).json({ message: emailCheck.reason });
     }
+
+    // Verify OTP code
+    const storedOtp = otpStore.get(customerEmail.toLowerCase().trim());
+    if (!storedOtp || storedOtp.code !== otpCode.toString().trim() || Date.now() > storedOtp.expires) {
+      return res.status(400).json({ message: 'Invalid or expired email verification code. Please request a new one.' });
+    }
+
+    // Clear OTP code once verified successfully
+    otpStore.delete(customerEmail.toLowerCase().trim());
 
     // Validate customer phone
     const phoneCheck = validatePhone(customerPhone);
@@ -61,6 +103,8 @@ router.post('/', async (req, res) => {
       detailSummary = `Item inquiry: "${details.itemTitle}" (Size: ${details.size || 'N/A'}, Color: ${details.color || 'N/A'})`;
     } else if (businessType === 'liquor') {
       detailSummary = `Liquor pickup pre-order: "${details.orderNotes || 'Catalog items'}"`;
+    } else if (businessType === 'grocery') {
+      detailSummary = `Grocery order (${details.groceryServiceType === 'delivery' ? 'Home Delivery' : 'In-Store Pickup'}): "${details.groceryItems}". Notes: "${details.groceryNotes || 'None'}". Preferred Time: ${details.groceryTime}`;
     } else {
       detailSummary = `General Inquiry: "${details.message || 'No additional details'}"`;
     }

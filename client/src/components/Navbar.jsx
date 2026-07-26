@@ -98,17 +98,26 @@ const Navbar = () => {
     }
   };
 
-  const handleTypeSelect = (type) => {
+  const handleTypeSelect = (type, categoryVal = '') => {
     setActiveStoreType('');
-    if (location.pathname !== '/') {
-      navigate(`/?type=${type}`);
+    const newParams = new URLSearchParams(searchParams);
+    const currentCategory = searchParams.get('category') || '';
+    
+    if (selectedType === type && !categoryVal && !currentCategory) {
+      newParams.delete('type');
+      newParams.delete('category');
     } else {
-      const newParams = new URLSearchParams(searchParams);
-      if (selectedType === type) {
-        newParams.delete('type');
+      newParams.set('type', type);
+      if (categoryVal) {
+        newParams.set('category', categoryVal);
       } else {
-        newParams.set('type', type);
+        newParams.delete('category');
       }
+    }
+    
+    if (location.pathname !== '/') {
+      navigate(`/?${newParams.toString()}`);
+    } else {
       setSearchParams(newParams);
     }
   };
@@ -139,12 +148,55 @@ const Navbar = () => {
             >
               {t('stores')}
             </button>
-            <button
-              onClick={() => handleTypeSelect('handyman_skill')}
-              className={`filter-badge ${selectedType === 'handyman_skill' ? 'active' : ''}`}
-            >
-              {t('handymen')}
-            </button>
+            <div className="nav-dropdown-wrapper">
+              <button
+                onClick={() => handleTypeSelect('handyman_skill')}
+                className={`filter-badge ${selectedType === 'handyman_skill' ? 'active' : ''}`}
+                style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                {selectedType === 'handyman_skill' && searchParams.get('category')
+                  ? `${t('experties') || 'Expertise'}: ${t('specialty_' + searchParams.get('category').toLowerCase().replace(/\s+/g, '_')) || searchParams.get('category')}`
+                  : (t('experties') || 'Expertise')
+                } <span style={{ fontSize: '0.65rem' }}>▼</span>
+              </button>
+              <div className="nav-dropdown-menu">
+                {[
+                  { value: 'Housekeeper', key: 'specialty_housekeeper' },
+                  { value: 'Childcare Provider', key: 'specialty_childcare' },
+                  { value: 'Property Manager', key: 'specialty_property_manager' },
+                  { value: 'Cook', key: 'specialty_cook' },
+                  { value: 'Caretaker', key: 'specialty_caretaker' },
+                  { value: 'Electrician', key: 'specialty_electrician' },
+                  { value: 'Plumber', key: 'specialty_plumber' },
+                  { value: 'Carpenter', key: 'specialty_carpenter' },
+                  { value: 'Handyman', key: 'specialty_handyman' },
+                  { value: 'Painter', key: 'specialty_painter' },
+                  { value: 'HVAC Specialist', key: 'specialty_hvac' },
+                  { value: 'Pest Control', key: 'specialty_pest_control' },
+                  { value: 'Contractor', key: 'specialty_contractor' },
+                  { value: 'Mason', key: 'specialty_mason' },
+                  { value: 'Roofer', key: 'specialty_roofer' },
+                  { value: 'Drywall Specialist', key: 'specialty_drywall' },
+                  { value: 'Flooring Specialist', key: 'specialty_flooring' },
+                  { value: 'Landscaper', key: 'specialty_landscaper' },
+                  { value: 'Window Installer', key: 'specialty_window_installer' },
+                  { value: 'Tiler', key: 'specialty_tiler' },
+                  { value: 'Architect', key: 'specialty_architect' },
+                  { value: 'Designer', key: 'specialty_designer' }
+                ].map((spec) => (
+                  <button
+                    key={spec.value}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTypeSelect('handyman_skill', spec.value);
+                    }}
+                    className="nav-dropdown-item"
+                  >
+                    {t(spec.key) || spec.value}
+                  </button>
+                ))}
+              </div>
+            </div>
             <button
               onClick={() => handleTypeSelect('service')}
               className={`filter-badge ${selectedType === 'service' ? 'active' : ''}`}
@@ -178,21 +230,17 @@ const Navbar = () => {
           </div>
         )}
 
-        {/* Always Visible Actions (Language Toggle) */}
-        <div className="nav-global-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto', marginRight: '10px' }}>
+        {/* Right Nav Links */}
+        <div className="nav-links" style={{ marginLeft: 'auto' }}>
           {/* Language Toggle Button */}
           <button 
             onClick={toggleLanguage} 
             className="btn-navbar-tool btn-lang"
             title="Switch Language / ቋንቋ ቀይር"
-            style={{ fontSize: '0.8rem', padding: '6px 10px', height: '34px', minWidth: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            style={{ fontSize: '0.8rem', padding: '6px 10px', height: '34px', minWidth: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
           >
             {language === 'en' ? 'አማ' : 'EN'}
           </button>
-        </div>
-
-        {/* Right Nav Links */}
-        <div className="nav-links">
           {token && !isPublicStorefront ? (
             <>
               {user.role === 'super_admin' && (
@@ -515,6 +563,59 @@ const Navbar = () => {
           color: #ffffff;
           border-color: var(--accent-primary);
           box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+        }
+
+        .nav-dropdown-wrapper {
+          position: relative;
+          display: inline-block;
+        }
+        .nav-dropdown-menu {
+          display: none;
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%) translateY(8px);
+          background: #ffffff;
+          border: 1px solid var(--border-glass);
+          border-radius: var(--radius-md);
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+          z-index: 2200;
+          min-width: 210px;
+          max-height: 380px;
+          overflow-y: auto;
+          padding: 8px 0;
+          animation: navFadeIn 0.2s ease;
+        }
+        .nav-dropdown-wrapper:hover .nav-dropdown-menu {
+          display: block;
+        }
+        .nav-dropdown-item {
+          display: block;
+          width: 100%;
+          padding: 8px 18px;
+          border: none;
+          background: none;
+          text-align: left;
+          font-size: 0.85rem;
+          color: #1e293b;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.18s;
+        }
+        .nav-dropdown-item:hover {
+          background: rgba(197, 168, 90, 0.08);
+          color: #c5a85a;
+          padding-left: 22px;
+        }
+        @keyframes navFadeIn {
+          from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(14px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(8px);
+          }
         }
 
         /* Responsive Mobile Styling */

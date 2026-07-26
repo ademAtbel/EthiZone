@@ -59,9 +59,10 @@ const Home = () => {
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [storeType, setStoreType] = useState('All');
 
-  // Sync local input state with URL parameter changes (e.g. when user clicks home/logo)
+  // Sync local input and category states with URL parameter changes (e.g. when user clicks home/logo)
   useEffect(() => {
     setSearchInput(searchParams.get('query') || '');
+    setSelectedCategory(searchParams.get('category') || '');
   }, [searchParams]);
 
   // Fetch listing data based on queries
@@ -98,17 +99,28 @@ const Home = () => {
   useEffect(() => {
     if (selectedType === 'handyman_skill') {
       const handymanCategories = [
-        { name: 'Plumbing' },
-        { name: 'Electrical Work' },
-        { name: 'Carpentry' },
-        { name: 'Painting & Plastering' },
-        { name: 'Roofing' },
-        { name: 'HVAC & Heating' },
-        { name: 'Appliance Repair' },
-        { name: 'Gardening & Landscaping' },
-        { name: 'Cleaning & Housekeeping' },
-        { name: 'Locksmith & Security' },
-        { name: 'Masonry & Tiling' }
+        { name: 'Housekeeper', key: 'specialty_housekeeper' },
+        { name: 'Childcare Provider', key: 'specialty_childcare' },
+        { name: 'Property Manager', key: 'specialty_property_manager' },
+        { name: 'Cook', key: 'specialty_cook' },
+        { name: 'Caretaker', key: 'specialty_caretaker' },
+        { name: 'Electrician', key: 'specialty_electrician' },
+        { name: 'Plumber', key: 'specialty_plumber' },
+        { name: 'Carpenter', key: 'specialty_carpenter' },
+        { name: 'Handyman', key: 'specialty_handyman' },
+        { name: 'Painter', key: 'specialty_painter' },
+        { name: 'HVAC Specialist', key: 'specialty_hvac' },
+        { name: 'Pest Control', key: 'specialty_pest_control' },
+        { name: 'Contractor', key: 'specialty_contractor' },
+        { name: 'Mason', key: 'specialty_mason' },
+        { name: 'Roofer', key: 'specialty_roofer' },
+        { name: 'Drywall Specialist', key: 'specialty_drywall' },
+        { name: 'Flooring Specialist', key: 'specialty_flooring' },
+        { name: 'Landscaper', key: 'specialty_landscaper' },
+        { name: 'Window Installer', key: 'specialty_window_installer' },
+        { name: 'Tiler', key: 'specialty_tiler' },
+        { name: 'Architect', key: 'specialty_architect' },
+        { name: 'Designer', key: 'specialty_designer' }
       ];
       setCategories(handymanCategories);
       setSelectedCategory(''); 
@@ -1410,6 +1422,52 @@ const Home = () => {
                   <div className="space-y-4">
                     <h2 className="fs-4 fw-bold pb-2 border-bottom">{t('filters')}</h2>
 
+                    {/* Skill Specialty Category */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('experties') || 'Expertise'}</h4>
+                      <select 
+                        className="form-control"
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        style={{ 
+                          fontSize: '0.85rem', 
+                          padding: '8px 12px', 
+                          borderRadius: '6px', 
+                          background: 'rgba(255,255,255,0.02)', 
+                          color: 'var(--text-main)', 
+                          border: '1px solid var(--border-glass)' 
+                        }}
+                      >
+                        <option value="">{t('all') || 'All Specialties'}</option>
+                        {[
+                          { value: 'Housekeeper', key: 'specialty_housekeeper' },
+                          { value: 'Childcare Provider', key: 'specialty_childcare' },
+                          { value: 'Property Manager', key: 'specialty_property_manager' },
+                          { value: 'Cook', key: 'specialty_cook' },
+                          { value: 'Caretaker', key: 'specialty_caretaker' },
+                          { value: 'Electrician', key: 'specialty_electrician' },
+                          { value: 'Plumber', key: 'specialty_plumber' },
+                          { value: 'Carpenter', key: 'specialty_carpenter' },
+                          { value: 'Handyman', key: 'specialty_handyman' },
+                          { value: 'Painter', key: 'specialty_painter' },
+                          { value: 'HVAC Specialist', key: 'specialty_hvac' },
+                          { value: 'Pest Control', key: 'specialty_pest_control' },
+                          { value: 'Contractor', key: 'specialty_contractor' },
+                          { value: 'Mason', key: 'specialty_mason' },
+                          { value: 'Roofer', key: 'specialty_roofer' },
+                          { value: 'Drywall Specialist', key: 'specialty_drywall' },
+                          { value: 'Flooring Specialist', key: 'specialty_flooring' },
+                          { value: 'Landscaper', key: 'specialty_landscaper' },
+                          { value: 'Window Installer', key: 'specialty_window_installer' },
+                          { value: 'Tiler', key: 'specialty_tiler' },
+                          { value: 'Architect', key: 'specialty_architect' },
+                          { value: 'Designer', key: 'specialty_designer' }
+                        ].map(spec => (
+                          <option key={spec.value} value={spec.value}>{t(spec.key) || spec.value}</option>
+                        ))}
+                      </select>
+                    </div>
+
                     {/* Availability */}
                     <div className="mt-3">
                       <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('availability')}</h4>
@@ -1474,6 +1532,7 @@ const Home = () => {
                           setAvailabilityFilter('All');
                           setMinRating(0);
                           setLocationFilter('');
+                          setSelectedCategory('');
                           setSearchQuery('');
                         }}
                         className="btn btn-light border w-100 py-2 rounded-3 fw-semibold transition-all"

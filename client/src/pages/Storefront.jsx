@@ -99,10 +99,13 @@ const Storefront = () => {
   const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
   const [submittingInquiry, setSubmittingInquiry] = useState(false);
   const [submissionSuccessLogs, setSubmissionSuccessLogs] = useState(null);
+  const [otpSent, setOtpSent] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
   const [inquiryForm, setInquiryForm] = useState({
     customerName: '',
     customerEmail: '',
     customerPhone: '',
+    otpCode: '',
     pharmacyFileName: '',
     pharmacyNotes: '',
     lawDate: '',
@@ -118,8 +121,35 @@ const Storefront = () => {
     liquorItems: '',
     liquorPickupTime: '',
     liquorNotes: '',
+    groceryItems: '',
+    groceryServiceType: 'pickup',
+    groceryTime: '',
+    groceryNotes: '',
     generalMessage: ''
   });
+
+  const handleSendOtp = async () => {
+    if (!inquiryForm.customerEmail) {
+      alert(t('email_required_otp') || 'Please enter your email address first.');
+      return;
+    }
+    setSendingOtp(true);
+    try {
+      const res = await fetch('/api/inquiries/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: inquiryForm.customerEmail })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      setOtpSent(true);
+      alert(t('otp_sent_success') || 'Verification code sent to your email! Please check your inbox.');
+    } catch (err) {
+      alert(err.message || 'Failed to send verification code.');
+    } finally {
+      setSendingOtp(false);
+    }
+  };
 
   const handleFileChange = (e, fieldName) => {
     const file = e.target.files[0];
@@ -133,6 +163,10 @@ const Storefront = () => {
 
   const handleSubmitInquiry = async (e) => {
     e.preventDefault();
+    if (!otpSent) {
+      alert(t('otp_verification_required') || 'Please request an email verification code first.');
+      return;
+    }
     setSubmittingInquiry(true);
 
     const category = store.category.toLowerCase().trim().replace(/_/g, ' ');
@@ -174,6 +208,14 @@ const Storefront = () => {
         pickupTime: inquiryForm.liquorPickupTime,
         notes: inquiryForm.liquorNotes
       };
+    } else if (category.includes('grocery')) {
+      businessType = 'grocery';
+      details = {
+        groceryItems: inquiryForm.groceryItems,
+        groceryServiceType: inquiryForm.groceryServiceType,
+        groceryTime: inquiryForm.groceryTime,
+        groceryNotes: inquiryForm.groceryNotes
+      };
     } else {
       details = {
         message: inquiryForm.generalMessage
@@ -192,6 +234,7 @@ const Storefront = () => {
           customerEmail: inquiryForm.customerEmail,
           customerPhone: inquiryForm.customerPhone,
           businessType,
+          otpCode: inquiryForm.otpCode,
           details
         })
       });
@@ -199,13 +242,14 @@ const Storefront = () => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
 
-      setSubmissionSuccessLogs(data.simulatedLogs || []);
       setInquiryModalOpen(false);
+      setOtpSent(false);
 
       setInquiryForm({
         customerName: '',
         customerEmail: '',
         customerPhone: '',
+        otpCode: '',
         pharmacyFileName: '',
         pharmacyNotes: '',
         lawDate: '',
@@ -221,9 +265,14 @@ const Storefront = () => {
         liquorItems: '',
         liquorPickupTime: '',
         liquorNotes: '',
+        groceryItems: '',
+        groceryServiceType: 'pickup',
+        groceryTime: '',
+        groceryNotes: '',
         generalMessage: ''
       });
 
+      alert(t('inquiry_submitted_success') || 'Your inquiry has been submitted successfully!');
     } catch (err) {
       alert(err.message || 'Failed to submit inquiry.');
     } finally {
@@ -805,14 +854,14 @@ const Storefront = () => {
                   className="btn btn-secondary" 
                   style={{ padding: '12px 28px', fontSize: '1rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--border-glass)', color: 'var(--text-main)' }}
                 >
-                  ✉️ Send Message / Request
+                  {t('contact_send_msg') || '✉️ Send Message / Request'}
                 </button>
               </div>
             </div>
 
             {store.socialLinks && store.socialLinks.length > 0 && (
               <div style={{ marginTop: '30px', borderTop: '1px solid var(--border-glass)', paddingTop: '24px' }}>
-                <h4 style={{ fontSize: '1.05rem', color: 'var(--text-secondary)', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Follow Us On Social Media</h4>
+                <h4 style={{ fontSize: '1.05rem', color: 'var(--text-secondary)', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('contact_follow_us') || 'Follow Us On Social Media'}</h4>
                 <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
                   {store.socialLinks.map((link, idx) => {
                     const targetUrl = link.url.startsWith('http') ? link.url : `https://${link.url}`;
@@ -862,13 +911,13 @@ const Storefront = () => {
         <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.75)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1050 }}>
           <div className="glass-panel modal-content" style={{ maxWidth: '600px', width: '95%', padding: '30px', position: 'relative', border: '1px solid var(--border-glass)', maxHeight: '90vh', overflowY: 'auto' }}>
             <button onClick={() => setInquiryModalOpen(false)} style={{ position: 'absolute', top: '16px', right: '20px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
-            <h3 style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '12px', marginBottom: '20px' }}>📩 Contact & Request Form</h3>
+            <h3 style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '12px', marginBottom: '20px' }}>{t('contact_form_title') || '📩 Contact & Request Form'}</h3>
             
             <form onSubmit={handleSubmitInquiry} className="template-form">
               {/* Contact Info Header */}
-              <h5 style={{ color: 'var(--accent-primary)', marginBottom: '14px', fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Contact Details</h5>
+              <h5 style={{ color: 'var(--accent-primary)', marginBottom: '14px', fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('contact_your_details') || 'Your Contact Details'}</h5>
               <div className="form-group" style={{ marginBottom: '12px' }}>
-                <label>Full Name</label>
+                <label style={{ display: 'block', marginBottom: '4px' }}>{t('contact_full_name') || 'Full Name'}</label>
                 <input 
                   type="text" 
                   className="form-control" 
@@ -880,18 +929,33 @@ const Storefront = () => {
               </div>
               <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label>Email Address</label>
-                  <input 
-                    type="email" 
-                    className="form-control" 
-                    value={inquiryForm.customerEmail}
-                    onChange={(e) => setInquiryForm({ ...inquiryForm, customerEmail: e.target.value })}
-                    placeholder="john@example.com"
-                    required 
-                  />
+                  <label style={{ display: 'block', marginBottom: '4px' }}>{t('contact_email_address') || 'Email Address'}</label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input 
+                      type="email" 
+                      className="form-control" 
+                      value={inquiryForm.customerEmail}
+                      onChange={(e) => {
+                        setInquiryForm({ ...inquiryForm, customerEmail: e.target.value });
+                        if (otpSent) setOtpSent(false);
+                      }}
+                      placeholder="john@example.com"
+                      disabled={otpSent}
+                      required 
+                    />
+                    <button 
+                      type="button"
+                      onClick={handleSendOtp}
+                      disabled={sendingOtp || !inquiryForm.customerEmail}
+                      className="btn btn-secondary"
+                      style={{ padding: '0 12px', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
+                    >
+                      {sendingOtp ? 'Sending...' : (otpSent ? 'Resend' : 'Send Code')}
+                    </button>
+                  </div>
                 </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label>Phone Number</label>
+                  <label style={{ display: 'block', marginBottom: '4px' }}>{t('contact_phone_number') || 'Phone Number'}</label>
                   <input 
                     type="tel" 
                     className="form-control" 
@@ -903,14 +967,30 @@ const Storefront = () => {
                 </div>
               </div>
 
+              {otpSent && (
+                <div className="form-group" style={{ marginTop: '12px', marginBottom: '20px' }}>
+                  <label style={{ display: 'block', marginBottom: '4px', color: 'var(--accent-primary)', fontWeight: 600 }}>{t('enter_verification_code') || 'Enter Verification Code (OTP)'}</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    value={inquiryForm.otpCode}
+                    onChange={(e) => setInquiryForm({ ...inquiryForm, otpCode: e.target.value })}
+                    placeholder="6-digit code"
+                    maxLength="6"
+                    required 
+                    style={{ letterSpacing: '4px', textAlign: 'center', fontSize: '1.1rem', fontWeight: 'bold' }}
+                  />
+                </div>
+              )}
+
               {/* Category-Specific Form Section */}
-              <h5 style={{ color: 'var(--accent-secondary)', marginBottom: '14px', fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.05em', borderTop: '1px solid var(--border-glass)', paddingTop: '16px' }}>Request Details</h5>
+              <h5 style={{ color: 'var(--accent-secondary)', marginBottom: '14px', fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.05em', borderTop: '1px solid var(--border-glass)', paddingTop: '16px' }}>{t('contact_req_details') || 'Request Details'}</h5>
 
               {/* 1. Pharmacy details */}
               {store.category && store.category.toLowerCase().includes('pharmacy') && (
                 <>
                   <div className="form-group">
-                    <label>Upload Doctor Prescription (Image or PDF)</label>
+                    <label>{t('contact_upload_prescription') || 'Upload Doctor Prescription (Image or PDF)'}</label>
                     <input 
                       type="file" 
                       accept="image/*,application/pdf"
@@ -920,7 +1000,7 @@ const Storefront = () => {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Additional Notes / Symptoms</label>
+                    <label>{t('contact_notes_symptoms') || 'Additional Notes / Symptoms'}</label>
                     <textarea 
                       className="form-control" 
                       placeholder="List any medication names, dosage requests, or allergies..."
@@ -937,7 +1017,7 @@ const Storefront = () => {
                 <>
                   <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                     <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label>Preferred Date</label>
+                      <label>{t('contact_pref_date') || 'Preferred Date'}</label>
                       <input 
                         type="date" 
                         className="form-control" 
@@ -947,7 +1027,7 @@ const Storefront = () => {
                       />
                     </div>
                     <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label>Preferred Time</label>
+                      <label>{t('contact_pref_time') || 'Preferred Time'}</label>
                       <input 
                         type="time" 
                         className="form-control" 
@@ -958,7 +1038,7 @@ const Storefront = () => {
                     </div>
                   </div>
                   <div className="form-group">
-                    <label>Case Details / Consultation Topic</label>
+                    <label>{t('contact_case_topic') || 'Case Details / Consultation Topic'}</label>
                     <input 
                       type="text" 
                       className="form-control" 
@@ -976,7 +1056,7 @@ const Storefront = () => {
                 <>
                   <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                     <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label>Tax Filing Year</label>
+                      <label>{t('contact_tax_year') || 'Tax Filing Year'}</label>
                       <select 
                         className="form-control" 
                         value={inquiryForm.taxYear}
@@ -988,7 +1068,7 @@ const Storefront = () => {
                       </select>
                     </div>
                     <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label>Upload Documents (W2s, Receipts)</label>
+                      <label>{t('contact_upload_tax_docs') || 'Upload Documents (W2s, Receipts)'}</label>
                       <input 
                         type="file" 
                         accept="image/*,application/pdf"
@@ -1014,7 +1094,7 @@ const Storefront = () => {
               {store.category && (store.category.toLowerCase().includes('boutique') || store.category.toLowerCase().includes('clothing')) && (
                 <>
                   <div className="form-group">
-                    <label>Product Item Name / Description</label>
+                    <label>{t('contact_prod_item_name') || 'Product Item Name / Description'}</label>
                     <input 
                       type="text" 
                       className="form-control" 
@@ -1026,7 +1106,7 @@ const Storefront = () => {
                   </div>
                   <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                     <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label>Preferred Size</label>
+                      <label>{t('contact_pref_size') || 'Preferred Size'}</label>
                       <input 
                         type="text" 
                         className="form-control" 
@@ -1036,7 +1116,7 @@ const Storefront = () => {
                       />
                     </div>
                     <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label>Preferred Color</label>
+                      <label>{t('contact_pref_color') || 'Preferred Color'}</label>
                       <input 
                         type="text" 
                         className="form-control" 
@@ -1047,7 +1127,7 @@ const Storefront = () => {
                     </div>
                   </div>
                   <div className="form-group">
-                    <label>Inquiry Details</label>
+                    <label>{t('contact_msg_details') || 'Inquiry Details'}</label>
                     <textarea 
                       className="form-control" 
                       placeholder="Ask about availability, custom fit, or shipping..."
@@ -1063,7 +1143,7 @@ const Storefront = () => {
               {store.category && (store.category.toLowerCase().includes('liquor') || store.category.toLowerCase().includes('alcohol')) && (
                 <>
                   <div className="form-group">
-                    <label>Pre-Order Items List (Names and Quantities)</label>
+                    <label>{t('contact_preorder_items') || 'Pre-Order Items List (Names and Quantities)'}</label>
                     <textarea 
                       className="form-control" 
                       placeholder="e.g. 2x Craft Beers, 1x Single Malt Whiskey"
@@ -1074,7 +1154,7 @@ const Storefront = () => {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Estimated Pickup Time</label>
+                    <label>{t('contact_est_pickup_time') || 'Estimated Pickup Time'}</label>
                     <input 
                       type="text" 
                       className="form-control" 
@@ -1082,6 +1162,57 @@ const Storefront = () => {
                       value={inquiryForm.liquorPickupTime}
                       onChange={(e) => setInquiryForm({ ...inquiryForm, liquorPickupTime: e.target.value })}
                       required
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* 5.5 Grocery details */}
+              {store.category && store.category.toLowerCase().includes('grocery') && (
+                <>
+                  <div className="form-group">
+                    <label>{t('contact_grocery_items') || 'Grocery Items List (Names and Quantities)'}</label>
+                    <textarea 
+                      className="form-control" 
+                      placeholder="e.g. 2 liters Milk, 1 loaf of Whole Wheat Bread, 5 Bananas"
+                      value={inquiryForm.groceryItems}
+                      onChange={(e) => setInquiryForm({ ...inquiryForm, groceryItems: e.target.value })}
+                      rows="3"
+                      required
+                    />
+                  </div>
+                  <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label style={{ display: 'block', marginBottom: '4px' }}>{t('contact_grocery_service_type') || 'Service Option'}</label>
+                      <select 
+                        className="form-control" 
+                        value={inquiryForm.groceryServiceType}
+                        onChange={(e) => setInquiryForm({ ...inquiryForm, groceryServiceType: e.target.value })}
+                      >
+                        <option value="pickup">{t('contact_grocery_service_pickup') || 'In-Store Pickup'}</option>
+                        <option value="delivery">{t('contact_grocery_service_delivery') || 'Home Delivery'}</option>
+                      </select>
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label style={{ display: 'block', marginBottom: '4px' }}>{t('contact_grocery_time') || 'Preferred Time'}</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        placeholder="e.g. Today at 6:00 PM"
+                        value={inquiryForm.groceryTime}
+                        onChange={(e) => setInquiryForm({ ...inquiryForm, groceryTime: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label>{t('contact_grocery_notes') || 'Special Instructions / Delivery Address'}</label>
+                    <textarea 
+                      className="form-control" 
+                      placeholder="Add any specific dietary preferences or your delivery address here..."
+                      value={inquiryForm.groceryNotes}
+                      onChange={(e) => setInquiryForm({ ...inquiryForm, groceryNotes: e.target.value })}
+                      rows="2"
                     />
                   </div>
                 </>
@@ -1097,12 +1228,13 @@ const Storefront = () => {
                !store.category.toLowerCase().includes('boutique') && 
                !store.category.toLowerCase().includes('clothing') && 
                !store.category.toLowerCase().includes('liquor') && 
-               !store.category.toLowerCase().includes('alcohol') && (
+               !store.category.toLowerCase().includes('alcohol') && 
+               !store.category.toLowerCase().includes('grocery') && (
                 <div className="form-group">
-                  <label>Message details</label>
+                  <label>{t('contact_msg_details') || 'Message details'}</label>
                   <textarea 
                     className="form-control" 
-                    placeholder="Enter details of your request or booking details..."
+                    placeholder={t('contact_general_placeholder') || 'Enter details of your request or booking details...'}
                     value={inquiryForm.generalMessage}
                     onChange={(e) => setInquiryForm({ ...inquiryForm, generalMessage: e.target.value })}
                     rows="4"
@@ -1113,42 +1245,16 @@ const Storefront = () => {
 
               <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
                 <button type="submit" className="btn btn-primary flex-grow-1" disabled={submittingInquiry}>
-                  {submittingInquiry ? 'Submitting request...' : '🚀 Submit Request & Alert'}
+                  {submittingInquiry ? (t('contact_submitting') || 'Submitting request...') : (t('contact_submit_btn') || '🚀 Submit Request & Alert')}
                 </button>
-                <button type="button" onClick={() => setInquiryModalOpen(false)} className="btn btn-secondary">Cancel</button>
+                <button type="button" onClick={() => setInquiryModalOpen(false)} className="btn btn-secondary">{t('btn_cancel') || 'Cancel'}</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* SIMULATED SMS & EMAIL NOTIFICATION REPORT MODAL */}
-      {submissionSuccessLogs && (
-        <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100 }}>
-          <div className="glass-panel modal-content" style={{ maxWidth: '650px', width: '95%', padding: '30px', position: 'relative', border: '2px solid var(--accent-primary)', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h3 style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-glass)', paddingBottom: '12px', marginBottom: '20px' }}>
-              ✔️ Inquiry Submitted & Alerts Sent!
-            </h3>
-            
-            <div className="alert alert-success" style={{ marginBottom: '20px', fontSize: '0.95rem' }}>
-              Your inquiry has been logged in the system. The platform has automatically simulated and sent the dual-channel (SMS & Email) notifications to both you and the business owner!
-            </div>
 
-            <h5 style={{ color: 'var(--text-main)', marginBottom: '12px', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Simulated Notification Log:</h5>
-            <div className="logs-container" style={{ background: '#0b0f19', border: '1px solid var(--border-glass)', borderRadius: '8px', padding: '16px', maxHeight: '350px', overflowY: 'auto', fontFamily: 'monospace', fontSize: '0.82rem', color: '#38bdf8', whiteSpace: 'pre-wrap', marginBottom: '20px' }}>
-              {submissionSuccessLogs.map((log, idx) => (
-                <div key={idx} style={{ marginBottom: '16px', borderBottom: idx < submissionSuccessLogs.length - 1 ? '1px dashed rgba(255,255,255,0.1)' : 'none', paddingBottom: '12px' }}>
-                  {log.text}
-                </div>
-              ))}
-            </div>
-
-            <button onClick={() => setSubmissionSuccessLogs(null)} className="btn btn-primary w-full" style={{ padding: '12px', fontSize: '1rem', fontWeight: 600 }}>
-              Done / Close Report
-            </button>
-          </div>
-        </div>
-      )}
       {/* Storefront Custom Social Footer */}
       {(() => {
         const activeLinks = (store.socialLinks || []).filter(l => l.url && l.url.trim() !== '');

@@ -10,6 +10,94 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
   const [modalRatings, setModalRatings] = useState([]);
   const [loadingRatings, setLoadingRatings] = useState(false);
   const { t } = useApp();
+  const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
+  const [submittingInquiry, setSubmittingInquiry] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [inquiryForm, setInquiryForm] = useState({
+    customerName: '',
+    customerEmail: '',
+    customerPhone: '',
+    otpCode: '',
+    generalMessage: ''
+  });
+
+  const handleSendOtp = async () => {
+    if (!inquiryForm.customerEmail) {
+      alert(t('email_required_otp') || 'Please enter your email address first.');
+      return;
+    }
+    setSendingOtp(true);
+    try {
+      const res = await fetch('/api/inquiries/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: inquiryForm.customerEmail })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      setOtpSent(true);
+      alert(t('otp_sent_success') || 'Verification code sent to your email! Please check your inbox.');
+    } catch (err) {
+      alert(err.message || 'Failed to send verification code.');
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
+  const handleSubmitInquiry = async (e) => {
+    e.preventDefault();
+    if (!otpSent) {
+      alert(t('otp_verification_required') || 'Please request an email verification code first.');
+      return;
+    }
+    setSubmittingInquiry(true);
+
+    const targetUserId = ownerId?._id || ownerId;
+    if (!targetUserId) {
+      alert('Error: Listing owner is not resolved.');
+      setSubmittingInquiry(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          businessId: targetUserId,
+          customerName: inquiryForm.customerName,
+          customerEmail: inquiryForm.customerEmail,
+          customerPhone: inquiryForm.customerPhone,
+          businessType: type === 'handyman_skill' ? 'handyman' : (type || 'general'),
+          otpCode: inquiryForm.otpCode,
+          details: {
+            message: inquiryForm.generalMessage
+          }
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+
+      setInquiryModalOpen(false);
+      setOtpSent(false);
+      setInquiryForm({
+        customerName: '',
+        customerEmail: '',
+        customerPhone: '',
+        otpCode: '',
+        generalMessage: ''
+      });
+      alert(t('inquiry_submitted_success') || 'Your inquiry request has been sent to the service provider successfully!');
+    } catch (err) {
+      alert(err.message || 'Failed to submit request.');
+    } finally {
+      setSubmittingInquiry(false);
+    }
+  };
 
   const {
     _id,
@@ -151,10 +239,20 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
               <span className="badge" style={{ background: 'var(--accent-primary)', color: '#000', fontSize: '0.7rem', padding: '2px 6px', fontWeight: 'bold', borderRadius: '4px' }}>NEW</span>
             )}
           </div>
-          {category && (
-            <span className="listing-category-text">{category}</span>
-          )}
-        </div>
+           {category && (
+             <div className="listing-categories-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' }}>
+               {category.split(',').map(s => s.trim()).filter(Boolean).map((catName, idx) => {
+                 const cleanKey = catName.toLowerCase().replace(/\s+/g, '_').replace(/&/g, 'slots').replace(/-/g, '_');
+                 const specKey = type === 'handyman_skill' ? 'specialty_' + cleanKey : cleanKey;
+                 return (
+                   <span key={idx} className="listing-category-text" style={{ fontSize: '0.72rem', padding: '2px 6px' }}>
+                     {t(specKey) || catName}
+                   </span>
+                 );
+               })}
+             </div>
+           )}
+         </div>
 
         <div className="card-body">
           {images.length > 0 && (
@@ -367,8 +465,20 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span className={`badge ${getBadgeTypeClass(type)}`}>{getLabel(type)}</span>
-                      {category && <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{category}</span>}
+                       <span className={`badge ${getBadgeTypeClass(type)}`}>{getLabel(type)}</span>
+                       {category && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                            {category.split(',').map(s => s.trim()).filter(Boolean).map((catName, idx) => {
+                              const cleanKey = catName.toLowerCase().replace(/\s+/g, '_').replace(/&/g, 'slots').replace(/-/g, '_');
+                              const specKey = type === 'handyman_skill' ? 'specialty_' + cleanKey : cleanKey;
+                              return (
+                                <span key={idx} className="badge bg-secondary" style={{ fontSize: '0.75rem', fontWeight: '500', padding: '4px 8px' }}>
+                                  {t(specKey) || catName}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
                     </div>
 
                     <h2 style={{ fontSize: '1.6rem', color: 'var(--text-main)', margin: '12px 0 6px 0' }}>{title}</h2>
@@ -434,11 +544,18 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                       </span>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '12px' }}>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                       {isInteractive ? (
                         <>
-                          <a href={`tel:${ownerPhone}`} className="btn btn-success flex-grow-1" style={{ padding: '12px' }}>{t('call')}</a>
-                          <a href={`sms:${ownerPhone}?body=${encodeURIComponent(smsMessage)}`} className="btn btn-primary flex-grow-1" style={{ padding: '12px' }}>{t('sms')}</a>
+                          <a href={`tel:${ownerPhone}`} className="btn btn-success flex-grow-1" style={{ padding: '12px', minWidth: '100px' }}>{t('call')}</a>
+                          <a href={`sms:${ownerPhone}?body=${encodeURIComponent(smsMessage)}`} className="btn btn-primary flex-grow-1" style={{ padding: '12px', minWidth: '100px' }}>{t('sms')}</a>
+                          <button 
+                            onClick={() => setInquiryModalOpen(true)}
+                            className="btn btn-secondary flex-grow-1" 
+                            style={{ padding: '12px', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--border-glass)', color: 'var(--text-main)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', minWidth: '140px' }}
+                          >
+                            {t('contact_send_msg') || '✉️ Send Message'}
+                          </button>
                         </>
                       ) : (
                         <button className="btn btn-secondary flex-grow-1 disabled" disabled>{t('unavailable')}</button>
@@ -546,6 +663,145 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                         setShowReviewForm(false);
                       }} 
                     />
+                  </div>
+                </div>
+              )}
+
+              {/* Nested Inquiry Modal */}
+              {inquiryModalOpen && (
+                <div className="nested-modal-overlay" 
+                  onClick={() => setInquiryModalOpen(false)}
+                  style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    background: 'rgba(0, 0, 0, 0.65)',
+                    backdropFilter: 'blur(4px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 2100
+                  }}
+                >
+                  <div className="nested-modal-content glass-panel" 
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      width: '90%',
+                      maxWidth: '500px',
+                      padding: '32px',
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border-glass)',
+                      borderRadius: 'var(--radius-lg)',
+                      boxShadow: 'var(--shadow-premium)',
+                      position: 'relative'
+                    }}
+                  >
+                    <button 
+                      onClick={() => setInquiryModalOpen(false)} 
+                      style={{
+                        position: 'absolute',
+                        top: '16px',
+                        right: '16px',
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-secondary)',
+                        fontSize: '1.6rem',
+                        cursor: 'pointer',
+                        lineHeight: 1
+                      }}
+                    >
+                      &times;
+                    </button>
+                    
+                    <h3 style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '12px', marginBottom: '20px', fontSize: '1.25rem', color: 'var(--text-main)', fontFamily: 'var(--font-heading)' }}>
+                      {t('contact_form_title') || '📩 Contact & Request Form'}
+                    </h3>
+                    
+                    <form onSubmit={handleSubmitInquiry}>
+                      <div className="form-group" style={{ marginBottom: '14px' }}>
+                        <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>{t('contact_full_name') || 'Full Name'}</label>
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          value={inquiryForm.customerName}
+                          onChange={(e) => setInquiryForm({ ...inquiryForm, customerName: e.target.value })}
+                          placeholder="e.g. John Doe"
+                          required 
+                        />
+                      </div>
+                      <div className="form-group" style={{ marginBottom: '14px' }}>
+                        <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>{t('contact_email_address') || 'Email Address'}</label>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <input 
+                            type="email" 
+                            className="form-control" 
+                            value={inquiryForm.customerEmail}
+                            onChange={(e) => {
+                              setInquiryForm({ ...inquiryForm, customerEmail: e.target.value });
+                              if (otpSent) setOtpSent(false);
+                            }}
+                            placeholder="john@example.com"
+                            disabled={otpSent}
+                            required 
+                          />
+                          <button 
+                            type="button"
+                            onClick={handleSendOtp}
+                            disabled={sendingOtp || !inquiryForm.customerEmail}
+                            className="btn btn-secondary"
+                            style={{ padding: '0 12px', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
+                          >
+                            {sendingOtp ? 'Sending...' : (otpSent ? 'Resend' : 'Send Code')}
+                          </button>
+                        </div>
+                      </div>
+
+                      {otpSent && (
+                        <div className="form-group" style={{ marginBottom: '14px' }}>
+                          <label style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', display: 'block', marginBottom: '4px', fontWeight: 600 }}>{t('enter_verification_code') || 'Enter Verification Code (OTP)'}</label>
+                          <input 
+                            type="text" 
+                            className="form-control" 
+                            value={inquiryForm.otpCode}
+                            onChange={(e) => setInquiryForm({ ...inquiryForm, otpCode: e.target.value })}
+                            placeholder="6-digit code"
+                            maxLength="6"
+                            required 
+                            style={{ letterSpacing: '4px', textAlign: 'center', fontSize: '1.1rem', fontWeight: 'bold' }}
+                          />
+                        </div>
+                      )}
+                      <div className="form-group" style={{ marginBottom: '14px' }}>
+                        <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>{t('contact_phone_number') || 'Phone Number'}</label>
+                        <input 
+                          type="tel" 
+                          className="form-control" 
+                          value={inquiryForm.customerPhone}
+                          onChange={(e) => setInquiryForm({ ...inquiryForm, customerPhone: e.target.value })}
+                          placeholder="e.g. +1 234 567 890"
+                          required 
+                        />
+                      </div>
+                      <div className="form-group" style={{ marginBottom: '20px' }}>
+                        <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>{t('contact_msg_details') || 'Message details'}</label>
+                        <textarea 
+                          className="form-control" 
+                          value={inquiryForm.generalMessage}
+                          onChange={(e) => setInquiryForm({ ...inquiryForm, generalMessage: e.target.value })}
+                          placeholder="Enter details of your request or booking details..."
+                          rows="4"
+                          required
+                        />
+                      </div>
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        <button type="submit" className="btn btn-primary flex-grow-1" disabled={submittingInquiry}>
+                          {submittingInquiry ? (t('contact_submitting') || 'Submitting request...') : (t('contact_submit_btn') || '🚀 Submit Request & Alert')}
+                        </button>
+                        <button type="button" onClick={() => setInquiryModalOpen(false)} className="btn btn-secondary">{t('btn_cancel') || 'Cancel'}</button>
+                      </div>
+                    </form>
                   </div>
                 </div>
               )}
