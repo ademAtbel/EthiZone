@@ -43,6 +43,12 @@ router.post('/', async (req, res) => {
       attachmentUrl,
     });
 
+    // Send email notification to Super Admin asynchronously
+    const { sendContactInquiryEmail } = require('../utils/email');
+    sendContactInquiryEmail(inquiry).catch(err => {
+      console.error('Failed to send contact inquiry email:', err.message);
+    });
+
     return res.status(201).json({
       success: true,
       message: 'Your inquiry has been submitted successfully!',

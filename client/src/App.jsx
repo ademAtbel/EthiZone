@@ -174,6 +174,17 @@ const AppContent = () => {
         @media (max-width: 576px) {
           .footer-grid {
             grid-template-columns: 1fr;
+            text-align: center;
+          }
+          .social-links {
+            justify-content: center;
+          }
+          .footer-link-btn {
+            text-align: center;
+          }
+          .newsletter-input-row {
+            max-width: 400px;
+            margin: 0 auto;
           }
         }
         .footer-col h5 {

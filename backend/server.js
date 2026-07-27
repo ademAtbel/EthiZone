@@ -36,7 +36,7 @@ const runSeeding = async () => {
       { name: 'Cafe & Restaurant', type: 'store', description: 'Fresh food, drinks, coffee and dining service' },
       { name: 'Jewelry & Accessories', type: 'store', description: 'Gold, silver, watches, bags and fashion accessories retail' },
       { name: 'Gift & Toy Shop', type: 'store', description: 'Souvenirs, birthday gifts, kids toys and game boards retail' },
-      { name: 'Other', type: 'store', description: 'Other retail stores' },
+      { name: 'Other Store', type: 'store', description: 'Other retail stores' },
 
       // SERVICES
       { name: 'Law Office', type: 'service', description: 'Legal advice, consultation and representation' },
@@ -52,7 +52,7 @@ const runSeeding = async () => {
       { name: 'Healthcare Group', type: 'organization', description: 'Hospital chains, clinical services and research' },
       { name: 'Educational Institution', type: 'organization', description: 'Universities, schools and training academies' },
       { name: 'Non-Profit Org', type: 'organization', description: 'Social charity, fundraising and volunteer setups' },
-      { name: 'Other', type: 'organization', description: 'Other categories of hiring entities' },
+      { name: 'Other Organization', type: 'organization', description: 'Other categories of hiring entities' },
 
       // REAL ESTATE (Houses)
       { name: 'Residential Homes', type: 'real_estate', description: 'Single family houses, villas, and townhomes' },
