@@ -13,6 +13,7 @@ import SuperAdmin from './pages/SuperAdmin';
 import Inbox from './pages/Inbox';
 import Chatbot from './components/Chatbot';
 import StaticPage from './pages/StaticPage';
+import EventsPage from './pages/EventsPage';
 
 // Seller / Partner Imports
 import SellerDashboard from './pages/seller/SellerDashboard';
@@ -66,6 +67,7 @@ const AppContent = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/store/:storeName/dashboard" element={<Dashboard />} />
           <Route path="/store/:storeName" element={<Storefront />} />
+          <Route path="/events" element={<EventsPage />} />
 
           {/* Customer / Partner Auth Portals */}
           <Route path="/partner-register" element={<RegistrationPage />} />

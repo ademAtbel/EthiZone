@@ -135,6 +135,7 @@ const Navbar = () => {
   const handleTypeSelect = (type, categoryVal = '') => {
     setActiveStoreType('');
     const newParams = new URLSearchParams(searchParams);
+    newParams.delete('tab');
     const currentCategory = searchParams.get('category') || '';
     
     if (selectedType === type && !categoryVal && !currentCategory) {
@@ -182,55 +183,12 @@ const Navbar = () => {
             >
               {t('stores')}
             </button>
-            <div className="nav-dropdown-wrapper">
-              <button
-                onClick={() => handleTypeSelect('handyman_skill')}
-                className={`filter-badge ${selectedType === 'handyman_skill' ? 'active' : ''}`}
-                style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
-              >
-                {selectedType === 'handyman_skill' && searchParams.get('category')
-                  ? `${t('experties') || 'Expertise'}: ${t('specialty_' + searchParams.get('category').toLowerCase().replace(/\s+/g, '_')) || searchParams.get('category')}`
-                  : (t('experties') || 'Expertise')
-                } <span style={{ fontSize: '0.65rem' }}>▼</span>
-              </button>
-              <div className="nav-dropdown-menu">
-                {[
-                  { value: 'Housekeeper', key: 'specialty_housekeeper' },
-                  { value: 'Childcare Provider', key: 'specialty_childcare' },
-                  { value: 'Property Manager', key: 'specialty_property_manager' },
-                  { value: 'Cook', key: 'specialty_cook' },
-                  { value: 'Caretaker', key: 'specialty_caretaker' },
-                  { value: 'Electrician', key: 'specialty_electrician' },
-                  { value: 'Plumber', key: 'specialty_plumber' },
-                  { value: 'Carpenter', key: 'specialty_carpenter' },
-                  { value: 'Handyman', key: 'specialty_handyman' },
-                  { value: 'Painter', key: 'specialty_painter' },
-                  { value: 'HVAC Specialist', key: 'specialty_hvac' },
-                  { value: 'Pest Control', key: 'specialty_pest_control' },
-                  { value: 'Contractor', key: 'specialty_contractor' },
-                  { value: 'Mason', key: 'specialty_mason' },
-                  { value: 'Roofer', key: 'specialty_roofer' },
-                  { value: 'Drywall Specialist', key: 'specialty_drywall' },
-                  { value: 'Flooring Specialist', key: 'specialty_flooring' },
-                  { value: 'Landscaper', key: 'specialty_landscaper' },
-                  { value: 'Window Installer', key: 'specialty_window_installer' },
-                  { value: 'Tiler', key: 'specialty_tiler' },
-                  { value: 'Architect', key: 'specialty_architect' },
-                  { value: 'Designer', key: 'specialty_designer' }
-                ].map((spec) => (
-                  <button
-                    key={spec.value}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleTypeSelect('handyman_skill', spec.value);
-                    }}
-                    className="nav-dropdown-item"
-                  >
-                    {t(spec.key) || spec.value}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <button
+              onClick={() => handleTypeSelect('handyman_skill')}
+              className={`filter-badge ${selectedType === 'handyman_skill' ? 'active' : ''}`}
+            >
+              {t('experties') || 'Hire Me'}
+            </button>
             <button
               onClick={() => handleTypeSelect('service')}
               className={`filter-badge ${selectedType === 'service' ? 'active' : ''}`}
@@ -261,6 +219,13 @@ const Navbar = () => {
             >
               {t('used_items')}
             </button>
+            <Link
+              to="/events"
+              className={`filter-badge ${location.pathname === '/events' ? 'active' : ''}`}
+              style={{ textDecoration: 'none' }}
+            >
+              Events
+            </Link>
           </div>
         )}
 
@@ -275,11 +240,12 @@ const Navbar = () => {
           >
             {language === 'en' ? 'አማ' : 'EN'}
           </button>
-          {token && !isPublicStorefront ? (
-            <>
-              {user.role === 'super_admin' && (
-                <Link to="/super-admin" className="nav-link admin-badge">Super Admin</Link>
-              )}
+          {token ? (
+            !isPublicStorefront && (
+              <>
+                {user.role === 'super_admin' && (
+                  <Link to="/super-admin" className="nav-link admin-badge">Super Admin</Link>
+                )}
                 <div className="store-dashboard-shortcuts" style={{ display: 'inline-flex', gap: '8px', marginRight: '10px', alignItems: 'center' }}>
                   <button onClick={() => setQrOpen(true)} className="btn btn-secondary btn-sm d-flex align-items-center gap-1" style={{ padding: '6px 12px', fontSize: '0.82rem' }}>
                     <Printer size={14} /> QR Code
@@ -314,86 +280,87 @@ const Navbar = () => {
                     </button>
                   </div>
                 </div>
-              <div className="navbar-avatar-container" style={{ position: 'relative', marginLeft: '10px' }}>
-                {user.storeLogo ? (
-                  <img 
-                    src={user.storeLogo} 
-                    alt="User Profile" 
-                    onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border-glass)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', cursor: 'pointer', display: 'block' }}
-                  />
-                ) : (
-                  <div 
-                    className="navbar-avatar-circle"
-                    onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)', color: '#ffffff', fontWeight: 700, fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--border-glass)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', cursor: 'pointer' }}
-                  >
-                    {user.username ? user.username.charAt(0).toUpperCase() : <User size={20} />}
-                  </div>
-                )}
-
-                {userMenuOpen && (
-                  <>
-                    <div 
-                      onClick={() => setUserMenuOpen(false)}
-                      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1005, background: 'transparent', cursor: 'default' }}
+                <div className="navbar-avatar-container" style={{ position: 'relative', marginLeft: '10px' }}>
+                  {user.storeLogo ? (
+                    <img 
+                      src={user.storeLogo} 
+                      alt="User Profile" 
+                      onClick={() => setUserMenuOpen(!userMenuOpen)}
+                      style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border-glass)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', cursor: 'pointer', display: 'block' }}
                     />
-                    <div className="navbar-user-dropdown glass-panel" style={{ position: 'absolute', top: '50px', right: 0, width: '240px', padding: '16px 0', zIndex: 1010, background: 'var(--bg-navbar)', border: '1px solid var(--border-glass)', borderRadius: 'var(--radius-lg)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08)' }}>
-                      <div className="dropdown-user-header" style={{ padding: '0 16px 12px 16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <h6 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-main)' }}>{user.username}</h6>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{user.email || 'User Account'}</span>
-                        <span className={`role-badge-mini ${user.role}`} style={{ display: 'inline-block', width: 'fit-content', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', padding: '1px 6px', borderRadius: '4px', marginTop: '4px', background: user.role === 'business' ? 'rgba(197, 168, 90, 0.15)' : 'rgba(0, 0, 0, 0.05)', color: user.role === 'business' ? 'var(--accent-secondary)' : 'var(--text-main)' }}>
-                          {user.role === 'business' ? user.businessType : user.role}
-                        </span>
-                      </div>
-                      <div className="dropdown-divider" style={{ height: '1px', background: 'var(--border-glass)', margin: '8px 0' }}></div>
-                       {(user.role === 'business' || user.role === 'handyman') && (
+                  ) : (
+                    <div 
+                      className="navbar-avatar-circle"
+                      onClick={() => setUserMenuOpen(!userMenuOpen)}
+                      style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)', color: '#ffffff', fontWeight: 700, fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--border-glass)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', cursor: 'pointer' }}
+                    >
+                      {user.username ? user.username.charAt(0).toUpperCase() : <User size={20} />}
+                    </div>
+                  )}
+
+                  {userMenuOpen && (
+                    <>
+                      <div 
+                        onClick={() => setUserMenuOpen(false)}
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1005, background: 'transparent', cursor: 'default' }}
+                      />
+                      <div className="navbar-user-dropdown glass-panel" style={{ position: 'absolute', top: '50px', right: 0, width: '240px', padding: '16px 0', zIndex: 1010, background: 'var(--bg-navbar)', border: '1px solid var(--border-glass)', borderRadius: 'var(--radius-lg)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08)' }}>
+                        <div className="dropdown-user-header" style={{ padding: '0 16px 12px 16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <h6 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-main)' }}>{user.username}</h6>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{user.email || 'User Account'}</span>
+                          <span className={`role-badge-mini ${user.role}`} style={{ display: 'inline-block', width: 'fit-content', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', padding: '1px 6px', borderRadius: '4px', marginTop: '4px', background: user.role === 'business' ? 'rgba(197, 168, 90, 0.15)' : 'rgba(0, 0, 0, 0.05)', color: user.role === 'business' ? 'var(--accent-secondary)' : 'var(--text-main)' }}>
+                            {user.role === 'business' ? user.businessType : user.role}
+                          </span>
+                        </div>
+                        <div className="dropdown-divider" style={{ height: '1px', background: 'var(--border-glass)', margin: '8px 0' }}></div>
+                        {(user.role === 'business' || user.role === 'handyman') && (
+                          <button 
+                            type="button" 
+                            onClick={() => { setQrOpen(true); setUserMenuOpen(false); }} 
+                            className="dropdown-item d-flex align-items-center gap-2"
+                            style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }}
+                          >
+                            <Printer size={16} /> QR Code
+                          </button>
+                        )}
                         <button 
                           type="button" 
-                          onClick={() => { setQrOpen(true); setUserMenuOpen(false); }} 
+                          onClick={() => { setChangePasswordOpen(true); setUserMenuOpen(false); }} 
                           className="dropdown-item d-flex align-items-center gap-2"
                           style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }}
                         >
-                          <Printer size={16} /> QR Code
+                          <Key size={16} /> Change Password
                         </button>
-                      )}
-                      <button 
-                        type="button" 
-                        onClick={() => { setChangePasswordOpen(true); setUserMenuOpen(false); }} 
-                        className="dropdown-item d-flex align-items-center gap-2"
-                        style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }}
-                      >
-                        <Key size={16} /> Change Password
-                      </button>
-                      <Link to={getDashboardLink()} onClick={() => setUserMenuOpen(false)} className="dropdown-item d-flex align-items-center gap-2" style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', textDecoration: 'none' }}>
-                        <LayoutDashboard size={16} /> Dashboard
-                      </Link>
-                      {(user.role === 'business' || user.role === 'handyman') && (
-                        <a 
-                          href={`/store/${(user.storeName || user.username || '').toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="dropdown-item d-flex align-items-center gap-2"
-                          style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', textDecoration: 'none' }}
-                          onClick={() => setUserMenuOpen(false)}
+                        <Link to={getDashboardLink()} onClick={() => setUserMenuOpen(false)} className="dropdown-item d-flex align-items-center gap-2" style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', textDecoration: 'none' }}>
+                          <LayoutDashboard size={16} /> Dashboard
+                        </Link>
+                        {(user.role === 'business' || user.role === 'handyman') && (
+                          <a 
+                            href={`/store/${(user.storeName || user.username || '').toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="dropdown-item d-flex align-items-center gap-2"
+                            style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', textDecoration: 'none' }}
+                            onClick={() => setUserMenuOpen(false)}
+                          >
+                            <Store size={16} /> Visit Storefront
+                          </a>
+                        )}
+                        <div className="dropdown-divider" style={{ height: '1px', background: 'var(--border-glass)', margin: '8px 0' }}></div>
+                        <button 
+                          type="button" 
+                          onClick={handleLogout} 
+                          className="dropdown-item logout-btn d-flex align-items-center gap-2"
+                          style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--accent-danger)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }}
                         >
-                          <Store size={16} /> Visit Storefront
-                        </a>
-                      )}
-                      <div className="dropdown-divider" style={{ height: '1px', background: 'var(--border-glass)', margin: '8px 0' }}></div>
-                      <button 
-                        type="button" 
-                        onClick={handleLogout} 
-                        className="dropdown-item logout-btn d-flex align-items-center gap-2"
-                        style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--accent-danger)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }}
-                      >
-                        <LogOut size={16} /> Logout
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </>
+                          <LogOut size={16} /> Logout
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </>
+            )
           ) : (
             <>
               <Link to="/login" className="nav-link">{t('login')}</Link>
@@ -515,12 +482,10 @@ const Navbar = () => {
           font-size: 1.8rem;
         }
         .navbar-center-filters {
-          position: absolute;
-          left: 50%;
-          transform: translateX(-50%);
           display: flex;
           gap: 10px;
           align-items: center;
+          margin: 0 auto;
         }
         .nav-links {
           display: flex;
@@ -720,6 +685,30 @@ const Navbar = () => {
         @keyframes slideDown {
           from { transform: translateY(-20px); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
+        }
+
+        @media (max-width: 1250px) {
+          .logo-motto {
+            display: none !important;
+          }
+          .navbar-center-filters {
+            position: static;
+            transform: none;
+            left: auto;
+            margin: 0 auto;
+            gap: 6px;
+          }
+          .filter-badge {
+            padding: 4px 10px;
+            font-size: 0.78rem;
+          }
+          .store-dashboard-shortcuts {
+            gap: 4px !important;
+          }
+          .user-profile-info {
+            gap: 8px;
+            padding-left: 8px;
+          }
         }
 
         @media (max-width: 992px) {

@@ -64,7 +64,16 @@ const runSeeding = async () => {
       { name: 'Used Car Dealership', type: 'automotive', description: 'Pre-owned cars, SUVs and trucks sales' },
       { name: 'Car Rental Service', type: 'automotive', description: 'Daily, weekly and monthly vehicle leases' },
       { name: 'Auto Repair Workshop', type: 'automotive', description: 'Engine maintenance, painting, and mechanics' },
-      { name: 'Spare Parts Dealer', type: 'automotive', description: 'Car batteries, tires, filters and engine parts retail' }
+      { name: 'Spare Parts Dealer', type: 'automotive', description: 'Car batteries, tires, filters and engine parts retail' },
+
+      // EVENTS
+      { name: 'Entertainment', type: 'event', description: 'Concerts, festivals, standups, movie screenings' },
+      { name: 'Arts & Culture', type: 'event', description: 'Museum exhibits, theaters, painting, art galleries' },
+      { name: 'Religious', type: 'event', description: 'Spiritual gatherings, church, mosque services' },
+      { name: 'Social', type: 'event', description: 'Meetups, parties, networking mixers, speed dating' },
+      { name: 'Educational', type: 'event', description: 'Conferences, workshops, webinars, panel discussions' },
+      { name: 'Sports', type: 'event', description: 'Matches, games, tournaments, marathons' },
+      { name: 'Charity', type: 'event', description: 'Fundraisers, volunteer opportunities, auctions' }
     ];
     
     await Category.insertMany(defaults);
@@ -193,6 +202,7 @@ if (isClustered && cluster.isMaster) {
   const messageRoutes = require('./routes/messages');
   const contactRoutes = require('./routes/contact');
   const productRoutes = require('./routes/products');
+  const eventRoutes = require('./routes/events');
 
   // Pre-load all Mongoose discriminators to register them
   require('./models/BoutiqueListing');
@@ -249,6 +259,7 @@ if (isClustered && cluster.isMaster) {
   app.use('/api/chatbot', chatbotRoutes);
   app.use('/api/messages', messageRoutes);
   app.use('/api/contact', contactRoutes);
+  app.use('/api/events', eventRoutes);
 
   // Temporary route to create super admin
   app.get('/api/setup-admin', async (req, res) => {
@@ -330,7 +341,16 @@ if (isClustered && cluster.isMaster) {
         { name: 'Used Car Dealership', type: 'automotive', description: 'Pre-owned cars, SUVs and trucks sales' },
         { name: 'Car Rental Service', type: 'automotive', description: 'Daily, weekly and monthly vehicle leases' },
         { name: 'Auto Repair Workshop', type: 'automotive', description: 'Engine maintenance, painting, and mechanics' },
-        { name: 'Spare Parts Dealer', type: 'automotive', description: 'Car batteries, tires, filters and engine parts retail' }
+        { name: 'Spare Parts Dealer', type: 'automotive', description: 'Car batteries, tires, filters and engine parts retail' },
+
+        // EVENTS
+        { name: 'Entertainment', type: 'event', description: 'Concerts, festivals, standups, movie screenings' },
+        { name: 'Arts & Culture', type: 'event', description: 'Museum exhibits, theaters, painting, art galleries' },
+        { name: 'Religious', type: 'event', description: 'Spiritual gatherings, church, mosque services' },
+        { name: 'Social', type: 'event', description: 'Meetups, parties, networking mixers, speed dating' },
+        { name: 'Educational', type: 'event', description: 'Conferences, workshops, webinars, panel discussions' },
+        { name: 'Sports', type: 'event', description: 'Matches, games, tournaments, marathons' },
+        { name: 'Charity', type: 'event', description: 'Fundraisers, volunteer opportunities, auctions' }
       ];
       
       await Category.insertMany(defaults);
@@ -663,11 +683,69 @@ if (isClustered && cluster.isMaster) {
         await listing.save();
       }
 
+      // Seed Mock Events
+      const Event = require('./models/Event');
+      await Event.deleteMany({});
+      
+      const owner = getUser('business', 'store') || seededUsers[0];
+      const mockEvents = [
+        {
+          ownerId: owner._id,
+          ownerName: owner.storeName || owner.username,
+          ownerPhone: owner.phone || '0911223344',
+          ownerEmail: owner.email,
+          title: 'Summer Music Festival 2026',
+          description: 'Join us for the biggest summer concert featuring top local bands and electronic artists. Food, drinks, and great music guaranteed!',
+          category: 'Entertainment',
+          subCategory: 'Concerts',
+          eventDate: new Date('2026-08-15T18:00:00Z'),
+          eventTime: '06:00 PM',
+          location: 'Bole',
+          address: 'Skylight Hotel, Addis Ababa',
+          price: 40,
+          images: ['https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=800&q=80']
+        },
+        {
+          ownerId: owner._id,
+          ownerName: owner.storeName || owner.username,
+          ownerPhone: owner.phone || '0911223344',
+          ownerEmail: owner.email,
+          title: 'React & Node Fullstack Workshop',
+          description: 'Learn modern full-stack development. We will build an end-to-end web application from scratch. Bring your own laptop.',
+          category: 'Educational',
+          subCategory: 'Workshops',
+          eventDate: new Date('2026-09-01T09:00:00Z'),
+          eventTime: '09:00 AM - 04:00 PM',
+          location: 'Addis Ababa',
+          address: 'TechHub Hall, Addis Ababa',
+          price: 0,
+          images: ['https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=80']
+        },
+        {
+          ownerId: owner._id,
+          ownerName: owner.storeName || owner.username,
+          ownerPhone: owner.phone || '0911223344',
+          ownerEmail: owner.email,
+          title: 'Charity Football Tournament',
+          description: 'A 7v7 friendly football tournament to raise funds for the local community youth center. Winners get trophy and gold medals.',
+          category: 'Sports',
+          subCategory: 'Games',
+          eventDate: new Date('2026-08-20T14:00:00Z'),
+          eventTime: '02:00 PM',
+          location: 'Bole',
+          address: 'Bole Youth Center Stadium, Addis Ababa',
+          price: 10,
+          images: ['https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80']
+        }
+      ];
+      await Event.insertMany(mockEvents);
+
       res.json({
         success: true,
-        message: 'Database seeded successfully with users and listings for all categories!',
+        message: 'Database seeded successfully with users, listings, and events for all categories!',
         seededUsers: seededUsers.map(u => ({ email: u.email, role: u.role, businessType: u.businessType })),
-        seededListingsCount: listingsData.length
+        seededListingsCount: listingsData.length,
+        seededEventsCount: mockEvents.length
       });
     } catch (err) {
       res.status(500).json({ success: false, error: err.message });

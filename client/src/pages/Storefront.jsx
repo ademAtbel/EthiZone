@@ -89,6 +89,16 @@ const Storefront = () => {
   const [catalogSort, setCatalogSort] = useState('newest');
   const [catalogStatusFilter, setCatalogStatusFilter] = useState('all');
   const [catalogOfferType, setCatalogOfferType] = useState('all'); // all, sale, rent
+  const [filterPropertyType, setFilterPropertyType] = useState('all');
+  const [filterBedrooms, setFilterBedrooms] = useState('all');
+  const [filterBathrooms, setFilterBathrooms] = useState('all');
+  const [filterFurnished, setFilterFurnished] = useState('all');
+  const [filterMake, setFilterMake] = useState('all');
+  const [filterFuelType, setFilterFuelType] = useState('all');
+  const [filterTransmission, setFilterTransmission] = useState('all');
+  const [filterCondition, setFilterCondition] = useState('all');
+  const [filterMinPrice, setFilterMinPrice] = useState('');
+  const [filterMaxPrice, setFilterMaxPrice] = useState('');
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'home';
@@ -300,6 +310,17 @@ const Storefront = () => {
     }
   };
 
+  const pricesList = listings.map(l => Number(l.price)).filter(p => !isNaN(p) && p > 0);
+  const minListingPrice = pricesList.length ? Math.min(...pricesList) : 0;
+  const maxListingPrice = pricesList.length ? Math.max(...pricesList) : 5000;
+
+  const formatPriceLabel = (num) => {
+    if (num >= 1000) {
+      return `$${(num / 1000).toFixed(num % 1000 === 0 ? 0 : 1)}k`;
+    }
+    return `$${num}`;
+  };
+
   const filteredListings = listings
     .filter(item => {
       const query = catalogQuery.toLowerCase();
@@ -316,6 +337,50 @@ const Storefront = () => {
       const matchesOfferType = catalogOfferType === 'all' || 
         (catalogOfferType === 'sale' && offerTypeVal.toLowerCase() === 'sale') ||
         (catalogOfferType === 'rent' && offerTypeVal.toLowerCase() === 'rent');
+
+      if (!matchesSearch || !matchesStatus || !matchesOfferType) {
+        return false;
+      }
+
+      // Price filter
+      if (filterMinPrice && Number(item.price) < Number(filterMinPrice)) return false;
+      if (filterMaxPrice && Number(item.price) > Number(filterMaxPrice)) return false;
+
+      // Real Estate Filters
+      if (filterPropertyType !== 'all') {
+        const propType = item.metadata?.propertyType || item.propertyType || '';
+        if (propType.toLowerCase() !== filterPropertyType.toLowerCase()) return false;
+      }
+      if (filterBedrooms !== 'all') {
+        const beds = item.metadata?.bedrooms || item.bedrooms || 0;
+        if (Number(beds) < Number(filterBedrooms)) return false;
+      }
+      if (filterBathrooms !== 'all') {
+        const baths = item.metadata?.bathrooms || item.bathrooms || 0;
+        if (Number(baths) < Number(filterBathrooms)) return false;
+      }
+      if (filterFurnished !== 'all') {
+        const furnished = item.metadata?.furnishedStatus || item.furnishedStatus || '';
+        if (furnished.toLowerCase() !== filterFurnished.toLowerCase()) return false;
+      }
+
+      // Automotive Filters
+      if (filterMake !== 'all') {
+        const carMake = item.metadata?.make || item.make || '';
+        if (carMake.toLowerCase() !== filterMake.toLowerCase()) return false;
+      }
+      if (filterFuelType !== 'all') {
+        const fuel = item.metadata?.fuelType || item.fuelType || '';
+        if (fuel.toLowerCase() !== filterFuelType.toLowerCase()) return false;
+      }
+      if (filterTransmission !== 'all') {
+        const trans = item.metadata?.transmission || item.transmission || '';
+        if (trans.toLowerCase() !== filterTransmission.toLowerCase()) return false;
+      }
+      if (filterCondition !== 'all') {
+        const cond = item.metadata?.carCondition || item.carCondition || item.metadata?.condition || item.condition || '';
+        if (cond.toLowerCase() !== filterCondition.toLowerCase()) return false;
+      }
 
       if (activeTab === 'on_sale' && !item.isOnSale) {
         return false;
@@ -606,7 +671,7 @@ const Storefront = () => {
                     <h1 style={{ margin: 0, fontSize: '2.2rem' }}>{store.storeName || store.username}</h1>
                   </div>
                   <p className="store-address d-flex align-items-center gap-2" style={{ justifyContent: 'center' }}><MapPin size={16} style={{ color: 'var(--accent-secondary)' }} /> {store.address || 'Local Directory Services'}</p>
-                  <p className="store-desc">{store.description || t('middleman_free')}</p>
+                  <p className="store-desc" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{store.description || t('middleman_free')}</p>
                 </div>
                 <div className="store-hero-contact" style={{ zIndex: 2 }}>
                   <span className="contact-label">{t('direct_line')}</span>
@@ -721,77 +786,241 @@ const Storefront = () => {
 
         {/* TAB 2: CATALOG / SHOP ITEMS / ON SALE / NEW ARRIVAL SECTION */}
         {['catalog', 'on_sale', 'new_arrival', 'all_products', 'all_drinks', 'all_electronics', 'all_services', 'Fruits & Vegetables', 'Meat & Fish', 'Dairy & Eggs', 'Bakery', 'Pantry', 'Drinks', 'Household', 'Baby & Personal Care', 'Wine', 'Beer', 'Whiskey', 'Vodka', 'Gin', 'Rum', 'Tequila', 'Champagne', 'Mixers', 'Snacks', 'Gift Sets', 'Phones', 'Laptops', 'TV & Audio', 'Gaming', 'Accessories', 'Smart Devices', 'Appliances', 'refurbished', 'warranty', 'Family Law', 'Business Law', 'Immigration', 'Real Estate Law', 'Contract Review', 'Consultation', 'Personal Tax', 'Business Tax', 'VAT', 'Payroll Tax', 'Accounting', 'Bookkeeping', 'Tax Consultation', 'House Cleaning', 'Office Cleaning', 'Deep Cleaning', 'Move-In / Move-Out', 'Carpet Cleaning', 'Disinfection', 'Hair', 'Makeup', 'Nails', 'Facial', 'Barber', 'Spa', 'Packages'].includes(activeTab) && (
-          <div className="storefront-grid">
-            <div className="storefront-main" style={{ width: '100%' }}>
-              <div className="catalog-header-bar sticky-catalog-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                <h3 style={{ margin: 0 }}>
-                  {activeTab === 'on_sale' 
-                    ? (t('grocery_on_sale') || 'Items on Sale')
-                    : activeTab === 'new_arrival' 
-                      ? (t('grocery_new_arrivals') || 'New Arrivals')
-                      : ['catalog', 'all_products', 'all_drinks', 'all_electronics', 'all_services'].includes(activeTab)
-                        ? `${t('catalog_active_listings')} (${filteredListings.length})`
-                        : (() => {
-                            const keysMap = {
-                              'Fruits & Vegetables': 'grocery_fruits_vegetables',
-                              'Meat & Fish': 'grocery_meat_fish',
-                              'Dairy & Eggs': 'grocery_dairy_eggs',
-                              'Bakery': 'grocery_bakery',
-                              'Pantry': 'grocery_pantry',
-                              'Drinks': 'grocery_drinks',
-                              'Household': 'grocery_household',
-                              'Baby & Personal Care': 'grocery_baby_personal_care',
-                              'Wine': 'liquor_wine',
-                              'Beer': 'liquor_beer',
-                              'Whiskey': 'liquor_whiskey',
-                              'Vodka': 'liquor_vodka',
-                              'Gin': 'liquor_gin',
-                              'Rum': 'liquor_rum',
-                              'Tequila': 'liquor_tequila',
-                              'Champagne': 'liquor_champagne',
-                              'Mixers': 'liquor_mixers',
-                              'Snacks': 'liquor_snacks',
-                              'Gift Sets': 'liquor_gift_sets',
-                              'Phones': 'electronics_phones',
-                              'Laptops': 'electronics_laptops',
-                              'TV & Audio': 'electronics_tv_audio',
-                              'Gaming': 'electronics_gaming',
-                              'Accessories': 'electronics_accessories',
-                              'Smart Devices': 'electronics_smart_devices',
-                              'Appliances': 'electronics_appliances',
-                              'refurbished': 'electronics_refurbished',
-                              'warranty': 'electronics_warranty',
-                              'Family Law': 'law_family_law',
-                              'Business Law': 'law_business_law',
-                              'Immigration': 'law_immigration',
-                              'Real Estate Law': 'law_real_estate_law',
-                              'Contract Review': 'law_contract_review',
-                              'Consultation': 'law_consultation',
-                              'Personal Tax': 'tax_personal_tax',
-                              'Business Tax': 'tax_business_tax',
-                              'VAT': 'tax_vat',
-                              'Payroll Tax': 'tax_payroll_tax',
-                              'Accounting': 'tax_accounting',
-                              'Bookkeeping': 'tax_bookkeeping',
-                              'Tax Consultation': 'tax_consultation',
-                              'House Cleaning': 'cleaning_house_cleaning',
-                              'Office Cleaning': 'cleaning_office_cleaning',
-                              'Deep Cleaning': 'cleaning_deep_cleaning',
-                              'Move-In / Move-Out': 'cleaning_move_in_out',
-                              'Carpet Cleaning': 'cleaning_carpet_cleaning',
-                              'Disinfection': 'cleaning_disinfection',
-                              'Hair': 'beauty_hair',
-                              'Makeup': 'beauty_makeup',
-                              'Nails': 'beauty_nails',
-                              'Facial': 'beauty_facial',
-                              'Barber': 'beauty_barber',
-                              'Spa': 'beauty_spa',
-                              'Packages': 'beauty_packages'
-                            };
-                            const tKey = keysMap[activeTab];
-                            return `${t(tKey) || activeTab} (${filteredListings.length})`;
-                          })()}
-                </h3>
+          <div className="storefront-grid" style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
+            {/* Left Sidebar Filter Panel */}
+            <div className="storefront-sidebar d-none d-md-block" style={{ width: '270px', flexShrink: 0, position: 'sticky', top: '90px' }}>
+              <div style={{ background: 'var(--bg-card)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-glass)', boxShadow: '0 8px 24px rgba(0,0,0,0.15)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--border-glass)' }}>
+                  <h4 style={{ margin: 0, fontWeight: '700', fontSize: '1.05rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>🔍</span> Filter Criteria
+                  </h4>
+                  {(catalogQuery || catalogOfferType !== 'all' || filterPropertyType !== 'all' || filterBedrooms !== 'all' || filterBathrooms !== 'all' || filterFurnished !== 'all' || filterMake !== 'all' || filterFuelType !== 'all' || filterTransmission !== 'all' || filterCondition !== 'all' || filterMinPrice || filterMaxPrice) && (
+                    <button
+                      onClick={() => {
+                        setCatalogQuery('');
+                        setCatalogOfferType('all');
+                        setCatalogStatusFilter('all');
+                        setFilterPropertyType('all');
+                        setFilterBedrooms('all');
+                        setFilterBathrooms('all');
+                        setFilterFurnished('all');
+                        setFilterMake('all');
+                        setFilterFuelType('all');
+                        setFilterTransmission('all');
+                        setFilterCondition('all');
+                        setFilterMinPrice('');
+                        setFilterMaxPrice('');
+                      }}
+                      style={{ background: 'transparent', border: 'none', color: 'var(--accent-primary)', fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer', padding: 0 }}
+                    >
+                      Reset All
+                    </button>
+                  )}
+                </div>
+
+                {/* Offer Type Filter (Sale / Rent) */}
+                <div className="form-group" style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                    Listing Offer Type
+                  </label>
+                  <select 
+                    className="form-control" 
+                    value={catalogOfferType} 
+                    onChange={(e) => setCatalogOfferType(e.target.value)}
+                    style={{ fontSize: '0.9rem', borderRadius: '8px' }}
+                  >
+                    <option value="all">All Offers (Sale & Rent)</option>
+                    <option value="sale">🏷️ For Sale</option>
+                    <option value="rent">🔑 For Rent</option>
+                  </select>
+                </div>
+
+                {/* Automotive Specific Filters */}
+                {(store?.businessType === 'automotive' || store?.businessType === 'auto' || listings.some(i => i.type === 'car' || i.metadata?.make)) && (
+                  <>
+                    <div className="form-group" style={{ marginBottom: '16px' }}>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                        Make / Brand
+                      </label>
+                      <select 
+                        className="form-control" 
+                        value={filterMake} 
+                        onChange={(e) => setFilterMake(e.target.value)}
+                        style={{ fontSize: '0.9rem', borderRadius: '8px' }}
+                      >
+                        <option value="all">All Makes</option>
+                        {Array.from(new Set(listings.map(i => i.metadata?.make || i.make).filter(Boolean))).map(m => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: '16px' }}>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                        Fuel Type
+                      </label>
+                      <select 
+                        className="form-control" 
+                        value={filterFuelType} 
+                        onChange={(e) => setFilterFuelType(e.target.value)}
+                        style={{ fontSize: '0.9rem', borderRadius: '8px' }}
+                      >
+                        <option value="all">All Fuel Types</option>
+                        <option value="Gasoline">Gasoline</option>
+                        <option value="Diesel">Diesel</option>
+                        <option value="Electric">Electric</option>
+                        <option value="Hybrid">Hybrid</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: '16px' }}>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                        Transmission
+                      </label>
+                      <select 
+                        className="form-control" 
+                        value={filterTransmission} 
+                        onChange={(e) => setFilterTransmission(e.target.value)}
+                        style={{ fontSize: '0.9rem', borderRadius: '8px' }}
+                      >
+                        <option value="all">All Transmissions</option>
+                        <option value="Automatic">Automatic</option>
+                        <option value="Manual">Manual</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: '16px' }}>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                        Vehicle Condition
+                      </label>
+                      <select 
+                        className="form-control" 
+                        value={filterCondition} 
+                        onChange={(e) => setFilterCondition(e.target.value)}
+                        style={{ fontSize: '0.9rem', borderRadius: '8px' }}
+                      >
+                        <option value="all">All Conditions</option>
+                        <option value="Brand New">Brand New</option>
+                        <option value="Used">Used</option>
+                        <option value="Certified Pre-Owned">Certified Pre-Owned</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+
+                {/* Real Estate Specific Filters */}
+                {(store?.businessType === 'real_estate' || listings.some(i => i.type === 'house' || i.metadata?.bedrooms)) && (
+                  <>
+                    <div className="form-group" style={{ marginBottom: '16px' }}>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                        Property Type
+                      </label>
+                      <select 
+                        className="form-control" 
+                        value={filterPropertyType} 
+                        onChange={(e) => setFilterPropertyType(e.target.value)}
+                        style={{ fontSize: '0.9rem', borderRadius: '8px' }}
+                      >
+                        <option value="all">All Property Types</option>
+                        <option value="House">House</option>
+                        <option value="Apartment">Apartment</option>
+                        <option value="Commercial">Commercial</option>
+                        <option value="Land">Land</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: '16px' }}>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                        Min Bedrooms
+                      </label>
+                      <select 
+                        className="form-control" 
+                        value={filterBedrooms} 
+                        onChange={(e) => setFilterBedrooms(e.target.value)}
+                        style={{ fontSize: '0.9rem', borderRadius: '8px' }}
+                      >
+                        <option value="all">Any Bedrooms</option>
+                        <option value="1">1+ Bedroom</option>
+                        <option value="2">2+ Bedrooms</option>
+                        <option value="3">3+ Bedrooms</option>
+                        <option value="4">4+ Bedrooms</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: '16px' }}>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                        Min Bathrooms
+                      </label>
+                      <select 
+                        className="form-control" 
+                        value={filterBathrooms} 
+                        onChange={(e) => setFilterBathrooms(e.target.value)}
+                        style={{ fontSize: '0.9rem', borderRadius: '8px' }}
+                      >
+                        <option value="all">Any Bathrooms</option>
+                        <option value="1">1+ Bathroom</option>
+                        <option value="2">2+ Bathrooms</option>
+                        <option value="3">3+ Bathrooms</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: '16px' }}>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                        Furnished Status
+                      </label>
+                      <select 
+                        className="form-control" 
+                        value={filterFurnished} 
+                        onChange={(e) => setFilterFurnished(e.target.value)}
+                        style={{ fontSize: '0.9rem', borderRadius: '8px' }}
+                      >
+                        <option value="all">All Furnished Statuses</option>
+                        <option value="Furnished">Furnished</option>
+                        <option value="Semi-Furnished">Semi-Furnished</option>
+                        <option value="Unfurnished">Unfurnished</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+
+                {/* Dynamic Gold Price Range Slider (Image 2 Reference Style) */}
+                <div className="form-group" style={{ marginBottom: '16px', borderTop: '1px solid var(--border-glass)', paddingTop: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <label style={{ fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-main)', margin: 0, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                      PRICE RANGE
+                    </label>
+                    <span style={{ fontSize: '0.82rem', fontWeight: '700', color: '#d4af37' }}>
+                      Max: ${filterMaxPrice || maxListingPrice}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', fontSize: '0.88rem', fontWeight: '700', color: 'var(--text-secondary)' }}>
+                    <span>{formatPriceLabel(minListingPrice)}</span>
+                    <span>{formatPriceLabel(maxListingPrice)}</span>
+                  </div>
+
+                  <input
+                    type="range"
+                    min={minListingPrice}
+                    max={maxListingPrice}
+                    step={maxListingPrice > 10000 ? 500 : (maxListingPrice > 1000 ? 100 : 10)}
+                    value={filterMaxPrice || maxListingPrice}
+                    onChange={(e) => setFilterMaxPrice(e.target.value)}
+                    style={{
+                      width: '100%',
+                      accentColor: '#d4af37',
+                      cursor: 'pointer',
+                      height: '6px',
+                      borderRadius: '3px'
+                    }}
+                  />
+                </div>
+
+              </div>
+            </div>
+
+            <div className="storefront-main" style={{ flex: 1, minWidth: 0 }}>
+              <div className="catalog-header-bar sticky-catalog-header" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '20px' }}>
                 
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', flex: '1', justifyContent: 'flex-end' }}>
                   <button
@@ -934,6 +1163,151 @@ const Storefront = () => {
                       </div>
                     )}
                     
+                    {/* Automotive Filters */}
+                    {(store?.businessType === 'automotive' || store?.businessType === 'auto' || listings.some(i => i.type === 'car' || i.metadata?.make)) && (
+                      <>
+                        <div>
+                          <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Make / Brand</h4>
+                          <select 
+                            className="form-control w-100" 
+                            value={filterMake} 
+                            onChange={(e) => setFilterMake(e.target.value)}
+                          >
+                            <option value="all">All Makes</option>
+                            {Array.from(new Set(listings.map(i => i.metadata?.make || i.make).filter(Boolean))).map(m => (
+                              <option key={m} value={m}>{m}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Fuel Type</h4>
+                          <select 
+                            className="form-control w-100" 
+                            value={filterFuelType} 
+                            onChange={(e) => setFilterFuelType(e.target.value)}
+                          >
+                            <option value="all">All Fuel Types</option>
+                            <option value="Gasoline">Gasoline</option>
+                            <option value="Diesel">Diesel</option>
+                            <option value="Electric">Electric</option>
+                            <option value="Hybrid">Hybrid</option>
+                          </select>
+                        </div>
+                        <div>
+                          <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Transmission</h4>
+                          <select 
+                            className="form-control w-100" 
+                            value={filterTransmission} 
+                            onChange={(e) => setFilterTransmission(e.target.value)}
+                          >
+                            <option value="all">All Transmissions</option>
+                            <option value="Automatic">Automatic</option>
+                            <option value="Manual">Manual</option>
+                          </select>
+                        </div>
+                        <div>
+                          <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Condition</h4>
+                          <select 
+                            className="form-control w-100" 
+                            value={filterCondition} 
+                            onChange={(e) => setFilterCondition(e.target.value)}
+                          >
+                            <option value="all">All Conditions</option>
+                            <option value="Brand New">Brand New</option>
+                            <option value="Used">Used</option>
+                            <option value="Certified Pre-Owned">Certified Pre-Owned</option>
+                          </select>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Real Estate Filters */}
+                    {(store?.businessType === 'real_estate' || listings.some(i => i.type === 'house' || i.metadata?.bedrooms)) && (
+                      <>
+                        <div>
+                          <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Property Type</h4>
+                          <select 
+                            className="form-control w-100" 
+                            value={filterPropertyType} 
+                            onChange={(e) => setFilterPropertyType(e.target.value)}
+                          >
+                            <option value="all">All Property Types</option>
+                            <option value="House">House</option>
+                            <option value="Apartment">Apartment</option>
+                            <option value="Commercial">Commercial</option>
+                            <option value="Land">Land</option>
+                          </select>
+                        </div>
+                        <div>
+                          <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Bedrooms</h4>
+                          <select 
+                            className="form-control w-100" 
+                            value={filterBedrooms} 
+                            onChange={(e) => setFilterBedrooms(e.target.value)}
+                          >
+                            <option value="all">Any Bedrooms</option>
+                            <option value="1">1+ Bedroom</option>
+                            <option value="2">2+ Bedrooms</option>
+                            <option value="3">3+ Bedrooms</option>
+                            <option value="4">4+ Bedrooms</option>
+                          </select>
+                        </div>
+                        <div>
+                          <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Bathrooms</h4>
+                          <select 
+                            className="form-control w-100" 
+                            value={filterBathrooms} 
+                            onChange={(e) => setFilterBathrooms(e.target.value)}
+                          >
+                            <option value="all">Any Bathrooms</option>
+                            <option value="1">1+ Bathroom</option>
+                            <option value="2">2+ Bathrooms</option>
+                            <option value="3">3+ Bathrooms</option>
+                          </select>
+                        </div>
+                        <div>
+                          <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Furnished Status</h4>
+                          <select 
+                            className="form-control w-100" 
+                            value={filterFurnished} 
+                            onChange={(e) => setFilterFurnished(e.target.value)}
+                          >
+                            <option value="all">All Furnished Statuses</option>
+                            <option value="Furnished">Furnished</option>
+                            <option value="Semi-Furnished">Semi-Furnished</option>
+                            <option value="Unfurnished">Unfurnished</option>
+                          </select>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Price Range Filter */}
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                        <h4 className="text-xs fw-bold text-uppercase" style={{ fontSize: '0.75rem', margin: 0 }}>PRICE RANGE</h4>
+                        <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#d4af37' }}>Max: ${filterMaxPrice || maxListingPrice}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-secondary)' }}>
+                        <span>{formatPriceLabel(minListingPrice)}</span>
+                        <span>{formatPriceLabel(maxListingPrice)}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={minListingPrice}
+                        max={maxListingPrice}
+                        step={maxListingPrice > 10000 ? 500 : (maxListingPrice > 1000 ? 100 : 10)}
+                        value={filterMaxPrice || maxListingPrice}
+                        onChange={(e) => setFilterMaxPrice(e.target.value)}
+                        style={{
+                          width: '100%',
+                          accentColor: '#d4af37',
+                          cursor: 'pointer',
+                          height: '6px',
+                          borderRadius: '3px'
+                        }}
+                      />
+                    </div>
+                    
                     <div>
                       <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Sort By</h4>
                       <select 
@@ -954,6 +1328,16 @@ const Storefront = () => {
                           setCatalogQuery('');
                           setCatalogStatusFilter('all');
                           setCatalogOfferType('all');
+                          setFilterPropertyType('all');
+                          setFilterBedrooms('all');
+                          setFilterBathrooms('all');
+                          setFilterFurnished('all');
+                          setFilterMake('all');
+                          setFilterFuelType('all');
+                          setFilterTransmission('all');
+                          setFilterCondition('all');
+                          setFilterMinPrice('');
+                          setFilterMaxPrice('');
                           setCatalogSort('newest');
                           setShowMobileFilters(false);
                         }}
@@ -1016,14 +1400,14 @@ const Storefront = () => {
           <div className="glass-panel about-panel-card" style={{ padding: '40px', marginBottom: '30px' }}>
             <h2 style={{ marginBottom: '18px', borderLeft: '3px solid var(--accent-primary)', paddingLeft: '12px' }}>{t('about_business')}</h2>
             
-            <p style={{ fontSize: '1.05rem', color: 'var(--text-main)', lineHeight: 1.6, marginBottom: '24px' }}>
+            <p style={{ fontSize: '1.05rem', color: 'var(--text-main)', lineHeight: 1.6, marginBottom: '24px', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
               {store.description || 'Welcome to our business storefront. We are dedicated to providing excellent service and quality items directly to our local customers.'}
             </p>
 
             {store.shopStory && (
               <div style={{ marginBottom: '24px', borderTop: '1px solid var(--border-glass)', paddingTop: '20px' }}>
                 <h4 style={{ fontSize: '1.1rem', color: 'var(--accent-secondary)', marginBottom: '10px' }}>Our Story</h4>
-                <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
                   {store.shopStory}
                 </p>
               </div>

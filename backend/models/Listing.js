@@ -35,11 +35,23 @@ const ListingSchema = new mongoose.Schema({
     bathrooms: Number,
     propertyType: String,
     address: String,
+    offerType: String,
+    buildYear: Number,
+    totalLandArea: Number,
+    houseArea: Number,
+    leaseTerm: String,
+    depositAmount: Number,
+    furnishedStatus: String,
     // Automotive metadata
     year: Number,
     mileage: Number,
     make: String,
-    model: String
+    model: String,
+    fuelType: String,
+    transmission: String,
+    carCondition: String,
+    rentalPeriod: String,
+    mileageLimit: String
   }
 }, { timestamps: true });
 

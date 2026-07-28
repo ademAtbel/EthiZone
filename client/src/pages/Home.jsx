@@ -4,7 +4,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import ListingCard from '../components/ListingCard';
 import FilterButton from '../components/FilterButton';
-import { Search, Star } from 'lucide-react';
+import { Search, Star, Calendar, Clock, MapPin, Phone, MessageCircle, X, Tag } from 'lucide-react';
 
 const Home = () => {
   const [listings, setListings] = useState([]);
@@ -21,6 +21,63 @@ const Home = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [sortBy, setSortBy] = useState('newest');
 
+  // Events widget state
+  const [widgetEvents, setWidgetEvents] = useState([]);
+  const [widgetLocation, setWidgetLocation] = useState('');
+  const [loadingWidgetEvents, setLoadingWidgetEvents] = useState(false);
+  const [selectedWidgetEvent, setSelectedWidgetEvent] = useState(null);
+  const [currentWidgetIndex, setCurrentWidgetIndex] = useState(0);
+
+  useEffect(() => {
+    setCurrentWidgetIndex(0);
+  }, [widgetEvents]);
+
+  useEffect(() => {
+    if (widgetEvents.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentWidgetIndex(prev => (prev + 1) % widgetEvents.length);
+    }, 4500);
+    return () => clearInterval(interval);
+  }, [widgetEvents]);
+
+  const fetchWidgetEvents = async () => {
+    try {
+      setLoadingWidgetEvents(true);
+      let url = '/api/events?';
+      if (widgetLocation) {
+        url += `location=${encodeURIComponent(widgetLocation)}`;
+      }
+      const res = await fetch(url);
+      const data = await res.json();
+      if (res.ok && Array.isArray(data)) {
+        const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const active = data.filter(evt => !evt.eventDate || new Date(evt.eventDate) >= cutoff);
+        // Show max 3 upcoming events in the widget
+        setWidgetEvents(active.slice(0, 3));
+      }
+    } catch (err) {
+      console.error('Error fetching widget events:', err);
+    } finally {
+      setLoadingWidgetEvents(false);
+    }
+  };
+
+  const formatWidgetEventDate = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
+  const formatShortDate = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  useEffect(() => {
+    fetchWidgetEvents();
+  }, [widgetLocation]);
+
   const getCategoryTranslationKey = (name) => {
     const map = {
       'Boutique': 'boutique',
@@ -31,13 +88,26 @@ const Home = () => {
       'Bookstore': 'bookstore',
       'Furniture': 'furniture',
       'Hardware Store': 'hardware_store',
-      'Cafe & Restaurant': 'cafe_slots_restaurant',
-      'Jewelry & Accessories': 'jewelry_slots_accessories',
-      'Gift & Toy Shop': 'gift_slots_toy_shop',
-      'Other Store': 'other',
-      'Other': 'other'
+      'Cafe & Restaurant': 'cafe_restaurant',
+      'Jewelry & Accessories': 'jewelry_accessories',
+      'Gift & Toy Shop': 'gift_toy',
+      'Other': 'other_store',
+      'Law Office': 'law_office',
+      'Tax Office': 'tax_office',
+      'Clinic': 'clinic',
+      'Consulting Firm': 'consulting_firm',
+      'Cleaning Agency': 'cleaning_agency',
+      'Beauty Salon': 'beauty_salon',
+      'Residential Homes': 'residential_homes',
+      'Rental Apartments': 'rental_apartments',
+      'Commercial Real Estate': 'commercial_real_estate',
+      'Land & Lots': 'land_lots',
+      'Used Car Dealership': 'used_car_dealership',
+      'Car Rental Service': 'car_rental_service',
+      'Auto Repair Workshop': 'auto_repair_workshop',
+      'Spare Parts Dealer': 'spare_parts_dealer'
     };
-    return map[name] || name.toLowerCase().replace(/ & /g, '_slots_').replace(/ /g, '_');
+    return map[name] || '';
   };
 
   const storeCategoryNames = [
@@ -675,8 +745,153 @@ const Home = () => {
                 </div>
               </div>
               <div className="hero-img-col">
-                <div className="hero-monitor-frame">
-                  <img src="/hero_monitor.png" alt="Ethizone Mockup" />
+                <div className="glass-panel p-4" style={{ borderRadius: '16px', border: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.02)', display: 'flex', flexDirection: 'column', gap: '16px', color: 'var(--text-main)', textAlign: 'left' }}>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-main)' }}>🎉 Events Nearby</h3>
+                    <Link to="/events" style={{ fontSize: '0.82rem', color: 'var(--accent-secondary)', textDecoration: 'none', fontWeight: 'semibold' }}>View All →</Link>
+                  </div>
+                  
+                  {/* Widget events list (Carousel Mode) */}
+                  <div className="position-relative" style={{ minHeight: '260px', display: 'flex', flexDirection: 'column' }}>
+                    {loadingWidgetEvents ? (
+                       <div className="text-center py-5 my-auto">
+                         <div className="spinner-border spinner-border-sm text-success" role="status" />
+                       </div>
+                    ) : widgetEvents.length === 0 ? (
+                       <div className="text-center py-5 my-auto text-muted" style={{ fontSize: '0.85rem' }}>
+                         No events found {widgetLocation && `in "${widgetLocation}"`}.
+                       </div>
+                    ) : (
+                       (() => {
+                         const evt = widgetEvents[currentWidgetIndex];
+                         if (!evt) return null;
+                         return (
+                           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                             {/* Card Body */}
+                             <div 
+                               className="rounded-3" 
+                               onClick={() => setSelectedWidgetEvent(evt)}
+                               style={{ 
+                                 background: 'rgba(255,255,255,0.02)', 
+                                 border: '1px solid var(--border-glass)', 
+                                 cursor: 'pointer', 
+                                 transition: 'all 0.3s ease',
+                                 overflow: 'hidden',
+                                 display: 'flex',
+                                 flexDirection: 'column'
+                               }}
+                               onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--accent-primary)'}
+                               onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border-glass)'}
+                             >
+                               {/* Image Banner */}
+                               <div style={{ position: 'relative', height: '120px', background: '#1e293b', overflow: 'hidden' }}>
+                                 {evt.images && evt.images.length > 0 ? (
+                                   <img src={evt.images[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                 ) : (
+                                   <div className="w-100 h-100 d-flex align-items-center justify-content-center text-muted" style={{ background: 'rgba(255,255,255,0.01)' }}>
+                                     <span style={{ fontSize: '2.5rem' }}>🎉</span>
+                                   </div>
+                                 )}
+                                 <span style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', color: evt.price === 0 ? 'var(--accent-success)' : '#ffffff', padding: '2px 8px', borderRadius: '12px', fontSize: '0.68rem', fontWeight: 'bold' }}>
+                                   {evt.price === 0 ? 'FREE' : `$${evt.price}`}
+                                 </span>
+                               </div>
+
+                               {/* Text info */}
+                               <div className="p-3">
+                                 <div className="d-flex align-items-center gap-2 mb-1" style={{ fontSize: '0.7rem', color: 'var(--accent-secondary)' }}>
+                                   <Tag size={10} />
+                                   <span className="fw-bold text-uppercase">{evt.category}</span>
+                                   {evt.subCategory && (
+                                     <>
+                                       <span>•</span>
+                                       <span>{evt.subCategory}</span>
+                                     </>
+                                   )}
+                                 </div>
+                                 <h5 style={{ margin: '0 0 8px 0', fontSize: '0.98rem', fontWeight: 'bold', color: 'var(--text-main)' }} className="text-truncate">{evt.title}</h5>
+                                 
+                                 <div className="space-y-1" style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                                   <div className="d-flex align-items-center gap-2">
+                                     <Calendar size={12} style={{ color: 'var(--accent-primary)' }} />
+                                     <span>{formatShortDate(evt.eventDate)}</span>
+                                   </div>
+                                   <div className="d-flex align-items-center gap-2">
+                                     <Clock size={12} style={{ color: 'var(--accent-primary)' }} />
+                                     <span>{evt.eventTime}</span>
+                                   </div>
+                                   <div className="d-flex align-items-center gap-2">
+                                     <MapPin size={12} style={{ color: 'var(--accent-secondary)' }} />
+                                     <span className="text-truncate">{evt.location} - {evt.address || 'Venue TBA'}</span>
+                                   </div>
+                                 </div>
+                               </div>
+                             </div>
+
+                             {/* Carousel Controls */}
+                             {widgetEvents.length > 1 && (
+                               <div className="d-flex justify-content-between align-items-center mt-3 px-1">
+                                 <button 
+                                   onClick={(e) => {
+                                     e.stopPropagation();
+                                     setCurrentWidgetIndex(prev => (prev - 1 + widgetEvents.length) % widgetEvents.length);
+                                   }}
+                                   className="btn btn-sm btn-outline-secondary"
+                                   style={{ border: '1px solid var(--border-glass)', borderRadius: '50%', width: '28px', height: '28px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-main)' }}
+                                 >
+                                   ◀
+                                 </button>
+                                 
+                                 <div className="d-flex gap-1">
+                                   {widgetEvents.map((_, idx) => (
+                                     <span 
+                                       key={idx}
+                                       onClick={(e) => {
+                                         e.stopPropagation();
+                                         setCurrentWidgetIndex(idx);
+                                       }}
+                                       style={{
+                                         width: '6px',
+                                         height: '6px',
+                                         borderRadius: '50%',
+                                         background: idx === currentWidgetIndex ? 'var(--accent-primary)' : 'var(--border-glass)',
+                                         cursor: 'pointer',
+                                         transition: 'all 0.2s'
+                                       }}
+                                     />
+                                   ))}
+                                 </div>
+
+                                 <button 
+                                   onClick={(e) => {
+                                     e.stopPropagation();
+                                     setCurrentWidgetIndex(prev => (prev + 1) % widgetEvents.length);
+                                   }}
+                                   className="btn btn-sm btn-outline-secondary"
+                                   style={{ border: '1px solid var(--border-glass)', borderRadius: '50%', width: '28px', height: '28px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-main)' }}
+                                 >
+                                   ▶
+                                 </button>
+                               </div>
+                             )}
+                           </div>
+                         );
+                       })()
+                    )}
+                  </div>
+
+                  {/* Quick search by location inside the widget (Moved to Bottom) */}
+                  <div className="position-relative mt-2">
+                    <MapPin className="position-absolute translate-middle-y" style={{ left: '10px', top: '50%', color: 'var(--accent-secondary)' }} size={14} />
+                    <input
+                      type="text"
+                      placeholder="Enter City or Area (e.g. Bole)..."
+                      className="form-control form-control-sm"
+                      style={{ paddingLeft: '32px', backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-glass)', color: 'var(--text-main)', fontSize: '0.85rem', height: '36px' }}
+                      value={widgetLocation}
+                      onChange={(e) => setWidgetLocation(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1495,22 +1710,10 @@ const Home = () => {
 
                     {/* Skill Specialty Category */}
                     <div className="mt-3">
-                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('experties') || 'Expertise'}</h4>
-                      <select 
-                        className="form-control"
-                        value={selectedCategory}
-                        onChange={(e) => setSelectedCategory(e.target.value)}
-                        style={{ 
-                          fontSize: '0.85rem', 
-                          padding: '8px 12px', 
-                          borderRadius: '6px', 
-                          background: 'rgba(255,255,255,0.02)', 
-                          color: 'var(--text-main)', 
-                          border: '1px solid var(--border-glass)' 
-                        }}
-                      >
-                        <option value="">{t('all') || 'All Specialties'}</option>
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('experties') || 'Hire Me'}</h4>
+                      <div style={{ maxHeight: '300px', overflowY: 'auto', paddingRight: '8px', border: '1px solid var(--border-glass)', borderRadius: '6px', padding: '10px', background: 'rgba(255,255,255,0.01)' }}>
                         {[
+                          { value: '', key: 'all_specialties', name: 'All' },
                           { value: 'Housekeeper', key: 'specialty_housekeeper' },
                           { value: 'Childcare Provider', key: 'specialty_childcare' },
                           { value: 'Property Manager', key: 'specialty_property_manager' },
@@ -1533,10 +1736,24 @@ const Home = () => {
                           { value: 'Tiler', key: 'specialty_tiler' },
                           { value: 'Architect', key: 'specialty_architect' },
                           { value: 'Designer', key: 'specialty_designer' }
-                        ].map(spec => (
-                          <option key={spec.value} value={spec.value}>{t(spec.key) || spec.value}</option>
-                        ))}
-                      </select>
+                        ].map((item) => {
+                          const val = item.value;
+                          const labelText = item.name === 'All' ? (t('all') || 'All') : (t(item.key) || val);
+                          const isChecked = selectedCategory === val;
+                          return (
+                            <label key={val || 'all'} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                              <input
+                                type="radio"
+                                name="handymanSpecialty"
+                                className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                                checked={isChecked}
+                                onChange={() => setSelectedCategory(val)}
+                              />
+                              <span>{labelText}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
                     </div>
 
                     {/* Availability */}
@@ -1817,6 +2034,159 @@ const Home = () => {
                 </>
               )}
             </main>
+          </div>
+        </div>
+      )}
+
+      {/* EVENT DETAILED MODAL FOR HOME WIDGET */}
+      {selectedWidgetEvent && (
+        <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={() => setSelectedWidgetEvent(null)}>
+          <div 
+            className="glass-panel modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '850px',
+              width: '95%',
+              padding: 0,
+              overflow: 'hidden',
+              borderRadius: '16px',
+              border: '1px solid var(--border-glass)',
+              background: 'var(--bg-card)'
+            }}
+          >
+            {/* Header image / Banner */}
+            <div style={{ position: 'relative', height: '55vh', minHeight: '300px', background: '#1e293b' }}>
+              {selectedWidgetEvent.images && selectedWidgetEvent.images.length > 0 ? (
+                <img 
+                  src={selectedWidgetEvent.images[0]} 
+                  alt={selectedWidgetEvent.title}
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                />
+              ) : (
+                <div className="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-muted" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                  <span style={{ fontSize: '4rem' }}>🎉</span>
+                </div>
+              )}
+              
+              <button 
+                onClick={() => setSelectedWidgetEvent(null)}
+                className="position-absolute"
+                style={{
+                  top: '16px',
+                  right: '16px',
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  background: 'rgba(0,0,0,0.6)',
+                  border: 'none',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer'
+                }}
+              >
+                <X size={18} />
+              </button>
+
+              <span 
+                className="position-absolute"
+                style={{
+                  bottom: '16px',
+                  right: '16px',
+                  background: 'rgba(0,0,0,0.8)',
+                  backdropFilter: 'blur(5px)',
+                  color: selectedWidgetEvent.price === 0 ? 'var(--accent-success)' : '#ffffff',
+                  padding: '6px 14px',
+                  borderRadius: '20px',
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold'
+                }}
+              >
+                Price: {selectedWidgetEvent.price === 0 ? 'FREE' : `$${selectedWidgetEvent.price}`}
+              </span>
+            </div>
+
+            <div className="p-4" style={{ color: 'var(--text-main)', textAlign: 'left' }}>
+              <div className="d-flex align-items-center gap-2 mb-2" style={{ fontSize: '0.8rem', color: 'var(--accent-secondary)' }}>
+                <Tag size={14} />
+                <span className="fw-bold text-uppercase">{selectedWidgetEvent.category}</span>
+                {selectedWidgetEvent.subCategory && (
+                  <>
+                    <span>•</span>
+                    <span>{selectedWidgetEvent.subCategory}</span>
+                  </>
+                )}
+              </div>
+
+              <h2 className="fw-bold mb-4" style={{ fontSize: '1.5rem', color: 'var(--text-main)' }}>{selectedWidgetEvent.title}</h2>
+
+              {/* Event details block */}
+              <div className="row g-3 mb-4 p-3 rounded-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', fontSize: '0.9rem' }}>
+                <div className="col-sm-6">
+                  <div className="d-flex align-items-center gap-2 text-secondary">
+                    <Calendar size={14} style={{ color: 'var(--accent-primary)' }} />
+                    <span>Date: <strong>{formatWidgetEventDate(selectedWidgetEvent.eventDate)}</strong></span>
+                  </div>
+                </div>
+                <div className="col-sm-6">
+                  <div className="d-flex align-items-center gap-2 text-secondary">
+                    <Clock size={14} style={{ color: 'var(--accent-primary)' }} />
+                    <span>Time: <strong>{selectedWidgetEvent.eventTime}</strong></span>
+                  </div>
+                </div>
+                <div className="col-12 border-top pt-2 mt-2">
+                  <div className="d-flex align-items-start gap-2 text-secondary">
+                    <MapPin size={14} style={{ color: 'var(--accent-secondary)', marginTop: '2px' }} />
+                    <span>
+                      Location:{' '}
+                      <a 
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                          `${selectedWidgetEvent.address || ''} ${selectedWidgetEvent.location || ''}`.trim()
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ 
+                          color: 'var(--accent-primary)', 
+                          textDecoration: 'underline', 
+                          fontWeight: 'bold',
+                          cursor: 'pointer'
+                        }}
+                        title="Open in Google Maps"
+                      >
+                        {selectedWidgetEvent.location}{selectedWidgetEvent.address ? ` (${selectedWidgetEvent.address})` : ' - Venue TBA'}
+                      </a>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <h5 className="fw-bold mb-2">Description</h5>
+                <p style={{ color: 'var(--text-secondary)', lineHeight: 1.5, fontSize: '0.9rem', whiteSpace: 'pre-wrap' }}>
+                  {selectedWidgetEvent.description}
+                </p>
+              </div>
+
+              <div className="border-top pt-4">
+                <h5 className="fw-bold mb-2">Organizer Contact Details</h5>
+                <p className="text-secondary small mb-3">Posted by: <strong>{selectedWidgetEvent.ownerName}</strong></p>
+                <div className="d-flex gap-2">
+                  <a 
+                    href={`tel:${selectedWidgetEvent.ownerPhone}`} 
+                    className="btn btn-success flex-grow-1 d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold"
+                  >
+                    <Phone size={16} /> Call Organizer
+                  </a>
+                  <a 
+                    href={`sms:${selectedWidgetEvent.ownerPhone}?body=Hi, I am interested in your event: ${selectedWidgetEvent.title}`} 
+                    className="btn btn-primary flex-grow-1 d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold"
+                  >
+                    <MessageCircle size={16} /> Send SMS
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

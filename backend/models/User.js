@@ -25,7 +25,7 @@ const UserSchema = new mongoose.Schema({
   storeSlug: { type: String },
   businessType: {
     type: String,
-    enum: ['store', 'service', 'organization', 'real_estate', 'automotive']
+    enum: ['store', 'service', 'organization', 'real_estate', 'automotive', 'event']
   },
   category: { type: String },  // e.g., "Boutique", "Pharmacy", "Law Office", "Tax Office", "Liquor Store"
   description: { type: String }, // Store or handyman description

@@ -82,7 +82,8 @@ const Dashboard = () => {
   const [ratings, setRatings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get('tab') || 'items';
+  const defaultTab = user?.businessType === 'event' ? 'events' : 'items';
+  const activeTab = searchParams.get('tab') || defaultTab;
   const setActiveTab = (tab) => setSearchParams({ tab });
   const [inquiries, setInquiries] = useState([]);
   const [activeInquiryAlert, setActiveInquiryAlert] = useState(null);
@@ -167,10 +168,21 @@ const Dashboard = () => {
     bathrooms: '',
     propertyType: 'House',
     address: '',
+    buildYear: '',
+    totalLandArea: '',
+    houseArea: '',
+    leaseTerm: 'Monthly',
+    depositAmount: '',
+    furnishedStatus: 'Unfurnished',
     year: '',
     mileage: '',
     make: '',
     model: '',
+    fuelType: 'Gasoline',
+    transmission: 'Automatic',
+    carCondition: 'Used',
+    rentalPeriod: 'Per Day',
+    mileageLimit: 'Unlimited',
     brand: '',
     sizes: '',
     colors: '',
@@ -207,6 +219,24 @@ const Dashboard = () => {
   });
   const [selectedImages, setSelectedImages] = useState([]);
 
+  // Events State
+  const [userEvents, setUserEvents] = useState([]);
+  const [loadingEvents, setLoadingEvents] = useState(false);
+  const [isEventCreateOpen, setIsEventCreateOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [eventForm, setEventForm] = useState({
+    title: '',
+    description: '',
+    category: 'Entertainment',
+    subCategory: 'Concerts',
+    eventDate: '',
+    eventTime: '',
+    location: '',
+    address: '',
+    price: 0,
+    images: []
+  });
+
   // Listing Creation Modal State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
@@ -232,10 +262,21 @@ const Dashboard = () => {
     bathrooms: '',
     propertyType: 'House',
     address: '',
+    buildYear: '',
+    totalLandArea: '',
+    houseArea: '',
+    leaseTerm: 'Monthly',
+    depositAmount: '',
+    furnishedStatus: 'Unfurnished',
     year: '',
     mileage: '',
     make: '',
     model: '',
+    fuelType: 'Gasoline',
+    transmission: 'Automatic',
+    carCondition: 'Used',
+    rentalPeriod: 'Per Day',
+    mileageLimit: 'Unlimited',
     brand: '',
     sizes: '',
     colors: '',
@@ -507,6 +548,13 @@ const Dashboard = () => {
         const ratingsData = await ratingsRes.json();
         setRatings(ratingsData);
 
+        // Fetch User Events
+        const eventsRes = await fetch(`/api/events?ownerId=${userData._id}`);
+        const eventsData = await eventsRes.json();
+        if (eventsRes.ok && Array.isArray(eventsData)) {
+          setUserEvents(eventsData);
+        }
+
       } catch (err) {
         console.error('Error fetching dashboard info', err);
         localStorage.removeItem('token');
@@ -518,6 +566,108 @@ const Dashboard = () => {
 
     loadDashboardData();
   }, [navigate]);
+
+  const getSubcategories = (cat) => {
+    switch (cat) {
+      case 'Entertainment': return ['Concerts', 'Shows'];
+      case 'Arts & Culture': return ['Exhibitions', 'Festivals'];
+      case 'Religious': return ['Church Events', 'Prayer Meetings'];
+      case 'Social': return ['Meetups', 'Community Gatherings'];
+      case 'Educational': return ['Workshops', 'Conferences'];
+      case 'Sports': return ['Games', 'Tournaments'];
+      case 'Charity': return ['Fundraisers', 'Volunteer Events'];
+      default: return [];
+    }
+  };
+
+  const fetchUserEvents = async () => {
+    try {
+      if (!user) return;
+      setLoadingEvents(true);
+      const res = await fetch(`/api/events?ownerId=${user._id}`);
+      const data = await res.json();
+      if (res.ok && Array.isArray(data)) {
+        setUserEvents(data);
+      }
+    } catch (err) {
+      console.error('Error loading events:', err);
+    } finally {
+      setLoadingEvents(false);
+    }
+  };
+
+  const handleCreateEvent = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(eventForm)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to create event');
+      alert('Event created successfully!');
+      setIsEventCreateOpen(false);
+      // Reset form
+      setEventForm({
+        title: '',
+        description: '',
+        category: 'Entertainment',
+        subCategory: 'Concerts',
+        eventDate: '',
+        eventTime: '',
+        location: '',
+        address: '',
+        price: 0,
+        images: []
+      });
+      fetchUserEvents();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleUpdateEvent = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`/api/events/${editingEvent._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(eventForm)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to update event');
+      alert('Event updated successfully!');
+      setEditingEvent(null);
+      fetchUserEvents();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleDeleteEvent = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this event?')) return;
+    try {
+      const res = await fetch(`/api/events/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to delete event');
+      alert('Event deleted successfully!');
+      fetchUserEvents();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
 
   const handleToggleOnline = async () => {
     try {
@@ -733,6 +883,12 @@ const Dashboard = () => {
       metadata.propertyType = propertyType || 'House';
       metadata.address = address;
       metadata.offerType = listingForm.offerType || 'Sale';
+      metadata.buildYear = listingForm.buildYear ? Number(listingForm.buildYear) : undefined;
+      metadata.totalLandArea = listingForm.totalLandArea ? Number(listingForm.totalLandArea) : undefined;
+      metadata.houseArea = listingForm.houseArea ? Number(listingForm.houseArea) : undefined;
+      metadata.leaseTerm = listingForm.leaseTerm || undefined;
+      metadata.depositAmount = listingForm.depositAmount ? Number(listingForm.depositAmount) : undefined;
+      metadata.furnishedStatus = listingForm.furnishedStatus || undefined;
     }
     if (type === 'car') {
       metadata.year = year ? Number(year) : undefined;
@@ -740,6 +896,12 @@ const Dashboard = () => {
       metadata.make = make;
       metadata.model = model;
       metadata.offerType = listingForm.offerType || 'Sale';
+      metadata.fuelType = listingForm.fuelType || undefined;
+      metadata.transmission = listingForm.transmission || undefined;
+      metadata.carCondition = listingForm.carCondition || undefined;
+      metadata.rentalPeriod = listingForm.rentalPeriod || undefined;
+      metadata.mileageLimit = listingForm.mileageLimit || undefined;
+      metadata.depositAmount = listingForm.depositAmount ? Number(listingForm.depositAmount) : undefined;
     }
 
     // Category-specific metadata packing
@@ -935,10 +1097,21 @@ const Dashboard = () => {
       bathrooms: listing.bathrooms || listing.metadata?.bathrooms || '',
       propertyType: listing.propertyType || listing.metadata?.propertyType || 'House',
       address: listing.address || listing.metadata?.address || '',
+      buildYear: listing.buildYear || listing.metadata?.buildYear || '',
+      totalLandArea: listing.totalLandArea || listing.metadata?.totalLandArea || '',
+      houseArea: listing.houseArea || listing.metadata?.houseArea || '',
+      leaseTerm: listing.leaseTerm || listing.metadata?.leaseTerm || 'Monthly',
+      depositAmount: listing.depositAmount || listing.metadata?.depositAmount || '',
+      furnishedStatus: listing.furnishedStatus || listing.metadata?.furnishedStatus || 'Unfurnished',
       year: listing.year || listing.metadata?.year || '',
       mileage: listing.mileage || listing.metadata?.mileage || '',
       make: listing.make || listing.metadata?.make || '',
       model: listing.model || listing.metadata?.model || '',
+      fuelType: listing.fuelType || listing.metadata?.fuelType || 'Gasoline',
+      transmission: listing.transmission || listing.metadata?.transmission || 'Automatic',
+      carCondition: listing.carCondition || listing.metadata?.carCondition || 'Used',
+      rentalPeriod: listing.rentalPeriod || listing.metadata?.rentalPeriod || 'Per Day',
+      mileageLimit: listing.mileageLimit || listing.metadata?.mileageLimit || 'Unlimited',
       // Load custom category fields
       brand: listing.brand || listing.metadata?.brand || '',
       sizes: (listing.sizes || listing.metadata?.sizes || []).join(', '),
@@ -1014,6 +1187,12 @@ const Dashboard = () => {
       metadata.propertyType = propertyType || 'House';
       metadata.address = address;
       metadata.offerType = editForm.offerType || 'Sale';
+      metadata.buildYear = editForm.buildYear ? Number(editForm.buildYear) : undefined;
+      metadata.totalLandArea = editForm.totalLandArea ? Number(editForm.totalLandArea) : undefined;
+      metadata.houseArea = editForm.houseArea ? Number(editForm.houseArea) : undefined;
+      metadata.leaseTerm = editForm.leaseTerm || undefined;
+      metadata.depositAmount = editForm.depositAmount ? Number(editForm.depositAmount) : undefined;
+      metadata.furnishedStatus = editForm.furnishedStatus || undefined;
     }
     if (type === 'car') {
       metadata.year = year ? Number(year) : undefined;
@@ -1021,6 +1200,12 @@ const Dashboard = () => {
       metadata.make = make;
       metadata.model = model;
       metadata.offerType = editForm.offerType || 'Sale';
+      metadata.fuelType = editForm.fuelType || undefined;
+      metadata.transmission = editForm.transmission || undefined;
+      metadata.carCondition = editForm.carCondition || undefined;
+      metadata.rentalPeriod = editForm.rentalPeriod || undefined;
+      metadata.mileageLimit = editForm.mileageLimit || undefined;
+      metadata.depositAmount = editForm.depositAmount ? Number(editForm.depositAmount) : undefined;
     }
 
     // Category-specific metadata packing
@@ -1221,14 +1406,28 @@ const Dashboard = () => {
             <span>{getTabIcon('overview')}</span> {getTabLabel('overview')}
           </button>
           
-          <button 
-            onClick={() => setActiveTab('items')} 
-            className={`sidebar-tab-btn ${activeTab === 'items' ? 'active' : ''}`}
-          >
-            <span>{getTabIcon('items')}</span> {getTabLabel('items')}
-          </button>
+          {user?.businessType !== 'event' && (
+            <button 
+              onClick={() => setActiveTab('items')} 
+              className={`sidebar-tab-btn ${activeTab === 'items' ? 'active' : ''}`}
+            >
+              <span>{getTabIcon('items')}</span> {getTabLabel('items')}
+            </button>
+          )}
 
-          {user?.role === 'business' && (
+          {(user?.role === 'individual' || user?.businessType === 'event') && (
+            <button 
+              onClick={() => {
+                setActiveTab('events');
+                fetchUserEvents();
+              }} 
+              className={`sidebar-tab-btn ${activeTab === 'events' ? 'active' : ''}`}
+            >
+              <span>📅</span> Manage Events
+            </button>
+          )}
+
+          {user?.role === 'business' && user?.businessType !== 'event' && (
             <button 
               onClick={() => setActiveTab('store_settings')} 
               className={`sidebar-tab-btn ${activeTab === 'store_settings' ? 'active' : ''}`}
@@ -1237,7 +1436,7 @@ const Dashboard = () => {
             </button>
           )}
 
-          {user?.role === 'business' && (user?.category === 'Law Office' || user?.category === 'Clinic' || user?.category === 'Dental Clinic') && (
+          {user?.role === 'business' && user?.businessType !== 'event' && (user?.category === 'Law Office' || user?.category === 'Clinic' || user?.category === 'Dental Clinic') && (
             <button 
               onClick={() => setActiveTab('manage_attorneys')} 
               className={`sidebar-tab-btn ${activeTab === 'manage_attorneys' ? 'active' : ''}`}
@@ -1246,7 +1445,7 @@ const Dashboard = () => {
             </button>
           )}
 
-          {!isOtherOrgOrIndividual && (
+          {!isOtherOrgOrIndividual && user?.businessType !== 'event' && (
             <button 
               onClick={() => setActiveTab('settings')} 
               className={`sidebar-tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
@@ -1255,7 +1454,7 @@ const Dashboard = () => {
             </button>
           )}
 
-          {!isOtherOrgOrIndividual && (
+          {!isOtherOrgOrIndividual && user?.businessType !== 'event' && (
             <button 
               onClick={() => setActiveTab('reviews')} 
               className={`sidebar-tab-btn ${activeTab === 'reviews' ? 'active' : ''}`}
@@ -1264,7 +1463,7 @@ const Dashboard = () => {
             </button>
           )}
 
-          {!isOtherOrgOrIndividual && (
+          {!isOtherOrgOrIndividual && user?.businessType !== 'event' && (
             <button 
               onClick={() => {
                 setActiveTab('inquiries');
@@ -1809,6 +2008,118 @@ const Dashboard = () => {
                   )}
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* TAB: EVENTS MANAGER */}
+          {activeTab === 'events' && (
+            <div className="tab-pane-view">
+              <section className="dashboard-section glass-panel p-4" style={{ borderRadius: '12px', border: '1px solid var(--border-glass)', background: 'var(--bg-card)', color: 'var(--text-main)' }}>
+                <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                  <div style={{ textAlign: 'left' }}>
+                    <h3 className="fw-bold mb-1" style={{ margin: 0 }}>Manage Events</h3>
+                    <p className="text-secondary mb-0" style={{ fontSize: '0.9rem' }}>Create, edit, or remove your upcoming events shown to customers.</p>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      setEventForm({
+                        title: '',
+                        description: '',
+                        category: 'Entertainment',
+                        subCategory: 'Concerts',
+                        eventDate: '',
+                        eventTime: '',
+                        location: '',
+                        address: '',
+                        price: 0,
+                        images: []
+                      });
+                      setIsEventCreateOpen(true);
+                    }}
+                    className="btn btn-primary fw-semibold"
+                    style={{ background: 'var(--accent-primary)', border: 'none', padding: '10px 20px', borderRadius: '8px' }}
+                  >
+                    ➕ Post New Event
+                  </button>
+                </div>
+
+                {loadingEvents ? (
+                  <div className="text-center py-5">
+                    <div className="spinner-border text-success" role="status" />
+                  </div>
+                ) : userEvents.length === 0 ? (
+                  <div className="text-center py-5 text-muted glass-panel" style={{ borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.01)', padding: '40px' }}>
+                    <p className="mb-0">You haven't posted any events yet. Click "Post New Event" to add your first event.</p>
+                  </div>
+                ) : (
+                  <div className="table-responsive">
+                    <table className="table" style={{ color: 'var(--text-main)', borderColor: 'var(--border-glass)' }}>
+                      <thead>
+                        <tr style={{ color: 'var(--text-secondary)' }}>
+                          <th style={{ background: 'transparent' }}>Title</th>
+                          <th style={{ background: 'transparent' }}>Category</th>
+                          <th style={{ background: 'transparent' }}>Date & Time</th>
+                          <th style={{ background: 'transparent' }}>Location</th>
+                          <th style={{ background: 'transparent' }}>Price</th>
+                          <th className="text-end" style={{ background: 'transparent' }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {userEvents.map(evt => (
+                          <tr key={evt._id} style={{ verticalAlign: 'middle' }}>
+                            <td className="fw-bold" style={{ background: 'transparent', color: 'var(--text-main)' }}>{evt.title}</td>
+                            <td style={{ background: 'transparent' }}>
+                              <span className="badge" style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--accent-secondary)', border: '1px solid var(--border-glass)' }}>
+                                {evt.category}
+                              </span>
+                            </td>
+                            <td style={{ background: 'transparent', color: 'var(--text-secondary)' }}>
+                              {new Date(evt.eventDate).toLocaleDateString()} at {evt.eventTime}
+                              {evt.eventDate && new Date(evt.eventDate) < new Date(Date.now() - 24 * 60 * 60 * 1000) && (
+                                <span className="ms-2 badge" style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)', fontSize: '0.72rem', padding: '3px 8px', borderRadius: '12px' }}>
+                                  Expired (Hidden)
+                                </span>
+                              )}
+                            </td>
+                            <td style={{ background: 'transparent', color: 'var(--text-secondary)' }}>{evt.location}</td>
+                            <td style={{ background: 'transparent', color: 'var(--text-main)' }}>{evt.price === 0 ? 'Free' : `$${evt.price}`}</td>
+                            <td className="text-end" style={{ background: 'transparent' }}>
+                              <button 
+                                onClick={() => {
+                                  setEditingEvent(evt);
+                                  setEventForm({
+                                    title: evt.title,
+                                    description: evt.description,
+                                    category: evt.category,
+                                    subCategory: evt.subCategory || '',
+                                    eventDate: evt.eventDate ? evt.eventDate.substring(0, 10) : '',
+                                    eventTime: evt.eventTime,
+                                    location: evt.location,
+                                    address: evt.address || '',
+                                    price: evt.price,
+                                    images: evt.images || []
+                                  });
+                                }}
+                                className="btn btn-sm btn-outline-info me-2"
+                                style={{ borderRadius: '6px', marginRight: '6px' }}
+                              >
+                                Edit
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteEvent(evt._id)}
+                                className="btn btn-sm btn-outline-danger"
+                                style={{ borderRadius: '6px' }}
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
             </div>
           )}
 
@@ -2404,6 +2715,259 @@ const Dashboard = () => {
                 />
               </div>
 
+              {/* Listing Offer Type selector for Real Estate (Placed BEFORE Price) */}
+              {editForm.type === 'house' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Listing Offer Type *</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setEditForm({ ...editForm, offerType: 'Sale' })}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid ' + (editForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--border-glass)'),
+                          background: editForm.offerType === 'Sale' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
+                          color: editForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>🏷️</span> For Sale (Buy)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditForm({ ...editForm, offerType: 'Rent' })}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid ' + (editForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--border-glass)'),
+                          background: editForm.offerType === 'Rent' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
+                          color: editForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>🔑</span> For Rent
+                      </button>
+                    </div>
+                  </div>
+
+                  {editForm.offerType !== 'Rent' ? (
+                    <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: 0 }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Build Year</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="e.g. 2022"
+                          value={editForm.buildYear || ''}
+                          onChange={(e) => setEditForm({ ...editForm, buildYear: e.target.value })}
+                        />
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Total Land Area (sqm)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="e.g. 500"
+                          value={editForm.totalLandArea || ''}
+                          onChange={(e) => setEditForm({ ...editForm, totalLandArea: e.target.value })}
+                        />
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>House / Built Area (sqm)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="e.g. 350"
+                          value={editForm.houseArea || ''}
+                          onChange={(e) => setEditForm({ ...editForm, houseArea: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: 0 }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Lease Term</label>
+                        <select
+                          className="form-control"
+                          value={editForm.leaseTerm || 'Monthly'}
+                          onChange={(e) => setEditForm({ ...editForm, leaseTerm: e.target.value })}
+                        >
+                          <option value="Monthly">Monthly</option>
+                          <option value="6 Months">6 Months</option>
+                          <option value="Annual">Annual</option>
+                          <option value="Flexible">Flexible</option>
+                        </select>
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Security Deposit ($)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="e.g. 1000"
+                          value={editForm.depositAmount || ''}
+                          onChange={(e) => setEditForm({ ...editForm, depositAmount: e.target.value })}
+                        />
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Furnished Status</label>
+                        <select
+                          className="form-control"
+                          value={editForm.furnishedStatus || 'Unfurnished'}
+                          onChange={(e) => setEditForm({ ...editForm, furnishedStatus: e.target.value })}
+                        >
+                          <option value="Unfurnished">Unfurnished</option>
+                          <option value="Semi-Furnished">Semi-Furnished</option>
+                          <option value="Furnished">Furnished</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Listing Offer Type selector for Automotive (Placed BEFORE Price) */}
+              {editForm.type === 'car' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Listing Offer Type *</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setEditForm({ ...editForm, offerType: 'Sale' })}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid ' + (editForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--border-glass)'),
+                          background: editForm.offerType === 'Sale' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
+                          color: editForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>🏷️</span> For Sale (Buy)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditForm({ ...editForm, offerType: 'Rent' })}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid ' + (editForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--border-glass)'),
+                          background: editForm.offerType === 'Rent' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
+                          color: editForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>🔑</span> For Rent
+                      </button>
+                    </div>
+                  </div>
+
+                  {editForm.offerType !== 'Rent' ? (
+                    <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: 0 }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Fuel Type</label>
+                        <select
+                          className="form-control"
+                          value={editForm.fuelType || 'Gasoline'}
+                          onChange={(e) => setEditForm({ ...editForm, fuelType: e.target.value })}
+                        >
+                          <option value="Gasoline">Gasoline</option>
+                          <option value="Diesel">Diesel</option>
+                          <option value="Electric">Electric</option>
+                          <option value="Hybrid">Hybrid</option>
+                        </select>
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Transmission</label>
+                        <select
+                          className="form-control"
+                          value={editForm.transmission || 'Automatic'}
+                          onChange={(e) => setEditForm({ ...editForm, transmission: e.target.value })}
+                        >
+                          <option value="Automatic">Automatic</option>
+                          <option value="Manual">Manual</option>
+                        </select>
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Condition</label>
+                        <select
+                          className="form-control"
+                          value={editForm.carCondition || 'Used'}
+                          onChange={(e) => setEditForm({ ...editForm, carCondition: e.target.value })}
+                        >
+                          <option value="Brand New">Brand New</option>
+                          <option value="Used">Used</option>
+                          <option value="Certified Pre-Owned">Certified Pre-Owned</option>
+                        </select>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: 0 }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Rental Rate Period</label>
+                        <select
+                          className="form-control"
+                          value={editForm.rentalPeriod || 'Per Day'}
+                          onChange={(e) => setEditForm({ ...editForm, rentalPeriod: e.target.value })}
+                        >
+                          <option value="Per Day">Per Day</option>
+                          <option value="Per Week">Per Week</option>
+                          <option value="Per Month">Per Month</option>
+                        </select>
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Mileage Limit</label>
+                        <select
+                          className="form-control"
+                          value={editForm.mileageLimit || 'Unlimited'}
+                          onChange={(e) => setEditForm({ ...editForm, mileageLimit: e.target.value })}
+                        >
+                          <option value="Unlimited">Unlimited</option>
+                          <option value="100 miles/day">100 miles/day</option>
+                          <option value="200 miles/day">200 miles/day</option>
+                        </select>
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Security Deposit ($)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="e.g. 500"
+                          value={editForm.depositAmount || ''}
+                          onChange={(e) => setEditForm({ ...editForm, depositAmount: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {editForm.type === 'job_opening' ? (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
                   <div className="form-group" style={{ marginBottom: 0 }}>
@@ -2937,51 +3501,6 @@ const Dashboard = () => {
                       required
                     />
                   </div>
-                  <div className="form-group" style={{ marginBottom: '16px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Listing Offer Type *</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                      <button
-                        type="button"
-                        onClick={() => setEditForm({ ...editForm, offerType: 'Sale' })}
-                        style={{
-                          padding: '10px',
-                          borderRadius: '8px',
-                          border: '1px solid ' + (editForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--border-glass)'),
-                          background: editForm.offerType === 'Sale' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
-                          color: editForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '8px',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        <span>🏷️</span> For Sale (Buy)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEditForm({ ...editForm, offerType: 'Rent' })}
-                        style={{
-                          padding: '10px',
-                          borderRadius: '8px',
-                          border: '1px solid ' + (editForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--border-glass)'),
-                          background: editForm.offerType === 'Rent' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
-                          color: editForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '8px',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        <span>🔑</span> For Rent
-                      </button>
-                    </div>
-                  </div>
                 </>
               )}
 
@@ -3024,51 +3543,6 @@ const Dashboard = () => {
                         value={editForm.mileage}
                         onChange={(e) => setEditForm({ ...editForm, mileage: e.target.value })}
                       />
-                    </div>
-                  </div>
-                  <div className="form-group" style={{ marginBottom: '16px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Listing Offer Type *</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                      <button
-                        type="button"
-                        onClick={() => setEditForm({ ...editForm, offerType: 'Sale' })}
-                        style={{
-                          padding: '10px',
-                          borderRadius: '8px',
-                          border: '1px solid ' + (editForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--border-glass)'),
-                          background: editForm.offerType === 'Sale' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
-                          color: editForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '8px',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        <span>🏷️</span> For Sale
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEditForm({ ...editForm, offerType: 'Rent' })}
-                        style={{
-                          padding: '10px',
-                          borderRadius: '8px',
-                          border: '1px solid ' + (editForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--border-glass)'),
-                          background: editForm.offerType === 'Rent' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
-                          color: editForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '8px',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        <span>🔑</span> For Rent
-                      </button>
                     </div>
                   </div>
                 </>
@@ -3256,14 +3730,269 @@ const Dashboard = () => {
                       setListingForm(prev => ({ 
                         ...prev, 
                         type: newType,
-                        category: newType === 'job_opening' ? 'Other' : '' 
+                        category: newType === 'job_opening' ? 'Other' : (newType === 'car' ? 'Automotive' : newType === 'house' ? 'Real Estate' : '') 
                       }));
                     }}
                     required
                   >
                     <option value="personal_item">Personal Item (Sell)</option>
+                    <option value="car">Automotive Vehicle Listing (Car Sale / Rent)</option>
+                    <option value="house">Real Estate House Listing (Sale / Rent)</option>
                     <option value="job_opening">Job Opening (Hire someone)</option>
                   </select>
+                </div>
+              )}
+
+              {/* Listing Offer Type selector for Real Estate (Placed BEFORE Price) */}
+              {listingForm.type === 'house' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Listing Offer Type *</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setListingForm({ ...listingForm, offerType: 'Sale' })}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid ' + (listingForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--border-glass)'),
+                          background: listingForm.offerType === 'Sale' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
+                          color: listingForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>🏷️</span> For Sale (Buy)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setListingForm({ ...listingForm, offerType: 'Rent' })}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid ' + (listingForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--border-glass)'),
+                          background: listingForm.offerType === 'Rent' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
+                          color: listingForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>🔑</span> For Rent
+                      </button>
+                    </div>
+                  </div>
+
+                  {listingForm.offerType !== 'Rent' ? (
+                    <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: 0 }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Build Year</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="e.g. 2022"
+                          value={listingForm.buildYear || ''}
+                          onChange={(e) => setListingForm({ ...listingForm, buildYear: e.target.value })}
+                        />
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Total Land Area (sqm)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="e.g. 500"
+                          value={listingForm.totalLandArea || ''}
+                          onChange={(e) => setListingForm({ ...listingForm, totalLandArea: e.target.value })}
+                        />
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>House / Built Area (sqm)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="e.g. 350"
+                          value={listingForm.houseArea || ''}
+                          onChange={(e) => setListingForm({ ...listingForm, houseArea: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: 0 }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Lease Term</label>
+                        <select
+                          className="form-control"
+                          value={listingForm.leaseTerm || 'Monthly'}
+                          onChange={(e) => setListingForm({ ...listingForm, leaseTerm: e.target.value })}
+                        >
+                          <option value="Monthly">Monthly</option>
+                          <option value="6 Months">6 Months</option>
+                          <option value="Annual">Annual</option>
+                          <option value="Flexible">Flexible</option>
+                        </select>
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Security Deposit ($)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="e.g. 1000"
+                          value={listingForm.depositAmount || ''}
+                          onChange={(e) => setListingForm({ ...listingForm, depositAmount: e.target.value })}
+                        />
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Furnished Status</label>
+                        <select
+                          className="form-control"
+                          value={listingForm.furnishedStatus || 'Unfurnished'}
+                          onChange={(e) => setListingForm({ ...listingForm, furnishedStatus: e.target.value })}
+                        >
+                          <option value="Unfurnished">Unfurnished</option>
+                          <option value="Semi-Furnished">Semi-Furnished</option>
+                          <option value="Furnished">Furnished</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Listing Offer Type selector for Automotive (Placed BEFORE Price) */}
+              {listingForm.type === 'car' && (
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Listing Offer Type *</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setListingForm({ ...listingForm, offerType: 'Sale' })}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid ' + (listingForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--border-glass)'),
+                          background: listingForm.offerType === 'Sale' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
+                          color: listingForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>🏷️</span> For Sale (Buy)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setListingForm({ ...listingForm, offerType: 'Rent' })}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: '1px solid ' + (listingForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--border-glass)'),
+                          background: listingForm.offerType === 'Rent' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
+                          color: listingForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>🔑</span> For Rent
+                      </button>
+                    </div>
+                  </div>
+
+                  {listingForm.offerType !== 'Rent' ? (
+                    <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: 0 }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Fuel Type</label>
+                        <select
+                          className="form-control"
+                          value={listingForm.fuelType || 'Gasoline'}
+                          onChange={(e) => setListingForm({ ...listingForm, fuelType: e.target.value })}
+                        >
+                          <option value="Gasoline">Gasoline</option>
+                          <option value="Diesel">Diesel</option>
+                          <option value="Electric">Electric</option>
+                          <option value="Hybrid">Hybrid</option>
+                        </select>
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Transmission</label>
+                        <select
+                          className="form-control"
+                          value={listingForm.transmission || 'Automatic'}
+                          onChange={(e) => setListingForm({ ...listingForm, transmission: e.target.value })}
+                        >
+                          <option value="Automatic">Automatic</option>
+                          <option value="Manual">Manual</option>
+                        </select>
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Condition</label>
+                        <select
+                          className="form-control"
+                          value={listingForm.carCondition || 'Used'}
+                          onChange={(e) => setListingForm({ ...listingForm, carCondition: e.target.value })}
+                        >
+                          <option value="Brand New">Brand New</option>
+                          <option value="Used">Used</option>
+                          <option value="Certified Pre-Owned">Certified Pre-Owned</option>
+                        </select>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: 0 }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Rental Rate Period</label>
+                        <select
+                          className="form-control"
+                          value={listingForm.rentalPeriod || 'Per Day'}
+                          onChange={(e) => setListingForm({ ...listingForm, rentalPeriod: e.target.value })}
+                        >
+                          <option value="Per Day">Per Day</option>
+                          <option value="Per Week">Per Week</option>
+                          <option value="Per Month">Per Month</option>
+                        </select>
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Mileage Limit</label>
+                        <select
+                          className="form-control"
+                          value={listingForm.mileageLimit || 'Unlimited'}
+                          onChange={(e) => setListingForm({ ...listingForm, mileageLimit: e.target.value })}
+                        >
+                          <option value="Unlimited">Unlimited</option>
+                          <option value="100 miles/day">100 miles/day</option>
+                          <option value="200 miles/day">200 miles/day</option>
+                        </select>
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label>Security Deposit ($)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="e.g. 500"
+                          value={listingForm.depositAmount || ''}
+                          onChange={(e) => setListingForm({ ...listingForm, depositAmount: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -3806,51 +4535,6 @@ const Dashboard = () => {
                       required
                     />
                   </div>
-                  <div className="form-group" style={{ marginBottom: '16px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Listing Offer Type *</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                      <button
-                        type="button"
-                        onClick={() => setListingForm({ ...listingForm, offerType: 'Sale' })}
-                        style={{
-                          padding: '10px',
-                          borderRadius: '8px',
-                          border: '1px solid ' + (listingForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--border-glass)'),
-                          background: listingForm.offerType === 'Sale' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
-                          color: listingForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '8px',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        <span>🏷️</span> For Sale (Buy)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setListingForm({ ...listingForm, offerType: 'Rent' })}
-                        style={{
-                          padding: '10px',
-                          borderRadius: '8px',
-                          border: '1px solid ' + (listingForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--border-glass)'),
-                          background: listingForm.offerType === 'Rent' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
-                          color: listingForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '8px',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        <span>🔑</span> For Rent
-                      </button>
-                    </div>
-                  </div>
                 </>
               )}
 
@@ -3897,51 +4581,6 @@ const Dashboard = () => {
                         value={listingForm.mileage}
                         onChange={(e) => setListingForm({ ...listingForm, mileage: e.target.value })}
                       />
-                    </div>
-                  </div>
-                  <div className="form-group" style={{ marginBottom: '16px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Listing Offer Type *</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                      <button
-                        type="button"
-                        onClick={() => setListingForm({ ...listingForm, offerType: 'Sale' })}
-                        style={{
-                          padding: '10px',
-                          borderRadius: '8px',
-                          border: '1px solid ' + (listingForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--border-glass)'),
-                          background: listingForm.offerType === 'Sale' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
-                          color: listingForm.offerType === 'Sale' ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '8px',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        <span>🏷️</span> For Sale
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setListingForm({ ...listingForm, offerType: 'Rent' })}
-                        style={{
-                          padding: '10px',
-                          borderRadius: '8px',
-                          border: '1px solid ' + (listingForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--border-glass)'),
-                          background: listingForm.offerType === 'Rent' ? 'rgba(var(--accent-primary-rgb), 0.1)' : 'rgba(255,255,255,0.02)',
-                          color: listingForm.offerType === 'Rent' ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '8px',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        <span>🔑</span> For Rent
-                      </button>
                     </div>
                   </div>
                 </>
@@ -3992,6 +4631,247 @@ const Dashboard = () => {
               <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
                 <button type="submit" className="btn btn-primary flex-grow-1">{t('btn_publish_listing') || '+ Publish Listing'}</button>
                 <button type="button" onClick={() => setIsCreateModalOpen(false)} className="btn btn-secondary">{t('btn_cancel') || 'Cancel'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* CREATE/EDIT EVENT MODAL */}
+      {(isEventCreateOpen || editingEvent) && (
+        <div className="modal-overlay" style={{ zIndex: 1200, position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div className="glass-panel modal-content" style={{ maxWidth: '650px', width: '95%', padding: '30px', position: 'relative', background: 'var(--bg-card)', border: '1px solid var(--border-glass)', borderRadius: '16px' }}>
+            <button 
+              onClick={() => {
+                setIsEventCreateOpen(false);
+                setEditingEvent(null);
+              }} 
+              className="btn-close-modal" 
+              style={{ position: 'absolute', top: '16px', right: '20px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '1.5rem', cursor: 'pointer' }}
+            >
+              &times;
+            </button>
+            <h3 className="fw-bold mb-4" style={{ color: 'var(--text-main)', textAlign: 'left' }}>
+              {editingEvent ? 'Edit Event Details' : 'Post a New Event'}
+            </h3>
+            
+            <form onSubmit={editingEvent ? handleUpdateEvent : handleCreateEvent} style={{ maxHeight: '75vh', overflowY: 'auto', paddingRight: '6px', textAlign: 'left' }}>
+              <div className="mb-3">
+                <label className="form-label fw-semibold text-secondary" style={{ fontSize: '0.85rem' }}>Event Title *</label>
+                <input 
+                  type="text" 
+                  required
+                  className="form-control"
+                  style={{ backgroundColor: 'transparent', color: 'var(--text-main)', borderColor: 'rgba(255,255,255,0.15)' }}
+                  value={eventForm.title}
+                  onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                  placeholder="e.g. Grand Concert 2026"
+                />
+              </div>
+
+              <div className="row g-3 mb-3">
+                <div className="col-sm-6">
+                  <label className="form-label fw-semibold text-secondary" style={{ fontSize: '0.85rem' }}>Category *</label>
+                  <select 
+                    className="form-select"
+                    style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', borderColor: 'rgba(255,255,255,0.15)' }}
+                    value={eventForm.category}
+                    onChange={(e) => {
+                      const cat = e.target.value;
+                      const subs = getSubcategories(cat);
+                      setEventForm({ ...eventForm, category: cat, subCategory: subs[0] || '' });
+                    }}
+                  >
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Arts & Culture">Arts & Culture</option>
+                    <option value="Religious">Religious</option>
+                    <option value="Social">Social</option>
+                    <option value="Educational">Educational</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Charity">Charity</option>
+                  </select>
+                </div>
+
+                <div className="col-sm-6">
+                  <label className="form-label fw-semibold text-secondary" style={{ fontSize: '0.85rem' }}>Subcategory</label>
+                  <select 
+                    className="form-select"
+                    style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', borderColor: 'rgba(255,255,255,0.15)' }}
+                    value={eventForm.subCategory}
+                    onChange={(e) => setEventForm({ ...eventForm, subCategory: e.target.value })}
+                  >
+                    {getSubcategories(eventForm.category).map(sub => (
+                      <option key={sub} value={sub}>{sub}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="row g-3 mb-3">
+                <div className="col-sm-6">
+                  <label className="form-label fw-semibold text-secondary" style={{ fontSize: '0.85rem' }}>Event Date *</label>
+                  <input 
+                    type="date" 
+                    required
+                    className="form-control"
+                    style={{ backgroundColor: 'transparent', color: 'var(--text-main)', borderColor: 'rgba(255,255,255,0.15)' }}
+                    value={eventForm.eventDate}
+                    onChange={(e) => setEventForm({ ...eventForm, eventDate: e.target.value })}
+                  />
+                </div>
+
+                <div className="col-sm-6">
+                  <label className="form-label fw-semibold text-secondary" style={{ fontSize: '0.85rem' }}>Event Time *</label>
+                  <input 
+                    type="text" 
+                    required
+                    className="form-control"
+                    style={{ backgroundColor: 'transparent', color: 'var(--text-main)', borderColor: 'rgba(255,255,255,0.15)' }}
+                    value={eventForm.eventTime}
+                    onChange={(e) => setEventForm({ ...eventForm, eventTime: e.target.value })}
+                    placeholder="e.g. 06:00 PM - 10:00 PM"
+                  />
+                </div>
+              </div>
+
+              <div className="row g-3 mb-3">
+                <div className="col-sm-6">
+                  <label className="form-label fw-semibold text-secondary" style={{ fontSize: '0.85rem' }}>City / Area Location *</label>
+                  <input 
+                    type="text" 
+                    required
+                    className="form-control"
+                    style={{ backgroundColor: 'transparent', color: 'var(--text-main)', borderColor: 'rgba(255,255,255,0.15)' }}
+                    value={eventForm.location}
+                    onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+                    placeholder="e.g. Addis Ababa"
+                  />
+                </div>
+
+                <div className="col-sm-6">
+                  <label className="form-label fw-semibold text-secondary" style={{ fontSize: '0.85rem' }}>Price (leave 0 if free)</label>
+                  <input 
+                    type="number" 
+                    className="form-control"
+                    style={{ backgroundColor: 'transparent', color: 'var(--text-main)', borderColor: 'rgba(255,255,255,0.15)' }}
+                    value={eventForm.price}
+                    onChange={(e) => setEventForm({ ...eventForm, price: e.target.value })}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label fw-semibold text-secondary" style={{ fontSize: '0.85rem' }}>Venue Address details</label>
+                <input 
+                  type="text" 
+                  className="form-control"
+                  style={{ backgroundColor: 'transparent', color: 'var(--text-main)', borderColor: 'rgba(255,255,255,0.15)' }}
+                  value={eventForm.address}
+                  onChange={(e) => setEventForm({ ...eventForm, address: e.target.value })}
+                  placeholder="e.g. Skylight Hotel, Bole"
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label fw-semibold text-secondary" style={{ fontSize: '0.85rem' }}>Event Image</label>
+                <input 
+                  type="file" 
+                  className="form-control mb-2"
+                  style={{ backgroundColor: 'transparent', color: 'var(--text-main)', borderColor: 'rgba(255,255,255,0.15)' }}
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setEventForm(prev => ({ ...prev, images: [reader.result] }));
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '8px 0' }}>
+                  <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.1)' }}></div>
+                  <span style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase' }}>or paste URL</span>
+                  <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.1)' }}></div>
+                </div>
+
+                <input 
+                  type="text" 
+                  className="form-control"
+                  style={{ backgroundColor: 'transparent', color: 'var(--text-main)', borderColor: 'rgba(255,255,255,0.15)' }}
+                  value={eventForm.images[0] || ''}
+                  onChange={(e) => setEventForm({ ...eventForm, images: e.target.value ? [e.target.value] : [] })}
+                  placeholder="Paste image link e.g. https://images.unsplash.com/..."
+                />
+
+                {eventForm.images[0] && (
+                  <div className="mt-3" style={{ position: 'relative', width: '150px', height: '100px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.15)' }}>
+                    <img 
+                      src={eventForm.images[0]} 
+                      alt="Event Preview" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setEventForm(prev => ({ ...prev, images: [] }))}
+                      style={{
+                        position: 'absolute',
+                        top: '4px',
+                        right: '4px',
+                        background: 'rgba(0,0,0,0.7)',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: '24px',
+                        height: '24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        lineHeight: 1
+                      }}
+                    >
+                      &times;
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="mb-4">
+                <label className="form-label fw-semibold text-secondary" style={{ fontSize: '0.85rem' }}>Description *</label>
+                <textarea 
+                  required
+                  rows={4}
+                  className="form-control"
+                  style={{ backgroundColor: 'transparent', color: 'var(--text-main)', borderColor: 'rgba(255,255,255,0.15)' }}
+                  value={eventForm.description}
+                  onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                  placeholder="Describe your event..."
+                />
+              </div>
+
+              <div className="d-flex justify-content-end gap-2 pt-3 border-top">
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setIsEventCreateOpen(false);
+                    setEditingEvent(null);
+                  }} 
+                  className="btn btn-secondary"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn btn-primary"
+                  style={{ background: 'var(--accent-primary)', border: 'none' }}
+                >
+                  {editingEvent ? 'Save Changes' : 'Post Event'}
+                </button>
               </div>
             </form>
           </div>

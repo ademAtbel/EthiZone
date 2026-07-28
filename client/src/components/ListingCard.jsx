@@ -524,9 +524,16 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                       <div className="metadata-detailed-list" style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.88rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-glass)', padding: '12px', borderRadius: 'var(--radius-sm)', marginBottom: '20px' }}>
                         {type === 'house' && (
                           <>
+                            {metadata?.offerType && <span>🏷️ Listing Type: <strong>For {metadata.offerType}</strong></span>}
                             {metadata?.propertyType && <span>🏠 {t('property')}: <strong>{metadata.propertyType}</strong></span>}
                             {metadata?.bedrooms && <span>🛏️ {t('bedrooms')}: <strong>{metadata.bedrooms}</strong></span>}
                             {metadata?.bathrooms && <span>🛁 {t('bathrooms')}: <strong>{metadata.bathrooms}</strong></span>}
+                            {metadata?.buildYear && <span>🏗️ Build Year: <strong>{metadata.buildYear}</strong></span>}
+                            {metadata?.totalLandArea && <span>📐 Total Land Area: <strong>{metadata.totalLandArea} sqm</strong></span>}
+                            {metadata?.houseArea && <span>🏡 Built-up House Area: <strong>{metadata.houseArea} sqm</strong></span>}
+                            {metadata?.leaseTerm && <span>📅 Lease Term: <strong>{metadata.leaseTerm}</strong></span>}
+                            {metadata?.depositAmount && <span>💵 Security Deposit: <strong>${metadata.depositAmount}</strong></span>}
+                            {metadata?.furnishedStatus && <span>🛋️ Furnished: <strong>{metadata.furnishedStatus}</strong></span>}
                             {(metadata?.address || ownerId?.address) && (
                               <span>📍 {t('address_label') || 'Address'}: <strong>{metadata?.address || ownerId?.address}</strong></span>
                             )}
@@ -534,9 +541,16 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                         )}
                         {type === 'car' && metadata && (
                           <>
-                            {metadata.year && <span>📅 {t('model_year')}: <strong>{metadata.year}</strong></span>}
-                            {metadata.make && <span>🏷️ {t('brand')}: <strong>{metadata.make} {metadata.model}</strong></span>}
-                            {metadata.mileage !== undefined && <span>🛣️ {t('mileage')}: <strong>{metadata.mileage.toLocaleString()} miles</strong></span>}
+                            {metadata.offerType && <span>🏷️ Listing Offer Type: <strong>For {metadata.offerType}</strong></span>}
+                            {metadata.year && <span>📅 {t('model_year') || 'Year'}: <strong>{metadata.year}</strong></span>}
+                            {metadata.make && <span>🚗 {t('brand') || 'Make & Model'}: <strong>{metadata.make} {metadata.model}</strong></span>}
+                            {metadata.mileage !== undefined && <span>🛣️ {t('mileage') || 'Mileage'}: <strong>{metadata.mileage.toLocaleString()} mi</strong></span>}
+                            {metadata.fuelType && <span>⛽ Fuel Type: <strong>{metadata.fuelType}</strong></span>}
+                            {metadata.transmission && <span>⚙️ Transmission: <strong>{metadata.transmission}</strong></span>}
+                            {metadata.carCondition && <span>✨ Condition: <strong>{metadata.carCondition}</strong></span>}
+                            {metadata.rentalPeriod && <span>⏱️ Rental Period: <strong>{metadata.rentalPeriod}</strong></span>}
+                            {metadata.mileageLimit && <span>🛑 Mileage Limit: <strong>{metadata.mileageLimit}</strong></span>}
+                            {metadata.depositAmount && <span>💵 Security Deposit: <strong>${metadata.depositAmount}</strong></span>}
                           </>
                         )}
                         {type === 'handyman_skill' && metadata?.handymanRates && (

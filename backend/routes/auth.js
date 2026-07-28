@@ -12,7 +12,7 @@ const { validateEmail, validatePhone } = require('../utils/validation');
 // REGISTER USER
 router.post('/register', async (req, res) => {
   try {
-    const { username, email, password, phone, role, businessType, category, storeName, description, address } = req.body;
+    const { username, email, password, phone, role, businessType, category, subCategory, storeName, description, address } = req.body;
 
     // Validate email
     const emailCheck = validateEmail(email);
@@ -45,6 +45,7 @@ router.post('/register', async (req, res) => {
       role,
       businessType: role === 'business' ? businessType : undefined,
       category: role === 'business' ? category : undefined,
+      subCategory: role === 'business' ? subCategory : undefined,
       storeName: role === 'business' ? (storeName || username) : undefined,
       description: (role === 'business' || role === 'handyman') ? description : undefined,
       address: role === 'business' ? address : undefined,
@@ -70,6 +71,7 @@ router.post('/register', async (req, res) => {
         role: user.role,
         businessType: user.businessType,
         category: user.category,
+        subCategory: user.subCategory,
         storeName: user.storeName,
         description: user.description,
         address: user.address,
