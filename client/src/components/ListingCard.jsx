@@ -380,40 +380,45 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
           </div>
         </div>
 
-        <div className="card-actions">
+        <div className="card-actions" style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', marginTop: 'auto' }}>
           {/* Show public storefront link if applicable */}
           {showStoreLink && ownerId?._id && (ownerId.role === 'business' || ownerId.role === 'store') && (
             <Link 
               to={`/store/${(ownerId.storeName || ownerName || '').toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')}`} 
-              className="btn btn-secondary store-nav-btn flex-grow-1"
+              className="btn btn-secondary store-nav-btn"
+              style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
               onClick={(e) => e.stopPropagation()}
             >
               {t('visit_store')}
             </Link>
           )}
 
-          {isInteractive ? (
-            <>
-              <a 
-                href={`tel:${ownerPhone}`} 
-                className="btn btn-success flex-grow-1 action-btn d-flex align-items-center justify-content-center gap-2"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Phone size={16} /> {t('call')}
-              </a>
-              <a 
-                href={`sms:${ownerPhone}?body=${encodeURIComponent(smsMessage)}`} 
-                className="btn btn-primary flex-grow-1 action-btn d-flex align-items-center justify-content-center gap-2"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <MessageCircle size={16} /> {t('sms')}
-              </a>
-            </>
-          ) : (
-            <button className="btn btn-secondary flex-grow-1 action-btn disabled" disabled onClick={(e) => e.stopPropagation()}>
-              Unavailable
-            </button>
-          )}
+          <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+            {isInteractive ? (
+              <>
+                <a 
+                  href={`tel:${ownerPhone}`} 
+                  className="btn btn-success flex-grow-1 action-btn d-flex align-items-center justify-content-center gap-2"
+                  style={{ width: '50%' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Phone size={16} /> {t('call')}
+                </a>
+                <a 
+                  href={`sms:${ownerPhone}?body=${encodeURIComponent(smsMessage)}`} 
+                  className="btn btn-primary flex-grow-1 action-btn d-flex align-items-center justify-content-center gap-2"
+                  style={{ width: '50%' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MessageCircle size={16} /> {t('sms')}
+                </a>
+              </>
+            ) : (
+              <button className="btn btn-secondary flex-grow-1 action-btn disabled" disabled style={{ width: '100%' }} onClick={(e) => e.stopPropagation()}>
+                Unavailable
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
