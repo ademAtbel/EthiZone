@@ -7,12 +7,13 @@ const { sendOtpEmail } = require('../utils/email');
 const { validateEmail, validatePhone } = require('../utils/validation');
 
 // POST: GENERATE AND SEND VERIFICATION CODE
+// POST: GENERATE AND SEND VERIFICATION CODE
 router.post('/send-code', async (req, res) => {
   try {
-    const { email, targetId } = req.body;
+    const { email, targetId, listingId } = req.body;
 
-    if (!email || !targetId) {
-      return res.status(400).json({ message: 'Email and target ID are required.' });
+    if (!email || !targetId || !listingId) {
+      return res.status(400).json({ message: 'Email, target ID and product/service ID are required.' });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
@@ -29,10 +30,10 @@ router.post('/send-code', async (req, res) => {
       return res.status(404).json({ message: 'Target user/store not found.' });
     }
 
-    // Check if this email has already rated this target
-    const existingRating = await Rating.findOne({ targetId, email: normalizedEmail });
+    // Check if this email has already rated this specific listing/product/service
+    const existingRating = await Rating.findOne({ listingId, email: normalizedEmail });
     if (existingRating) {
-      return res.status(400).json({ message: 'This email address has already submitted a rating for this provider.' });
+      return res.status(400).json({ message: 'You have already submitted a reference rating for this product/service.' });
     }
 
     // Generate 4-digit code
@@ -40,13 +41,13 @@ router.post('/send-code', async (req, res) => {
 
     // Save or update verification document (reset verified status)
     await RatingVerification.findOneAndUpdate(
-      { email: normalizedEmail, targetId },
-      { code, verified: false, createdAt: new Date() },
+      { email: normalizedEmail, listingId },
+      { targetId, code, verified: false, createdAt: new Date() },
       { upsert: true, new: true }
     );
 
-    // Send the email
-    await sendOtpEmail(normalizedEmail, code);
+    // Send the email immediately in the background
+    sendOtpEmail(normalizedEmail, code).catch(err => console.error('Background email error:', err.message));
 
     res.json({ success: true, message: 'Verification code has been sent to your email.' });
   } catch (error) {
@@ -57,16 +58,16 @@ router.post('/send-code', async (req, res) => {
 // POST: VERIFY CODE
 router.post('/verify-code', async (req, res) => {
   try {
-    const { email, targetId, code } = req.body;
+    const { email, targetId, listingId, code } = req.body;
 
-    if (!email || !targetId || !code) {
-      return res.status(400).json({ message: 'Email, target ID and verification code are required.' });
+    if (!email || !targetId || !listingId || !code) {
+      return res.status(400).json({ message: 'Email, target ID, product/service ID and verification code are required.' });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Find verification record
-    const record = await RatingVerification.findOne({ email: normalizedEmail, targetId });
+    // Find verification record for this specific product/service
+    const record = await RatingVerification.findOne({ email: normalizedEmail, listingId });
     if (!record || record.code !== code.trim()) {
       return res.status(400).json({ message: 'Invalid or expired verification code.' });
     }
@@ -84,9 +85,9 @@ router.post('/verify-code', async (req, res) => {
 // POST A VERIFIED RATING (GUEST-FRIENDLY, REQUIRES VALIDATED NAME, EMAIL, AND PHONE)
 router.post('/', async (req, res) => {
   try {
-    const { targetId, rating, comment, name, email, phone } = req.body;
+    const { targetId, listingId, rating, comment, name, email, phone } = req.body;
 
-    if (!targetId || !rating || !comment || !name || !email || !phone) {
+    if (!targetId || !listingId || !rating || !comment || !name || !email || !phone) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -115,19 +116,20 @@ router.post('/', async (req, res) => {
 
     // Enforce backend-level OTP verification check
     const normalizedEmail = email.toLowerCase().trim();
-    const verification = await RatingVerification.findOne({ email: normalizedEmail, targetId, verified: true });
+    const verification = await RatingVerification.findOne({ email: normalizedEmail, listingId, verified: true });
     if (!verification) {
       return res.status(400).json({ message: 'Email address verification required before posting review.' });
     }
 
-    // Check if this email address has already rated this provider/store
-    const existingRating = await Rating.findOne({ targetId, email: normalizedEmail });
+    // Check if this email address has already rated this specific product/service
+    const existingRating = await Rating.findOne({ listingId, email: normalizedEmail });
     if (existingRating) {
-      return res.status(400).json({ message: 'This email address has already submitted a rating for this provider.' });
+      return res.status(400).json({ message: 'You have already submitted a reference rating for this product/service.' });
     }
 
     const newRating = new Rating({
       targetId,
+      listingId,
       rating,
       comment,
       name,

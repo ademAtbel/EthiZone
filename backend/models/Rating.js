@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const RatingSchema = new mongoose.Schema({
   targetId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  listingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Listing', required: true },
   rating: { type: Number, required: true, min: 1, max: 5 },
   comment: { type: String, required: true },
   name: { type: String, required: true },

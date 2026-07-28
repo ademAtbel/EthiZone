@@ -8,6 +8,7 @@ const ElectronicsListing = Listing.discriminator('ElectronicsListing', new mongo
   specifications: { type: String },
   warranty: { type: String },
   condition: { type: String },
+  electronicsSubcategory: { type: String },
   stock: { type: Number, default: 0 }
 }));
 

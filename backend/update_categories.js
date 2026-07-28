@@ -27,7 +27,7 @@ const runSeeding = async () => {
       // SERVICES
       { name: 'Law Office', type: 'service', description: 'Legal advice, consultation and representation' },
       { name: 'Tax Office', type: 'service', description: 'Tax filing, accounting and financial auditing preparation' },
-      { name: 'Dental Clinic', type: 'service', description: 'Teeth cleaning, surgeries and oral healthcare' },
+      { name: 'Clinic', type: 'service', description: 'General checkups, laboratory, pharmacy and dental healthcare' },
       { name: 'Consulting Firm', type: 'service', description: 'Corporate strategies, analysis and advice' },
       { name: 'Cleaning Agency', type: 'service', description: 'Residential, office cleaning and sanitization services' },
       { name: 'Beauty Salon', type: 'service', description: 'Hair styling, makeups, nails and spa care' },

@@ -6,6 +6,7 @@ const GroceryListing = Listing.discriminator('GroceryListing', new mongoose.Sche
   expirationDate: { type: Date },
   brand: { type: String },
   weight: { type: String },
+  grocerySubcategory: { type: String },
   stock: { type: Number, default: 0 }
 }));
 

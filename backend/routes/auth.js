@@ -163,8 +163,8 @@ router.post('/request-otp', async (req, res) => {
     user.otpExpires = new Date(Date.now() + 60 * 1000); // 60 seconds
     await user.save();
 
-    // Send the OTP email
-    await sendOtpEmail(user.email, otp);
+    // Send the OTP email immediately in the background
+    sendOtpEmail(user.email, otp).catch(err => console.error('Background email error:', err.message));
 
     res.json({ success: true, message: 'One-Time Login Code has been sent to your email.' });
   } catch (error) {
@@ -283,7 +283,7 @@ router.patch('/update-navbar', verifyToken, async (req, res) => {
 // UPDATE STORE PROFILE DETAILS (STORES/SERVICES ONLY)
 router.patch('/update-profile', verifyToken, async (req, res) => {
   try {
-    const { storeName, description, shopStory, galleryPhotos, address, socialLinks, storeLogo, storeImage, businessType, category, workingDays, businessHours } = req.body;
+    const { storeName, description, shopStory, galleryPhotos, address, socialLinks, storeLogo, storeImage, businessType, category, workingDays, businessHours, attorneys } = req.body;
 
     const user = await User.findById(req.user.id);
     if (!user || user.role !== 'business') {
@@ -306,6 +306,13 @@ router.patch('/update-profile', verifyToken, async (req, res) => {
     if (category) user.category = category;
     if (workingDays !== undefined) user.workingDays = workingDays;
     if (businessHours !== undefined) user.businessHours = businessHours;
+    
+    if (attorneys !== undefined) {
+      if (!Array.isArray(attorneys)) {
+        return res.status(400).json({ message: 'Attorneys must be an array' });
+      }
+      user.attorneys = attorneys;
+    }
     
     if (socialLinks !== undefined) {
       if (!Array.isArray(socialLinks)) {
@@ -345,7 +352,8 @@ router.patch('/update-profile', verifyToken, async (req, res) => {
         workingDays: user.workingDays || 'Monday - Saturday',
         businessHours: user.businessHours || '09:00 AM - 07:00 PM',
         isOnline: user.isOnline,
-        verificationBadge: user.verificationBadge
+        verificationBadge: user.verificationBadge,
+        attorneys: user.attorneys || []
       }
     });
   } catch (error) {

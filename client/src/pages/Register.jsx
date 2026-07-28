@@ -44,7 +44,7 @@ const Register = () => {
               { name: 'Jewelry & Accessories' }, { name: 'Gift & Toy Shop' }, { name: 'Other' }
             ],
             service: [
-              { name: 'Law Office' }, { name: 'Tax Office' }, { name: 'Dental Clinic' },
+              { name: 'Law Office' }, { name: 'Tax Office' }, { name: 'Clinic' },
               { name: 'Consulting Firm' }, { name: 'Cleaning Agency' }, { name: 'Beauty Salon' }
             ],
             organization: [
@@ -76,7 +76,7 @@ const Register = () => {
             { name: 'Jewelry & Accessories' }, { name: 'Gift & Toy Shop' }, { name: 'Other' }
           ],
           service: [
-            { name: 'Law Office' }, { name: 'Tax Office' }, { name: 'Dental Clinic' },
+            { name: 'Law Office' }, { name: 'Tax Office' }, { name: 'Clinic' },
             { name: 'Consulting Firm' }, { name: 'Cleaning Agency' }, { name: 'Beauty Salon' }
           ],
           organization: [

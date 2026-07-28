@@ -5,6 +5,7 @@ const Listing = require('./Listing');
 const LiquorListing = Listing.discriminator('LiquorListing', new mongoose.Schema({
   volume: { type: String },
   alcoholPercentage: { type: Number },
+  liquorSubcategory: { type: String },
   stock: { type: Number, default: 0 }
 }));
 

@@ -72,6 +72,7 @@ router.post('/', verifyToken, async (req, res) => {
         modelProps.expirationDate = metadata.expirationDate;
         modelProps.brand = metadata.brand;
         modelProps.weight = metadata.weight;
+        modelProps.grocerySubcategory = metadata.grocerySubcategory;
         modelProps.stock = metadata.stock;
       }
     } else if (itemCategory === 'Liquor Store') {
@@ -79,6 +80,7 @@ router.post('/', verifyToken, async (req, res) => {
       if (metadata) {
         modelProps.volume = metadata.volume;
         modelProps.alcoholPercentage = metadata.alcoholPercentage;
+        modelProps.liquorSubcategory = metadata.liquorSubcategory;
         modelProps.stock = metadata.stock;
       }
     } else if (itemCategory === 'Electronics Shop') {
@@ -89,6 +91,7 @@ router.post('/', verifyToken, async (req, res) => {
         modelProps.specifications = metadata.specifications;
         modelProps.warranty = metadata.warranty;
         modelProps.condition = metadata.condition;
+        modelProps.electronicsSubcategory = metadata.electronicsSubcategory;
         modelProps.stock = metadata.stock;
       }
     } else if (itemCategory === 'Law Office') {
@@ -106,7 +109,7 @@ router.post('/', verifyToken, async (req, res) => {
         modelProps.taxYearsHandled = metadata.taxYearsHandled;
         modelProps.documentsRequired = metadata.documentsRequired;
       }
-    } else if (itemCategory === 'Dental Clinic') {
+    } else if (itemCategory === 'Clinic') {
       Model = require('../models/ClinicListing');
       if (metadata) {
         modelProps.specialties = metadata.specialties;

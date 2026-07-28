@@ -201,4 +201,45 @@ const sendContactInquiryEmail = async (inquiry) => {
   }
 };
 
-module.exports = { sendOtpEmail, sendContactInquiryEmail };
+const sendNotificationEmail = async (toEmail, subject, text, html) => {
+  if (!nodemailer) {
+    console.log('ℹ️ [Email service] nodemailer is not installed. Falling back to console logging.');
+    return;
+  }
+
+  const host = process.env.EMAIL_HOST || '';
+  const port = process.env.EMAIL_PORT || 587;
+  const user = process.env.EMAIL_USER || '';
+  const pass = process.env.EMAIL_PASS || '';
+
+  if (!user || !pass) {
+    console.log('ℹ️ [Email service] EMAIL_USER or EMAIL_PASS environment variables are not set. Falling back to console logging.');
+    return;
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host: host || (parseInt(port) === 465 ? 'smtp.gmail.com' : undefined),
+      port: parseInt(port),
+      secure: parseInt(port) === 465,
+      auth: {
+        user,
+        pass,
+      },
+    });
+
+    const info = await transporter.sendMail({
+      from: `"EthiZone Notifications" <${user}>`,
+      to: toEmail,
+      subject: subject,
+      text: text,
+      html: html,
+    });
+
+    console.log(`✉️ Notification email successfully sent to ${toEmail}. Message ID: ${info.messageId}`);
+  } catch (error) {
+    console.error(`❌ Error sending notification email to ${toEmail}:`, error.message);
+  }
+};
+
+module.exports = { sendOtpEmail, sendContactInquiryEmail, sendNotificationEmail };

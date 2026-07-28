@@ -49,7 +49,16 @@ const UserSchema = new mongoose.Schema({
     }
   ],
   otpCode: { type: String },
-  otpExpires: { type: Date }
+  otpExpires: { type: Date },
+  attorneys: [
+    {
+      name: { type: String, required: true },
+      role: { type: String, required: true },
+      spec: { type: String },
+      bio: { type: String },
+      image: { type: String, default: '' }
+    }
+  ]
 }, { timestamps: true });
 
 // Pre-save hook to generate storeSlug automatically for businesses

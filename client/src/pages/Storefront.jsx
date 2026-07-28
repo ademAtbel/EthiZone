@@ -101,6 +101,8 @@ const Storefront = () => {
   const [submissionSuccessLogs, setSubmissionSuccessLogs] = useState(null);
   const [otpSent, setOtpSent] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
+  const [apptOtpSent, setApptOtpSent] = useState(false);
+  const [sendingApptOtp, setSendingApptOtp] = useState(false);
   const [inquiryForm, setInquiryForm] = useState({
     customerName: '',
     customerEmail: '',
@@ -125,7 +127,12 @@ const Storefront = () => {
     groceryServiceType: 'pickup',
     groceryTime: '',
     groceryNotes: '',
-    generalMessage: ''
+    generalMessage: '',
+    clinicDate: '',
+    clinicTime: '',
+    clinicDoctor: '',
+    clinicReason: '',
+    clinicAddress: ''
   });
 
   const handleSendOtp = async () => {
@@ -216,6 +223,15 @@ const Storefront = () => {
         groceryTime: inquiryForm.groceryTime,
         groceryNotes: inquiryForm.groceryNotes
       };
+    } else if (category.includes('clinic') || category.includes('dental') || category.includes('cleaning') || category.includes('beauty') || category.includes('salon')) {
+      businessType = category.includes('cleaning') ? 'cleaning' : (category.includes('beauty') || category.includes('salon')) ? 'beauty' : 'clinic';
+      details = {
+        date: inquiryForm.clinicDate,
+        time: inquiryForm.clinicTime,
+        topic: inquiryForm.clinicDoctor,
+        reason: inquiryForm.clinicReason,
+        address: inquiryForm.clinicAddress || ''
+      };
     } else {
       details = {
         message: inquiryForm.generalMessage
@@ -269,7 +285,11 @@ const Storefront = () => {
         groceryServiceType: 'pickup',
         groceryTime: '',
         groceryNotes: '',
-        generalMessage: ''
+        generalMessage: '',
+        clinicDate: '',
+        clinicTime: '',
+        clinicDoctor: '',
+        clinicReason: ''
       });
 
       alert(t('inquiry_submitted_success') || 'Your inquiry has been submitted successfully!');
@@ -303,6 +323,134 @@ const Storefront = () => {
 
       if (activeTab === 'new_arrival' && !item.isNewArrival) {
         return false;
+      }
+
+      const groceryCategories = [
+        'Fruits & Vegetables',
+        'Meat & Fish',
+        'Dairy & Eggs',
+        'Bakery',
+        'Pantry',
+        'Drinks',
+        'Household',
+        'Baby & Personal Care'
+      ];
+      if (groceryCategories.includes(activeTab)) {
+        const itemSubcat = item.metadata?.grocerySubcategory || item.grocerySubcategory || '';
+        if (itemSubcat.toLowerCase() !== activeTab.toLowerCase()) {
+          return false;
+        }
+      }
+
+      const liquorCategories = [
+        'Wine',
+        'Beer',
+        'Whiskey',
+        'Vodka',
+        'Gin',
+        'Rum',
+        'Tequila',
+        'Champagne',
+        'Mixers',
+        'Snacks',
+        'Gift Sets'
+      ];
+      if (liquorCategories.includes(activeTab)) {
+        const itemSubcat = item.metadata?.liquorSubcategory || item.liquorSubcategory || '';
+        if (itemSubcat.toLowerCase() !== activeTab.toLowerCase()) {
+          return false;
+        }
+      }
+
+      const electronicsCategories = [
+        'Phones',
+        'Laptops',
+        'TV & Audio',
+        'Gaming',
+        'Accessories',
+        'Smart Devices',
+        'Appliances'
+      ];
+      if (electronicsCategories.includes(activeTab)) {
+        const itemSubcat = item.metadata?.electronicsSubcategory || item.electronicsSubcategory || '';
+        if (itemSubcat.toLowerCase() !== activeTab.toLowerCase()) {
+          return false;
+        }
+      }
+
+      if (activeTab === 'refurbished') {
+        const itemCondition = item.metadata?.condition || item.condition || '';
+        if (itemCondition.toLowerCase() !== 'refurbished') {
+          return false;
+        }
+      }
+
+      if (activeTab === 'warranty') {
+        const hasWarranty = item.metadata?.warranty || item.warranty || '';
+        if (!hasWarranty || hasWarranty.toLowerCase() === 'no' || hasWarranty.toLowerCase() === 'none') {
+          return false;
+        }
+      }
+
+      const lawSpecialties = [
+        'Family Law',
+        'Business Law',
+        'Immigration',
+        'Real Estate Law',
+        'Contract Review',
+        'Consultation'
+      ];
+      if (lawSpecialties.includes(activeTab)) {
+        const itemSpecialties = item.specialties || item.metadata?.specialties || [];
+        const normalized = Array.isArray(itemSpecialties) 
+          ? itemSpecialties.map(s => s.toLowerCase()) 
+          : typeof itemSpecialties === 'string' 
+            ? itemSpecialties.split(',').map(s => s.trim().toLowerCase()) 
+            : [];
+        if (!normalized.includes(activeTab.toLowerCase())) {
+          return false;
+        }
+      }
+
+      const taxSpecialties = [
+        'Personal Tax',
+        'Business Tax',
+        'VAT',
+        'Payroll Tax',
+        'Accounting',
+        'Bookkeeping',
+        'Tax Consultation'
+      ];
+      if (taxSpecialties.includes(activeTab)) {
+        const itemSpecialties = item.specialties || item.metadata?.specialties || [];
+        const normalized = Array.isArray(itemSpecialties) 
+          ? itemSpecialties.map(s => s.toLowerCase()) 
+          : typeof itemSpecialties === 'string' 
+            ? itemSpecialties.split(',').map(s => s.trim().toLowerCase()) 
+            : [];
+        if (!normalized.includes(activeTab.toLowerCase())) {
+          return false;
+        }
+      }
+
+      const clinicSpecialties = [
+        'General Checkup',
+        'Laboratory',
+        'Pharmacy',
+        'Dental',
+        'Eye Care',
+        'Women’s Health'
+      ];
+      if (clinicSpecialties.includes(activeTab)) {
+        const itemSpecialties = item.specialties || item.metadata?.specialties || [];
+        const normalized = Array.isArray(itemSpecialties) 
+          ? itemSpecialties.map(s => s.toLowerCase()) 
+          : typeof itemSpecialties === 'string' 
+            ? itemSpecialties.split(',').map(s => s.trim().toLowerCase()) 
+            : [];
+        if (!normalized.includes(activeTab.toLowerCase())) {
+          return false;
+        }
       }
 
       return matchesSearch && matchesStatus && matchesOfferType;
@@ -572,12 +720,77 @@ const Storefront = () => {
         )}
 
         {/* TAB 2: CATALOG / SHOP ITEMS / ON SALE / NEW ARRIVAL SECTION */}
-        {['catalog', 'on_sale', 'new_arrival'].includes(activeTab) && (
+        {['catalog', 'on_sale', 'new_arrival', 'all_products', 'all_drinks', 'all_electronics', 'all_services', 'Fruits & Vegetables', 'Meat & Fish', 'Dairy & Eggs', 'Bakery', 'Pantry', 'Drinks', 'Household', 'Baby & Personal Care', 'Wine', 'Beer', 'Whiskey', 'Vodka', 'Gin', 'Rum', 'Tequila', 'Champagne', 'Mixers', 'Snacks', 'Gift Sets', 'Phones', 'Laptops', 'TV & Audio', 'Gaming', 'Accessories', 'Smart Devices', 'Appliances', 'refurbished', 'warranty', 'Family Law', 'Business Law', 'Immigration', 'Real Estate Law', 'Contract Review', 'Consultation', 'Personal Tax', 'Business Tax', 'VAT', 'Payroll Tax', 'Accounting', 'Bookkeeping', 'Tax Consultation', 'House Cleaning', 'Office Cleaning', 'Deep Cleaning', 'Move-In / Move-Out', 'Carpet Cleaning', 'Disinfection', 'Hair', 'Makeup', 'Nails', 'Facial', 'Barber', 'Spa', 'Packages'].includes(activeTab) && (
           <div className="storefront-grid">
             <div className="storefront-main" style={{ width: '100%' }}>
               <div className="catalog-header-bar sticky-catalog-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                 <h3 style={{ margin: 0 }}>
-                  {activeTab === 'on_sale' ? 'Items on Sale' : activeTab === 'new_arrival' ? 'New Arrivals' : `${t('catalog_active_listings')} (${filteredListings.length})`}
+                  {activeTab === 'on_sale' 
+                    ? (t('grocery_on_sale') || 'Items on Sale')
+                    : activeTab === 'new_arrival' 
+                      ? (t('grocery_new_arrivals') || 'New Arrivals')
+                      : ['catalog', 'all_products', 'all_drinks', 'all_electronics', 'all_services'].includes(activeTab)
+                        ? `${t('catalog_active_listings')} (${filteredListings.length})`
+                        : (() => {
+                            const keysMap = {
+                              'Fruits & Vegetables': 'grocery_fruits_vegetables',
+                              'Meat & Fish': 'grocery_meat_fish',
+                              'Dairy & Eggs': 'grocery_dairy_eggs',
+                              'Bakery': 'grocery_bakery',
+                              'Pantry': 'grocery_pantry',
+                              'Drinks': 'grocery_drinks',
+                              'Household': 'grocery_household',
+                              'Baby & Personal Care': 'grocery_baby_personal_care',
+                              'Wine': 'liquor_wine',
+                              'Beer': 'liquor_beer',
+                              'Whiskey': 'liquor_whiskey',
+                              'Vodka': 'liquor_vodka',
+                              'Gin': 'liquor_gin',
+                              'Rum': 'liquor_rum',
+                              'Tequila': 'liquor_tequila',
+                              'Champagne': 'liquor_champagne',
+                              'Mixers': 'liquor_mixers',
+                              'Snacks': 'liquor_snacks',
+                              'Gift Sets': 'liquor_gift_sets',
+                              'Phones': 'electronics_phones',
+                              'Laptops': 'electronics_laptops',
+                              'TV & Audio': 'electronics_tv_audio',
+                              'Gaming': 'electronics_gaming',
+                              'Accessories': 'electronics_accessories',
+                              'Smart Devices': 'electronics_smart_devices',
+                              'Appliances': 'electronics_appliances',
+                              'refurbished': 'electronics_refurbished',
+                              'warranty': 'electronics_warranty',
+                              'Family Law': 'law_family_law',
+                              'Business Law': 'law_business_law',
+                              'Immigration': 'law_immigration',
+                              'Real Estate Law': 'law_real_estate_law',
+                              'Contract Review': 'law_contract_review',
+                              'Consultation': 'law_consultation',
+                              'Personal Tax': 'tax_personal_tax',
+                              'Business Tax': 'tax_business_tax',
+                              'VAT': 'tax_vat',
+                              'Payroll Tax': 'tax_payroll_tax',
+                              'Accounting': 'tax_accounting',
+                              'Bookkeeping': 'tax_bookkeeping',
+                              'Tax Consultation': 'tax_consultation',
+                              'House Cleaning': 'cleaning_house_cleaning',
+                              'Office Cleaning': 'cleaning_office_cleaning',
+                              'Deep Cleaning': 'cleaning_deep_cleaning',
+                              'Move-In / Move-Out': 'cleaning_move_in_out',
+                              'Carpet Cleaning': 'cleaning_carpet_cleaning',
+                              'Disinfection': 'cleaning_disinfection',
+                              'Hair': 'beauty_hair',
+                              'Makeup': 'beauty_makeup',
+                              'Nails': 'beauty_nails',
+                              'Facial': 'beauty_facial',
+                              'Barber': 'beauty_barber',
+                              'Spa': 'beauty_spa',
+                              'Packages': 'beauty_packages'
+                            };
+                            const tKey = keysMap[activeTab];
+                            return `${t(tKey) || activeTab} (${filteredListings.length})`;
+                          })()}
                 </h3>
                 
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', flex: '1', justifyContent: 'flex-end' }}>
@@ -893,6 +1106,292 @@ const Storefront = () => {
           </div>
         )}
 
+        {/* TAB 5: ATTORNEYS / DOCTORS PANEL */}
+        {(activeTab === 'attorneys' || activeTab === 'doctors') && (
+          <div className="glass-panel attorneys-panel-card" style={{ padding: '40px', marginBottom: '30px' }}>
+            <h2 style={{ marginBottom: '24px', borderLeft: '3px solid var(--accent-primary)', paddingLeft: '12px' }}>
+              {activeTab === 'doctors' ? (t('clinic_doctors') || 'Our Doctors & Specialists') : (t('law_attorneys') || 'Our Legal Team')}
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '30px', fontSize: '1.05rem' }}>
+              {activeTab === 'doctors' 
+                ? 'Meet our team of experienced medical professionals dedicated to your health and wellness.'
+                : 'Meet our team of experienced attorneys dedicated to protecting your rights and delivering top-tier legal representation.'}
+            </p>
+            <div className="attorneys-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' }}>
+              {(store.attorneys && store.attorneys.length > 0 ? store.attorneys : (activeTab === 'doctors' ? [
+                { name: 'Dr. Abraham Belaye', role: 'Medical Director', spec: 'General Medicine & Wellness', bio: 'Over 15 years of experience in family medicine and clinical operations.' },
+                { name: 'Dr. Selamawit Daniel', role: 'Senior Consultant', spec: 'Pediatrics & Child Care', bio: 'Expert care in child health, nutrition guidance, and developmental milestones.' },
+                { name: 'Dr. Yared Tesfaye', role: 'Resident Specialist', spec: 'Dentistry & Oral Surgery', bio: 'Specialist in root canal therapy, orthodontics, and restorative dentistry.' }
+              ] : [
+                { name: 'Dr. Abraham Atbel', role: 'Senior Managing Partner', spec: 'Business Law & Arbitration', bio: 'Over 15 years of experience in corporate law and investment counseling.' },
+                { name: 'Selamawit Daniel', role: 'Partner', spec: 'Family & Civil Litigation', bio: 'Expert advocacy in divorce, custody disputes, and private mediation.' },
+                { name: 'Yared Tesfaye', role: 'Associate Attorney', spec: 'Immigration & International Law', bio: 'Specialist in visas, residence permits, and corporate compliance.' }
+              ])).map((att, idx) => (
+                <div key={idx} className="attorney-card glass-panel" style={{ padding: '24px', borderRadius: '12px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-glass)', transition: 'transform 0.3s ease', textAlign: 'center' }}>
+                  {att.image ? (
+                    <img src={att.image} alt={att.name} style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--accent-primary)', margin: '0 auto 16px auto', display: 'block', boxShadow: '0 8px 20px rgba(0,0,0,0.4)' }} />
+                  ) : (
+                    <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto', fontSize: '2rem', fontWeight: 800, color: '#fff', boxShadow: '0 8px 20px rgba(0,0,0,0.4)' }}>
+                      {att.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                  )}
+                  <h4 style={{ margin: '0 0 4px 0', fontSize: '1.2rem', color: 'var(--text-main)' }}>{att.name}</h4>
+                  <span style={{ display: 'block', fontSize: '0.88rem', color: 'var(--accent-secondary)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>{att.role}</span>
+                  <span style={{ display: 'inline-block', background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>{att.spec}</span>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>{att.bio}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 6: BOOK APPOINTMENT PANEL */}
+        {activeTab === 'book_appointment' && (
+          <div className="glass-panel booking-panel-card" style={{ padding: '40px', maxWidth: '650px', margin: '0 auto 30px auto' }}>
+            <h2 style={{ marginBottom: '12px', textAlign: 'center' }}>
+              {(store.category === 'Clinic' || store.category === 'Dental Clinic') ? 'Book Doctor Appointment' :
+               (store.category === 'Cleaning Agency') ? 'Book Cleaning Service' :
+               (store.category === 'Beauty Salon') ? 'Book Salon Session' :
+               (t('schedule_appointment') || 'Book an Appointment')}
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '28px', textAlign: 'center' }}>
+              {(store.category === 'Clinic' || store.category === 'Dental Clinic') 
+                ? 'Select a date, time slot, and preferred doctor. Our clinic team will review your request and contact you to confirm.' :
+               (store.category === 'Cleaning Agency')
+                ? 'Select a date, time slot, and preferred cleaning service. Our crew will review your request and contact you to confirm.' :
+               (store.category === 'Beauty Salon')
+                ? 'Select a date, time slot, and preferred beauty service. Our team will review your request and contact you to confirm.' :
+                'Select a date, time slot, and area of counsel. Our team will review your request and contact you to confirm.'}
+            </p>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (!apptOtpSent) {
+                alert('Please request an email verification code first.');
+                return;
+              }
+              const formData = new FormData(e.target);
+              const name = formData.get('clientName');
+              const email = formData.get('clientEmail');
+              const phone = formData.get('clientPhone');
+              const date = formData.get('appointmentDate');
+              const time = formData.get('appointmentTime');
+              const service = formData.get('legalService');
+              const otpCode = formData.get('apptOtpCode');
+              const isClinicStore = store.category === 'Clinic' || store.category === 'Dental Clinic';
+              const isCleaningStore = store.category === 'Cleaning Agency';
+              const isBeautyStore = store.category === 'Beauty Salon';
+              
+              try {
+                const response = await fetch('/api/inquiries', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    businessId: store._id || store.id,
+                    customerName: name,
+                    customerEmail: email,
+                    customerPhone: phone,
+                    businessType: isClinicStore ? 'clinic' : isCleaningStore ? 'cleaning' : isBeautyStore ? 'beauty' : 'law',
+                    otpCode: otpCode,
+                    details: (isClinicStore || isCleaningStore || isBeautyStore) ? {
+                      date: date,
+                      time: time,
+                      topic: service,
+                      reason: formData.get('clinicReason') || '',
+                      address: formData.get('cleaningAddress') || ''
+                    } : {
+                      date: date,
+                      time: time,
+                      topic: service
+                    }
+                  })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message);
+                alert('Booking request submitted successfully! We will contact you shortly.');
+                setApptOtpSent(false);
+                e.target.reset();
+              } catch(err) {
+                alert(err.message || 'Failed to submit appointment request.');
+              }
+            }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Your Name *</label>
+                  <input type="text" name="clientName" className="form-control" placeholder="e.g. Abraham" required style={{ background: 'var(--bg-app)', color: 'var(--text-main)', border: '1px solid var(--border-glass)' }} />
+                </div>
+                <div className="form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Your Email *</label>
+                  <input type="email" name="clientEmail" className="form-control" placeholder="e.g. john@example.com" required style={{ background: 'var(--bg-app)', color: 'var(--text-main)', border: '1px solid var(--border-glass)' }} />
+                </div>
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Your Phone Number *</label>
+                  <input type="tel" name="clientPhone" className="form-control" placeholder="e.g. +251..." required style={{ background: 'var(--bg-app)', color: 'var(--text-main)', border: '1px solid var(--border-glass)' }} />
+                </div>
+                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', justifycontent: 'flex-end' }}>
+                  <button
+                    type="button"
+                    onClick={async (e) => {
+                      const emailInput = e.target.closest('form').querySelector('input[name="clientEmail"]');
+                      const email = emailInput ? emailInput.value.trim() : '';
+                      if (!email) {
+                        alert('Please enter your email address first.');
+                        return;
+                      }
+                      setSendingApptOtp(true);
+                      try {
+                        const res = await fetch('/api/inquiries/send-otp', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ email })
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.message);
+                        setApptOtpSent(true);
+                        alert('Verification code sent successfully! Please check your email inbox.');
+                      } catch(err) {
+                        alert(err.message || 'Failed to send OTP code.');
+                      } finally {
+                        setSendingApptOtp(false);
+                      }
+                    }}
+                    className="btn btn-secondary w-100"
+                    disabled={sendingApptOtp}
+                    style={{ height: '38px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    {sendingApptOtp ? 'Sending...' : apptOtpSent ? 'Resend Code' : 'Send Verification Code'}
+                  </button>
+                </div>
+              </div>
+
+              {apptOtpSent && (
+                <div className="form-group" style={{ animation: 'fadeIn 0.3s ease-out' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Email Verification Code *</label>
+                  <input 
+                    type="text" 
+                    name="apptOtpCode" 
+                    className="form-control" 
+                    placeholder="Enter 6-digit OTP code" 
+                    required 
+                    style={{ background: 'var(--bg-app)', color: 'var(--text-main)', border: '1px solid var(--accent-primary)' }} 
+                  />
+                </div>
+              )}
+
+              {store.category === 'Cleaning Agency' && (
+                <div className="form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Service / Cleaning Address *</label>
+                  <input 
+                    type="text" 
+                    name="cleaningAddress" 
+                    className="form-control" 
+                    placeholder="e.g. Suite 402, Bole Road, Addis Ababa" 
+                    required 
+                    style={{ background: 'var(--bg-app)', color: 'var(--text-main)', border: '1px solid var(--border-glass)' }} 
+                  />
+                </div>
+              )}
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Preferred Date *</label>
+                  <input type="date" name="appointmentDate" className="form-control" required style={{ background: 'var(--bg-app)', color: 'var(--text-main)', border: '1px solid var(--border-glass)' }} />
+                </div>
+                <div className="form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Preferred Time *</label>
+                  <select name="appointmentTime" className="form-control" required style={{ background: 'var(--bg-app)', color: 'var(--text-main)', border: '1px solid var(--border-glass)' }}>
+                    <option value="09:00 AM">09:00 AM</option>
+                    <option value="10:00 AM">10:00 AM</option>
+                    <option value="11:00 AM">11:00 AM</option>
+                    <option value="02:00 PM">02:00 PM</option>
+                    <option value="03:00 PM">03:00 PM</option>
+                    <option value="04:00 PM">04:00 PM</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="form-group">
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>
+                  {(store.category === 'Clinic' || store.category === 'Dental Clinic') ? 'Select Doctor / Specialist *' :
+                   (store.category === 'Cleaning Agency') ? 'Select Cleaning Service *' :
+                   (store.category === 'Beauty Salon') ? 'Select Beauty Service *' :
+                   'Area of Counsel *'}
+                </label>
+                <select name="legalService" className="form-control" required style={{ background: 'var(--bg-app)', color: 'var(--text-main)', border: '1px solid var(--border-glass)' }}>
+                  {(store.category === 'Clinic' || store.category === 'Dental Clinic') ? (
+                    (store.attorneys && store.attorneys.length > 0 ? store.attorneys : [
+                      { name: 'Dr. Abraham Belaye', role: 'Medical Director' },
+                      { name: 'Dr. Selamawit Daniel', role: 'Senior Consultant' },
+                      { name: 'Dr. Yared Tesfaye', role: 'Resident Specialist' }
+                    ]).map((doc, dIdx) => (
+                      <option key={dIdx} value={`${doc.name} (${doc.role})`}>
+                        {doc.name} - {doc.role}
+                      </option>
+                    ))
+                  ) : (store.category === 'Cleaning Agency') ? (
+                    <>
+                      <option value="House Cleaning">House Cleaning</option>
+                      <option value="Office Cleaning">Office Cleaning</option>
+                      <option value="Deep Cleaning">Deep Cleaning</option>
+                      <option value="Move-In / Move-Out">Move-In / Move-Out</option>
+                      <option value="Carpet Cleaning">Carpet Cleaning</option>
+                      <option value="Disinfection">Disinfection</option>
+                    </>
+                  ) : (store.category === 'Beauty Salon') ? (
+                    <>
+                      <option value="Hair">Hair</option>
+                      <option value="Makeup">Makeup</option>
+                      <option value="Nails">Nails</option>
+                      <option value="Facial">Facial</option>
+                      <option value="Barber">Barber</option>
+                      <option value="Spa">Spa</option>
+                      <option value="Packages">Packages</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="Family Law">Family Law</option>
+                      <option value="Business Law">Business Law</option>
+                      <option value="Immigration">Immigration</option>
+                      <option value="Real Estate Law">Real Estate Law</option>
+                      <option value="Contract Review">Contract Review</option>
+                      <option value="General Consultation">General Consultation</option>
+                    </>
+                  )}
+                </select>
+              </div>
+
+              {(store.category === 'Clinic' || store.category === 'Dental Clinic' || store.category === 'Cleaning Agency' || store.category === 'Beauty Salon') && (
+                <div className="form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>
+                    {(store.category === 'Cleaning Agency') ? 'Cleaning Details / Special Instructions *' :
+                     (store.category === 'Beauty Salon') ? 'Beauty Instructions / Special Requests *' : 'Reason for Visit / Symptoms *'}
+                  </label>
+                  <textarea 
+                    name="clinicReason" 
+                    className="form-control" 
+                    placeholder={
+                      (store.category === 'Cleaning Agency') 
+                        ? 'Describe your space size, number of bedrooms/bathrooms, or specific cleaning instructions...'
+                        : (store.category === 'Beauty Salon')
+                          ? 'List details of requested style, haircut preferences, hair length, or salon notes...'
+                          : 'List details of symptoms, medication requests or reasons for booking...'
+                    } 
+                    required 
+                    rows="3"
+                    style={{ background: 'var(--bg-app)', color: 'var(--text-main)', border: '1px solid var(--border-glass)' }}
+                  />
+                </div>
+              )}
+
+              <button type="submit" className="btn btn-primary w-100 py-3 mt-3 fw-bold rounded-3" style={{ fontSize: '1rem' }}>
+                Confirm Booking Request
+              </button>
+            </form>
+          </div>
+        )}
+
       </div>
 
       {/* QR Code printing dialog */}
@@ -1007,6 +1506,123 @@ const Storefront = () => {
                       value={inquiryForm.pharmacyNotes}
                       onChange={(e) => setInquiryForm({ ...inquiryForm, pharmacyNotes: e.target.value })}
                       rows="3"
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Clinic, Cleaning & Beauty details */}
+              {store.category && (store.category.toLowerCase().includes('clinic') || store.category.toLowerCase().includes('dental') || store.category.toLowerCase().includes('cleaning') || store.category.toLowerCase().includes('beauty') || store.category.toLowerCase().includes('salon')) && (
+                <>
+                  {store.category === 'Cleaning Agency' && (
+                    <div className="form-group" style={{ marginBottom: '12px' }}>
+                      <label>Service / Cleaning Address *</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        placeholder="e.g. Suite 402, Bole Road, Addis Ababa" 
+                        value={inquiryForm.clinicAddress}
+                        onChange={(e) => setInquiryForm({ ...inquiryForm, clinicAddress: e.target.value })}
+                        required
+                      />
+                    </div>
+                  )}
+
+                  <div className="metadata-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Preferred Date *</label>
+                      <input 
+                        type="date" 
+                        className="form-control" 
+                        value={inquiryForm.clinicDate}
+                        onChange={(e) => setInquiryForm({ ...inquiryForm, clinicDate: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label>Preferred Time *</label>
+                      <select 
+                        className="form-control" 
+                        value={inquiryForm.clinicTime}
+                        onChange={(e) => setInquiryForm({ ...inquiryForm, clinicTime: e.target.value })}
+                        required
+                      >
+                        <option value="">-- Choose a Slot --</option>
+                        <option value="09:00 AM">09:00 AM</option>
+                        <option value="10:00 AM">10:00 AM</option>
+                        <option value="11:00 AM">11:00 AM</option>
+                        <option value="02:00 PM">02:00 PM</option>
+                        <option value="03:00 PM">03:00 PM</option>
+                        <option value="04:00 PM">04:00 PM</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label>
+                      {(store.category === 'Cleaning Agency') ? 'Select Cleaning Service *' :
+                       (store.category === 'Beauty Salon') ? 'Select Beauty Service *' : 'Select Doctor / Specialist *'}
+                    </label>
+                    <select 
+                      className="form-control" 
+                      value={inquiryForm.clinicDoctor}
+                      onChange={(e) => setInquiryForm({ ...inquiryForm, clinicDoctor: e.target.value })}
+                      required
+                    >
+                      {(store.category === 'Cleaning Agency') ? (
+                        <>
+                          <option value="">-- Choose a Service --</option>
+                          <option value="House Cleaning">House Cleaning</option>
+                          <option value="Office Cleaning">Office Cleaning</option>
+                          <option value="Deep Cleaning">Deep Cleaning</option>
+                          <option value="Move-In / Move-Out">Move-In / Move-Out</option>
+                          <option value="Carpet Cleaning">Carpet Cleaning</option>
+                          <option value="Disinfection">Disinfection</option>
+                        </>
+                      ) : (store.category === 'Beauty Salon') ? (
+                        <>
+                          <option value="">-- Choose a Service --</option>
+                          <option value="Hair">Hair</option>
+                          <option value="Makeup">Makeup</option>
+                          <option value="Nails">Nails</option>
+                          <option value="Facial">Facial</option>
+                          <option value="Barber">Barber</option>
+                          <option value="Spa">Spa</option>
+                          <option value="Packages">Packages</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="">-- Choose a Doctor --</option>
+                          {(store.attorneys && store.attorneys.length > 0 ? store.attorneys : [
+                            { name: 'Dr. Abraham Belaye', role: 'Medical Director' },
+                            { name: 'Dr. Selamawit Daniel', role: 'Senior Consultant' },
+                            { name: 'Dr. Yared Tesfaye', role: 'Resident Specialist' }
+                          ]).map((doc, dIdx) => (
+                            <option key={dIdx} value={`${doc.name} (${doc.role})`}>
+                              {doc.name} - {doc.role}
+                            </option>
+                          ))}
+                        </>
+                      )}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>
+                      {(store.category === 'Cleaning Agency') ? 'Cleaning Details / Special Instructions *' :
+                       (store.category === 'Beauty Salon') ? 'Beauty Instructions / Special Requests *' : 'Reason for Visit / Symptoms *'}
+                    </label>
+                    <textarea 
+                      className="form-control" 
+                      placeholder={
+                        (store.category === 'Cleaning Agency')
+                          ? 'Describe your space size, number of bedrooms/bathrooms, or specific cleaning instructions...'
+                          : (store.category === 'Beauty Salon')
+                            ? 'List details of requested style, haircut preferences, hair length, or salon notes...'
+                            : 'Please describe symptoms, medication needs, or reasons for scheduling...'
+                      }
+                      value={inquiryForm.clinicReason}
+                      onChange={(e) => setInquiryForm({ ...inquiryForm, clinicReason: e.target.value })}
+                      rows="3"
+                      required
                     />
                   </div>
                 </>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import Breadcrumbs from './Breadcrumbs';
@@ -13,6 +13,40 @@ const Navbar = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const [qrOpen, setQrOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [navbarInquiries, setNavbarInquiries] = useState([]);
+  const [navbarHasOpened, setNavbarHasOpened] = useState(false);
+
+  useEffect(() => {
+    if (!token || !user || !user._id) return;
+    if (user.role !== 'business' && user.role !== 'handyman') return;
+
+    const fetchNavbarInquiries = async () => {
+      try {
+        const res = await fetch('/api/inquiries?limit=100', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (res.ok && Array.isArray(data)) {
+          setNavbarInquiries(prev => {
+            if (prev.length > 0 && data.length > prev.length) {
+              const newItems = data.filter(item => !prev.some(old => old._id === item._id));
+              const newPending = newItems.find(item => item.status === 'pending');
+              if (newPending) {
+                setNavbarHasOpened(false);
+              }
+            }
+            return data;
+          });
+        }
+      } catch (err) {
+        console.error('Error loading navbar inquiries', err);
+      }
+    };
+
+    fetchNavbarInquiries();
+    const interval = setInterval(fetchNavbarInquiries, 8000);
+    return () => clearInterval(interval);
+  }, [token, user?.role]);
 
   const getDashboardLink = () => {
     if (user && user.role === 'business' && user.storeName) {
@@ -246,8 +280,7 @@ const Navbar = () => {
               {user.role === 'super_admin' && (
                 <Link to="/super-admin" className="nav-link admin-badge">Super Admin</Link>
               )}
-              {(user.role === 'business' || user.role === 'handyman') && (
-                <div className="store-dashboard-shortcuts" style={{ display: 'inline-flex', gap: '8px', marginRight: '10px' }}>
+                <div className="store-dashboard-shortcuts" style={{ display: 'inline-flex', gap: '8px', marginRight: '10px', alignItems: 'center' }}>
                   <button onClick={() => setQrOpen(true)} className="btn btn-secondary btn-sm d-flex align-items-center gap-1" style={{ padding: '6px 12px', fontSize: '0.82rem' }}>
                     <Printer size={14} /> QR Code
                   </button>
@@ -260,8 +293,27 @@ const Navbar = () => {
                   >
                     Visit Storefront
                   </a>
+                  
+                  {/* Notification Bell with Gold Circle */}
+                  <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', marginLeft: '4px', marginRight: '4px' }}>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        const storeSlug = (user.storeName || user.username || '').toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-');
+                        navigate(`/store/${storeSlug}/dashboard?tab=inquiries`);
+                        setNavbarHasOpened(true);
+                      }}
+                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s', outline: 'none', position: 'relative', padding: 0 }}
+                    >
+                      <span style={{ fontSize: '1.2rem' }}>🔔</span>
+                      {(!navbarHasOpened && navbarInquiries.filter(i => i.status === 'pending').length > 0) && (
+                        <span style={{ position: 'absolute', top: '-4px', right: '-4px', minWidth: '18px', height: '18px', padding: '0 4px', background: 'var(--accent-secondary)', color: 'var(--bg-app)', borderRadius: '9px', fontSize: '0.7rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-glass)', boxShadow: '0 2px 5px rgba(0,0,0,0.2)' }}>
+                          {navbarInquiries.filter(i => i.status === 'pending').length}
+                        </span>
+                      )}
+                    </button>
+                  </div>
                 </div>
-              )}
               <div className="navbar-avatar-container" style={{ position: 'relative', marginLeft: '10px' }}>
                 {user.storeLogo ? (
                   <img 

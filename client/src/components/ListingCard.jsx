@@ -113,6 +113,26 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
     metadata
   } = listing;
 
+  const getCategoryTranslationKey = (name) => {
+    if (!name) return '';
+    const map = {
+      'Boutique': 'boutique',
+      'Pharmacy': 'pharmacy',
+      'Liquor Store': 'liquor_store',
+      'Grocery Store': 'grocery_store',
+      'Electronics Shop': 'electronics_shop',
+      'Bookstore': 'bookstore',
+      'Furniture': 'furniture',
+      'Hardware Store': 'hardware_store',
+      'Cafe & Restaurant': 'cafe_slots_restaurant',
+      'Jewelry & Accessories': 'jewelry_slots_accessories',
+      'Gift & Toy Shop': 'gift_slots_toy_shop',
+      'Other Store': 'other',
+      'Other': 'other'
+    };
+    return map[name] || name.toLowerCase().replace(/ & /g, '_slots_').replace(/ /g, '_');
+  };
+
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const images = listing.images || [];
 
@@ -494,7 +514,8 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                     {( (type === 'house' && (metadata?.propertyType || metadata?.bedrooms || metadata?.bathrooms || metadata?.address || ownerId?.address)) ||
                        (type === 'car' && metadata && (metadata.year || metadata.make || metadata.mileage !== undefined)) ||
                        (type === 'handyman_skill' && metadata?.handymanRates) ||
-                       (type === 'job_opening' && metadata?.jobRequirements && metadata.jobRequirements.length > 0) ) && (
+                       (type === 'job_opening' && metadata?.jobRequirements && metadata.jobRequirements.length > 0) ||
+                       ((type === 'store_product' || type === 'personal_item' || type === 'service') && metadata) ) && (
                       <div className="metadata-detailed-list" style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.88rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-glass)', padding: '12px', borderRadius: 'var(--radius-sm)', marginBottom: '20px' }}>
                         {type === 'house' && (
                           <>
@@ -525,6 +546,120 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                               ))}
                             </ul>
                           </div>
+                        )}
+                        {(type === 'store_product' || type === 'personal_item') && (
+                          <>
+                            {(listing.condition || metadata?.condition) && <span>✨ {t('condition') || 'Condition'}: <strong>{listing.condition || metadata.condition}</strong></span>}
+                            {(listing.brand || metadata?.brand) && <span>🏷️ {t('brand') || 'Brand'}: <strong>{listing.brand || metadata.brand}</strong></span>}
+                            
+                            {/* Grocery Specifics */}
+                            {(listing.weight || metadata?.weight) && <span>⚖️ {t('weight') || 'Weight'}: <strong>{listing.weight || metadata.weight}</strong></span>}
+                            {(listing.expirationDate || metadata?.expirationDate) && (
+                              <span>📅 {t('expiration_date') || 'Expiration Date'}: <strong>{new Date(listing.expirationDate || metadata.expirationDate).toLocaleDateString()}</strong></span>
+                            )}
+                            {(listing.grocerySubcategory || metadata?.grocerySubcategory) && (
+                              <span>🗂️ {t('section') || 'Section'}: <strong>{t(getCategoryTranslationKey(listing.grocerySubcategory || metadata.grocerySubcategory)) || (listing.grocerySubcategory || metadata.grocerySubcategory)}</strong></span>
+                            )}
+
+                            {/* Liquor Specifics */}
+                            {(listing.volume || metadata?.volume) && <span>🧪 {t('volume') || 'Volume'}: <strong>{listing.volume || metadata.volume}</strong></span>}
+                            {((listing.alcoholPercentage !== undefined && listing.alcoholPercentage !== null && listing.alcoholPercentage !== '') ||
+                              (metadata?.alcoholPercentage !== undefined && metadata?.alcoholPercentage !== null && metadata?.alcoholPercentage !== '')) && (
+                              <span>🍺 {t('alcohol_content') || 'Alcohol Content'}: <strong>{listing.alcoholPercentage !== undefined && listing.alcoholPercentage !== null && listing.alcoholPercentage !== '' ? listing.alcoholPercentage : metadata.alcoholPercentage}%</strong></span>
+                            )}
+                            {(listing.liquorSubcategory || metadata?.liquorSubcategory) && (
+                              <span>🗂️ {t('section') || 'Section'}: <strong>{t(getCategoryTranslationKey(listing.liquorSubcategory || metadata.liquorSubcategory)) || (listing.liquorSubcategory || metadata.liquorSubcategory)}</strong></span>
+                            )}
+
+                            {/* Electronics Specifics */}
+                            {(listing.electronicsSubcategory || metadata?.electronicsSubcategory) && (
+                              <span>🗂️ {t('section') || 'Section'}: <strong>{t(getCategoryTranslationKey(listing.electronicsSubcategory || metadata.electronicsSubcategory)) || (listing.electronicsSubcategory || metadata.electronicsSubcategory)}</strong></span>
+                            )}
+                            {(listing.modelNumber || metadata?.modelNumber) && <span>🔢 {t('model_number') || 'Model Number'}: <strong>{listing.modelNumber || metadata.modelNumber}</strong></span>}
+                            {(listing.warranty || metadata?.warranty) && <span>🛡️ {t('warranty') || 'Warranty'}: <strong>{listing.warranty || metadata.warranty}</strong></span>}
+                            {(listing.specifications || metadata?.specifications) && (
+                              <div style={{ marginTop: '4px' }}>
+                                <span style={{ fontWeight: 600, display: 'block' }}>📝 {t('specifications') || 'Specifications'}:</span>
+                                <p style={{ margin: '2px 0 0 0', paddingLeft: '12px', whiteSpace: 'pre-wrap', color: 'var(--text-secondary)' }}>{listing.specifications || metadata.specifications}</p>
+                              </div>
+                            )}
+
+                            {/* Boutique Specifics */}
+                            {(listing.sizes || metadata?.sizes) && (listing.sizes || metadata.sizes).length > 0 && (
+                              <span>📏 {t('sizes') || 'Sizes'}: <strong>{Array.isArray(listing.sizes || metadata.sizes) ? (listing.sizes || metadata.sizes).join(', ') : (listing.sizes || metadata.sizes)}</strong></span>
+                            )}
+                            {(listing.colors || metadata?.colors) && (listing.colors || metadata.colors).length > 0 && (
+                              <span>🎨 {t('colors') || 'Colors'}: <strong>{Array.isArray(listing.colors || metadata.colors) ? (listing.colors || metadata.colors).join(', ') : (listing.colors || metadata.colors)}</strong></span>
+                            )}
+
+                            {/* Stock level */}
+                            {(listing.stock !== undefined || metadata?.stock !== undefined) && (
+                              <span>📦 {t('stock') || 'Stock Level'}: <strong>{listing.stock !== undefined ? listing.stock : metadata.stock} units</strong></span>
+                            )}
+                          </>
+                        )}
+                        {type === 'service' && metadata && (
+                          <>
+                            {/* Law / Legal Specifics */}
+                            {metadata.consultationType && <span>⚖️ Consultation: <strong>{metadata.consultationType}</strong></span>}
+                            {metadata.officeHours && <span>⏰ Office Hours: <strong>{metadata.officeHours}</strong></span>}
+                            {metadata.specialties && metadata.specialties.length > 0 && (
+                              <span>🎯 Specialties: <strong>{Array.isArray(metadata.specialties) ? metadata.specialties.join(', ') : metadata.specialties}</strong></span>
+                            )}
+                            {metadata.languagesSpoken && metadata.languagesSpoken.length > 0 && (
+                              <span>🗣️ Languages Spoken: <strong>{Array.isArray(metadata.languagesSpoken) ? metadata.languagesSpoken.join(', ') : metadata.languagesSpoken}</strong></span>
+                            )}
+
+                            {/* Tax / Accounting Specifics */}
+                            {metadata.taxServices && metadata.taxServices.length > 0 && (
+                              <span>💵 Tax Services: <strong>{Array.isArray(metadata.taxServices) ? metadata.taxServices.join(', ') : metadata.taxServices}</strong></span>
+                            )}
+                            {metadata.taxYearsHandled && metadata.taxYearsHandled.length > 0 && (
+                              <span>📅 Tax Years Handled: <strong>{Array.isArray(metadata.taxYearsHandled) ? metadata.taxYearsHandled.join(', ') : metadata.taxYearsHandled}</strong></span>
+                            )}
+                            {metadata.documentsRequired && metadata.documentsRequired.length > 0 && (
+                              <span>📄 Documents Required: <strong>{Array.isArray(metadata.documentsRequired) ? metadata.documentsRequired.join(', ') : metadata.documentsRequired}</strong></span>
+                            )}
+
+                            {/* Clinic Specifics */}
+                            {metadata.clinicServices && metadata.clinicServices.length > 0 && (
+                              <span>🏥 Clinic Services: <strong>{Array.isArray(metadata.clinicServices) ? metadata.clinicServices.join(', ') : metadata.clinicServices}</strong></span>
+                            )}
+                            {metadata.acceptedInsurances && metadata.acceptedInsurances.length > 0 && (
+                              <span>🛡️ Insurance Accepted: <strong>{Array.isArray(metadata.acceptedInsurances) ? metadata.acceptedInsurances.join(', ') : metadata.acceptedInsurances}</strong></span>
+                            )}
+                            {metadata.emergencyServices !== undefined && (
+                              <span>🚨 Emergency Care: <strong>{metadata.emergencyServices ? 'Yes, Available' : 'No'}</strong></span>
+                            )}
+
+                            {/* Consulting Specifics */}
+                            {metadata.consultingDomains && metadata.consultingDomains.length > 0 && (
+                              <span>💡 Domains: <strong>{Array.isArray(metadata.consultingDomains) ? metadata.consultingDomains.join(', ') : metadata.consultingDomains}</strong></span>
+                            )}
+                            {metadata.corporateServices && metadata.corporateServices.length > 0 && (
+                              <span>🏢 Corporate Services: <strong>{Array.isArray(metadata.corporateServices) ? metadata.corporateServices.join(', ') : metadata.corporateServices}</strong></span>
+                            )}
+                            {metadata.consultantProfiles && metadata.consultantProfiles.length > 0 && (
+                              <span>👥 Consultants: <strong>{Array.isArray(metadata.consultantProfiles) ? metadata.consultantProfiles.join(', ') : metadata.consultantProfiles}</strong></span>
+                            )}
+
+                            {/* Cleaning Specifics */}
+                            {metadata.cleaningServices && metadata.cleaningServices.length > 0 && (
+                              <span>🧹 Cleaning Services: <strong>{Array.isArray(metadata.cleaningServices) ? metadata.cleaningServices.join(', ') : metadata.cleaningServices}</strong></span>
+                            )}
+                            {metadata.frequencies && metadata.frequencies.length > 0 && (
+                              <span>🔄 Frequencies: <strong>{Array.isArray(metadata.frequencies) ? metadata.frequencies.join(', ') : metadata.frequencies}</strong></span>
+                            )}
+                            {metadata.cleaningRates && <span>💰 Rates: <strong>{metadata.cleaningRates}</strong></span>}
+
+                            {/* Beauty Salon Specifics */}
+                            {metadata.beautyServices && metadata.beautyServices.length > 0 && (
+                              <span>💅 Beauty Services: <strong>{Array.isArray(metadata.beautyServices) ? metadata.beautyServices.join(', ') : metadata.beautyServices}</strong></span>
+                            )}
+                            {metadata.stylists && metadata.stylists.length > 0 && (
+                              <span>💇 Stylists / Specialists: <strong>{Array.isArray(metadata.stylists) ? metadata.stylists.join(', ') : metadata.stylists}</strong></span>
+                            )}
+                          </>
                         )}
                       </div>
                     )}
@@ -658,6 +793,7 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                     </button>
                     <RatingForm 
                       targetId={ownerId?._id || ownerId} 
+                      listingId={listing._id || listing.id}
                       onRatingSubmitted={(newRating) => {
                         handleRatingAdded(newRating);
                         setShowReviewForm(false);

@@ -86,12 +86,43 @@ const Dashboard = () => {
   const setActiveTab = (tab) => setSearchParams({ tab });
   const [inquiries, setInquiries] = useState([]);
   const [activeInquiryAlert, setActiveInquiryAlert] = useState(null);
+  const [attorneyPhoto, setAttorneyPhoto] = useState('');
+  const [hasOpenedNotifications, setHasOpenedNotifications] = useState(false);
 
   // Filter States
   const [listingSearch, setListingSearch] = useState('');
   const [listingStatusFilter, setListingStatusFilter] = useState('all');
   const [inquirySearch, setInquirySearch] = useState('');
   const [inquiryStatusFilter, setInquiryStatusFilter] = useState('all');
+
+  const getServicePlaceholder = () => {
+    const category = user?.category;
+    if (category === 'Law Office') {
+      return 'e.g. Legal Consultation & Advocacy';
+    } else if (category === 'Tax Office') {
+      return 'e.g. Corporate Tax Return Preparation';
+    } else if (category === 'Clinic' || category === 'Dental Clinic') {
+      return 'e.g. General Medical Examination & Checkup';
+    } else if (category === 'Consulting Firm') {
+      return 'e.g. Business Strategy Consulting';
+    } else if (category === 'Cleaning Agency') {
+      return 'e.g. Deep House Cleaning';
+    } else if (category === 'Beauty Salon') {
+      return 'e.g. Professional Haircut & Styling';
+    }
+    return t('placeholder_service_name') || 'e.g. Professional Service';
+  };
+
+  const getServiceLabel = () => {
+    const category = user?.category;
+    if (category === 'Clinic' || category === 'Dental Clinic') {
+      return 'Clinic / Medical Service Name';
+    }
+    if (category === 'Beauty Salon') {
+      return 'Salon / Beauty Service Name';
+    }
+    return t('label_service_name') || 'Service Name';
+  };
 
   const filteredListings = listings.filter(item => {
     const searchLower = listingSearch.toLowerCase();
@@ -146,6 +177,9 @@ const Dashboard = () => {
     condition: 'New',
     stock: '',
     expirationDate: '',
+    grocerySubcategory: 'Fruits & Vegetables',
+    liquorSubcategory: 'Wine',
+    electronicsSubcategory: 'Phones',
     weight: '',
     volume: '',
     alcoholPercentage: '',
@@ -208,6 +242,9 @@ const Dashboard = () => {
     condition: 'New',
     stock: '',
     expirationDate: '',
+    grocerySubcategory: 'Fruits & Vegetables',
+    liquorSubcategory: 'Wine',
+    electronicsSubcategory: 'Phones',
     weight: '',
     volume: '',
     alcoholPercentage: '',
@@ -271,7 +308,7 @@ const Dashboard = () => {
         } else {
           const fallbacks = {
             store: ['Boutique', 'Pharmacy', 'Liquor Store', 'Grocery Store', 'Electronics Shop', 'Bookstore', 'Furniture', 'Hardware Store', 'Cafe & Restaurant', 'Jewelry & Accessories', 'Gift & Toy Shop', 'Other'],
-            service: ['Law Office', 'Tax Office', 'Dental Clinic', 'Consulting Firm', 'Cleaning Agency', 'Beauty Salon'],
+            service: ['Law Office', 'Tax Office', 'Clinic', 'Consulting Firm', 'Cleaning Agency', 'Beauty Salon'],
             organization: ['Tech Corporation', 'Construction Company', 'Healthcare Group', 'Educational Institution', 'Non-Profit Org', 'Other'],
             real_estate: ['Residential Homes', 'Rental Apartments', 'Commercial Real Estate', 'Land & Lots'],
             automotive: ['Used Car Dealership', 'Car Rental Service', 'Auto Repair Workshop', 'Spare Parts Dealer']
@@ -286,7 +323,7 @@ const Dashboard = () => {
       .catch(() => {
         const fallbacks = {
           store: ['Boutique', 'Pharmacy', 'Liquor Store', 'Grocery Store', 'Electronics Shop', 'Bookstore', 'Furniture', 'Hardware Store', 'Cafe & Restaurant', 'Jewelry & Accessories', 'Gift & Toy Shop', 'Other'],
-          service: ['Law Office', 'Tax Office', 'Dental Clinic', 'Consulting Firm', 'Cleaning Agency', 'Beauty Salon'],
+          service: ['Law Office', 'Tax Office', 'Clinic', 'Consulting Firm', 'Cleaning Agency', 'Beauty Salon'],
           organization: ['Tech Corporation', 'Construction Company', 'Healthcare Group', 'Educational Institution', 'Non-Profit Org', 'Other'],
           real_estate: ['Residential Homes', 'Rental Apartments', 'Commercial Real Estate', 'Land & Lots'],
           automotive: ['Used Car Dealership', 'Car Rental Service', 'Auto Repair Workshop', 'Spare Parts Dealer']
@@ -361,6 +398,7 @@ const Dashboard = () => {
             const newPending = newItems.find(item => item.status === 'pending');
             if (newPending) {
               setActiveInquiryAlert(newPending);
+              setHasOpenedNotifications(false);
             }
           }
           return data;
@@ -643,6 +681,18 @@ const Dashboard = () => {
     setForm({ ...currentForm, sizes: sizesArray.join(', ') });
   };
 
+  const handleSpecialtyCheckboxChange = (specialty, isEdit = false) => {
+    const currentForm = isEdit ? editForm : listingForm;
+    const setFormFunc = isEdit ? setEditForm : setListingForm;
+    let list = currentForm.specialties ? currentForm.specialties.split(',').map(s => s.trim()).filter(Boolean) : [];
+    if (list.includes(specialty)) {
+      list = list.filter(s => s !== specialty);
+    } else {
+      list.push(specialty);
+    }
+    setFormFunc({ ...currentForm, specialties: list.join(', ') });
+  };
+
   const handleCreateListing = async (e) => {
     e.preventDefault();
     const { 
@@ -652,8 +702,8 @@ const Dashboard = () => {
       bedrooms, bathrooms, propertyType, address,
       year, mileage, make, model,
       brand, sizes, colors, condition, stock,
-      expirationDate, weight, volume, alcoholPercentage,
-      modelNumber, specifications, warranty,
+      expirationDate, weight, grocerySubcategory, liquorSubcategory, volume, alcoholPercentage,
+      modelNumber, specifications, warranty, electronicsSubcategory,
       specialties, consultationType, officeHours, languagesSpoken,
       taxServices, taxYearsHandled, documentsRequired,
       clinicServices, acceptedInsurances, emergencyServices,
@@ -704,10 +754,12 @@ const Dashboard = () => {
       metadata.expirationDate = expirationDate;
       metadata.brand = brand;
       metadata.weight = weight;
+      metadata.grocerySubcategory = grocerySubcategory;
       metadata.stock = Number(stock) || 0;
     } else if (activeCategory === 'Liquor Store') {
       metadata.volume = volume;
       metadata.alcoholPercentage = Number(alcoholPercentage) || 0;
+      metadata.liquorSubcategory = liquorSubcategory;
       metadata.stock = Number(stock) || 0;
     } else if (activeCategory === 'Electronics Shop') {
       metadata.brand = brand;
@@ -715,6 +767,7 @@ const Dashboard = () => {
       metadata.specifications = specifications;
       metadata.warranty = warranty;
       metadata.condition = condition;
+      metadata.electronicsSubcategory = electronicsSubcategory;
       metadata.stock = Number(stock) || 0;
     } else if (activeCategory === 'Law Office') {
       metadata.specialties = specialties ? specialties.split(',').map(s => s.trim()) : [];
@@ -725,7 +778,7 @@ const Dashboard = () => {
       metadata.taxServices = taxServices ? taxServices.split(',').map(s => s.trim()) : [];
       metadata.taxYearsHandled = taxYearsHandled ? taxYearsHandled.split(',').map(s => s.trim()) : [];
       metadata.documentsRequired = documentsRequired ? documentsRequired.split(',').map(s => s.trim()) : [];
-    } else if (activeCategory === 'Dental Clinic') {
+    } else if (activeCategory === 'Clinic') {
       metadata.specialties = specialties ? specialties.split(',').map(s => s.trim()) : [];
       metadata.clinicServices = clinicServices ? clinicServices.split(',').map(s => s.trim()) : [];
       metadata.acceptedInsurances = acceptedInsurances ? acceptedInsurances.split(',').map(s => s.trim()) : [];
@@ -894,9 +947,12 @@ const Dashboard = () => {
       stock: listing.stock !== undefined ? listing.stock : (listing.metadata?.stock || ''),
       expirationDate: listing.expirationDate ? new Date(listing.expirationDate).toISOString().substring(0, 10) : (listing.metadata?.expirationDate ? new Date(listing.metadata.expirationDate).toISOString().substring(0, 10) : ''),
       weight: listing.weight || listing.metadata?.weight || '',
+      grocerySubcategory: listing.grocerySubcategory || listing.metadata?.grocerySubcategory || 'Fruits & Vegetables',
+      liquorSubcategory: listing.liquorSubcategory || listing.metadata?.liquorSubcategory || 'Wine',
       volume: listing.volume || listing.metadata?.volume || '',
       alcoholPercentage: listing.alcoholPercentage || listing.metadata?.alcoholPercentage || '',
       modelNumber: listing.modelNumber || listing.metadata?.modelNumber || '',
+      electronicsSubcategory: listing.electronicsSubcategory || listing.metadata?.electronicsSubcategory || 'Phones',
       specifications: listing.specifications || listing.metadata?.specifications || '',
       warranty: listing.warranty || listing.metadata?.warranty || '',
       specialties: (listing.specialties || listing.metadata?.specialties || []).join(', '),
@@ -932,8 +988,8 @@ const Dashboard = () => {
       bedrooms, bathrooms, propertyType, address,
       year, mileage, make, model, images,
       brand, sizes, colors, condition, stock,
-      expirationDate, weight, volume, alcoholPercentage,
-      modelNumber, specifications, warranty,
+      expirationDate, weight, grocerySubcategory, liquorSubcategory, volume, alcoholPercentage,
+      modelNumber, specifications, warranty, electronicsSubcategory,
       specialties, consultationType, officeHours, languagesSpoken,
       taxServices, taxYearsHandled, documentsRequired,
       clinicServices, acceptedInsurances, emergencyServices,
@@ -979,10 +1035,12 @@ const Dashboard = () => {
       metadata.expirationDate = expirationDate;
       metadata.brand = brand;
       metadata.weight = weight;
+      metadata.grocerySubcategory = grocerySubcategory;
       metadata.stock = Number(stock) || 0;
     } else if (activeCategory === 'Liquor Store') {
       metadata.volume = volume;
       metadata.alcoholPercentage = Number(alcoholPercentage) || 0;
+      metadata.liquorSubcategory = liquorSubcategory;
       metadata.stock = Number(stock) || 0;
     } else if (activeCategory === 'Electronics Shop') {
       metadata.brand = brand;
@@ -990,6 +1048,7 @@ const Dashboard = () => {
       metadata.specifications = specifications;
       metadata.warranty = warranty;
       metadata.condition = condition;
+      metadata.electronicsSubcategory = electronicsSubcategory;
       metadata.stock = Number(stock) || 0;
     } else if (activeCategory === 'Law Office') {
       metadata.specialties = specialties ? specialties.split(',').map(s => s.trim()) : [];
@@ -1000,7 +1059,7 @@ const Dashboard = () => {
       metadata.taxServices = taxServices ? taxServices.split(',').map(s => s.trim()) : [];
       metadata.taxYearsHandled = taxYearsHandled ? taxYearsHandled.split(',').map(s => s.trim()) : [];
       metadata.documentsRequired = documentsRequired ? documentsRequired.split(',').map(s => s.trim()) : [];
-    } else if (activeCategory === 'Dental Clinic') {
+    } else if (activeCategory === 'Clinic') {
       metadata.specialties = specialties ? specialties.split(',').map(s => s.trim()) : [];
       metadata.clinicServices = clinicServices ? clinicServices.split(',').map(s => s.trim()) : [];
       metadata.acceptedInsurances = acceptedInsurances ? acceptedInsurances.split(',').map(s => s.trim()) : [];
@@ -1077,7 +1136,10 @@ const Dashboard = () => {
 
   // Helper translations for dynamic tabs depending on role/type complexity
   const getTabLabel = (tabKey) => {
-    if (tabKey === 'inquiries') return 'Customer Requests';
+    if (tabKey === 'inquiries') {
+      const isServiceCategory = ['Clinic', 'Dental Clinic', 'Cleaning Agency', 'Beauty Salon', 'Law Office', 'Tax Office', 'Consulting Firm'].includes(user?.category);
+      return isServiceCategory ? 'Manage Bookings' : 'Customer Requests';
+    }
     if (tabKey === 'overview') return t('dashboard');
     if (tabKey === 'items') {
       if (user?.role === 'handyman') return t('handymen');
@@ -1134,6 +1196,16 @@ const Dashboard = () => {
 
   return (
     <div className="container dashboard-page">
+      {/* Dashboard Top Header */}
+      <div className="dashboard-top-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', padding: '16px 24px', background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(10px)', borderRadius: '12px', border: '1px solid var(--border-glass)', boxShadow: '0 8px 32px rgba(0,0,0,0.15)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '1.8rem' }}>🏢</span>
+          <div>
+            <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-main)' }}>{user?.storeName || user?.username} Dashboard</h2>
+            <span style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', fontWeight: 600, textTransform: 'uppercase' }}>{user?.category} Portal</span>
+          </div>
+        </div>
+      </div>
       
 
 
@@ -1161,7 +1233,16 @@ const Dashboard = () => {
               onClick={() => setActiveTab('store_settings')} 
               className={`sidebar-tab-btn ${activeTab === 'store_settings' ? 'active' : ''}`}
             >
-              <span>🔧</span> Store Settings
+              <span>🔧</span> {user?.category === 'Clinic' || user?.category === 'Dental Clinic' ? 'Clinic Settings' : (user?.category === 'Cleaning Agency' ? 'Agency Settings' : (user?.category === 'Beauty Salon' ? 'Salon Settings' : 'Store Settings'))}
+            </button>
+          )}
+
+          {user?.role === 'business' && (user?.category === 'Law Office' || user?.category === 'Clinic' || user?.category === 'Dental Clinic') && (
+            <button 
+              onClick={() => setActiveTab('manage_attorneys')} 
+              className={`sidebar-tab-btn ${activeTab === 'manage_attorneys' ? 'active' : ''}`}
+            >
+              <span>👥</span> {(user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? 'Manage Doctors' : 'Manage Attorneys'}
             </button>
           )}
 
@@ -1185,11 +1266,14 @@ const Dashboard = () => {
 
           {!isOtherOrgOrIndividual && (
             <button 
-              onClick={() => setActiveTab('inquiries')} 
+              onClick={() => {
+                setActiveTab('inquiries');
+                setHasOpenedNotifications(true);
+              }}
               className={`sidebar-tab-btn ${activeTab === 'inquiries' ? 'active' : ''}`}
             >
               <span>{getTabIcon('inquiries')}</span> {getTabLabel('inquiries')}
-              {inquiries.filter(i => i.status === 'pending').length > 0 && (
+              {(!hasOpenedNotifications && inquiries.filter(i => i.status === 'pending').length > 0) && (
                 <span className="badge bg-danger text-white" style={{ marginLeft: '8px', borderRadius: '10px', padding: '2px 8px', fontSize: '0.75rem' }}>
                   {inquiries.filter(i => i.status === 'pending').length}
                 </span>
@@ -1205,10 +1289,20 @@ const Dashboard = () => {
           {activeTab === 'store_settings' && (
             <div className="tab-pane-view">
               <div className="glass-panel" style={{ padding: '30px', maxWidth: '700px', width: '100%' }}>
-                <h3 style={{ marginBottom: '20px' }}>Store Settings & Page Details</h3>
+                <h3 style={{ marginBottom: '20px' }}>
+                  {profileForm.category === 'Clinic' || profileForm.category === 'Dental Clinic' ? 'Clinic Settings & Page Details' :
+                   profileForm.category === 'Cleaning Agency' ? 'Agency Settings & Page Details' :
+                   profileForm.category === 'Beauty Salon' ? 'Salon Settings & Page Details' :
+                   'Store Settings & Page Details'}
+                </h3>
                 <form onSubmit={handleSaveProfile}>
                   <div className="form-group" style={{ marginBottom: '16px' }}>
-                    <label style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Store / Business Name</label>
+                    <label style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>
+                      {profileForm.category === 'Clinic' || profileForm.category === 'Dental Clinic' ? 'Clinic Name' :
+                       profileForm.category === 'Cleaning Agency' ? 'Agency Name' :
+                       profileForm.category === 'Beauty Salon' ? 'Salon Name' :
+                       'Store / Business Name'}
+                    </label>
                     <input 
                       type="text" 
                       className="form-control" 
@@ -1467,6 +1561,198 @@ const Dashboard = () => {
             </div>
           )}
 
+          {activeTab === 'manage_attorneys' && (
+            <div className="tab-pane-view">
+              <div className="glass-panel" style={{ padding: '30px', maxWidth: '800px', width: '100%' }}>
+                <h3 style={{ marginBottom: '8px' }}>
+                  👥 {(user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? 'Manage Doctors & Specialists' : 'Manage Attorneys & Counselors'}
+                </h3>
+                <p className="text-muted" style={{ marginBottom: '24px' }}>
+                  {(user?.category === 'Clinic' || user?.category === 'Dental Clinic') 
+                    ? 'Add, edit, or remove doctors and medical specialists displayed on your storefront page.'
+                    : 'Add, edit, or remove attorneys displayed on your storefront page.'}
+                </p>
+
+                {/* Team List */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '30px' }}>
+                  {(!user.attorneys || user.attorneys.length === 0) ? (
+                    <div style={{ padding: '30px', textAlign: 'center', background: 'rgba(255,255,255,0.01)', borderRadius: '8px', border: '1px dashed var(--border-glass)' }}>
+                      <p className="text-muted mb-0">
+                        {(user?.category === 'Clinic' || user?.category === 'Dental Clinic') 
+                          ? 'No doctors added yet. Use the form below to add members to your medical team.'
+                          : 'No attorneys added yet. Use the form below to add members to your legal team.'}
+                      </p>
+                    </div>
+                  ) : (
+                    user.attorneys.map((att, idx) => (
+                      <div key={idx} className="glass-panel" style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-glass)', borderRadius: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                          {att.image ? (
+                            <img src={att.image} alt={att.name} style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent-secondary)' }} />
+                          ) : (
+                            <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', color: '#fff', fontWeight: 'bold' }}>
+                              {att.name.split(' ').map(n => n[0]).join('')}
+                            </div>
+                          )}
+                          <div>
+                            <h4 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', color: 'var(--text-main)' }}>{att.name}</h4>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--accent-secondary)', fontWeight: 600, display: 'block' }}>{att.role}</span>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginTop: '2px' }}>🎯 Specialty: {att.spec || 'General Counsel'}</span>
+                            {att.bio && <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '6px 0 0 0', fontStyle: 'italic' }}>{att.bio}</p>}
+                          </div>
+                        </div>
+                        <button 
+                          type="button" 
+                          className="btn btn-danger btn-sm"
+                          onClick={async () => {
+                            if (!window.confirm(`Are you sure you want to remove ${att.name}?`)) return;
+                            const updatedList = user.attorneys.filter((_, i) => i !== idx);
+                            const token = localStorage.getItem('token');
+                            try {
+                              const res = await fetch('/api/auth/update-profile', {
+                                method: 'PATCH',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify({ attorneys: updatedList })
+                              });
+                              const data = await res.json();
+                              if (!res.ok) throw new Error(data.message);
+                              setUser({ ...user, attorneys: updatedList });
+                              alert((user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? 'Doctor removed successfully!' : 'Attorney removed successfully!');
+                            } catch(err) {
+                              alert(err.message || ((user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? 'Failed to remove doctor' : 'Failed to remove attorney'));
+                            }
+                          }}
+                          style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Add Attorney Form */}
+                <div style={{ borderTop: '1px solid var(--border-glass)', paddingTop: '24px' }}>
+                  <h4 style={{ marginBottom: '16px', color: 'var(--accent-primary)' }}>
+                    {(user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? 'Add Doctor / Specialist' : 'Add Team Member'}
+                  </h4>
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const name = formData.get('attName');
+                    const role = formData.get('attRole');
+                    
+                    const specs = Array.from(e.target.querySelectorAll('input[name="attSpecs"]:checked')).map(cb => cb.value);
+                    const spec = specs.join(', ');
+                    const bio = formData.get('attBio');
+                    
+                    const newAtt = { name, role, spec, bio, image: attorneyPhoto };
+                    const updatedList = [...(user.attorneys || []), newAtt];
+                    const token = localStorage.getItem('token');
+                    
+                    try {
+                       const res = await fetch('/api/auth/update-profile', {
+                        method: 'PATCH',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ attorneys: updatedList })
+                      });
+                      const data = await res.json();
+                      if (!res.ok) throw new Error(data.message);
+                      setUser({ ...user, attorneys: updatedList });
+                      setAttorneyPhoto('');
+                      e.target.reset();
+                      const fileInput = e.target.querySelector('input[type="file"]');
+                      if (fileInput) fileInput.value = '';
+                      alert((user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? 'Doctor added successfully!' : 'Attorney added successfully!');
+                    } catch(err) {
+                      alert(err.message || ((user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? 'Failed to add doctor' : 'Failed to add attorney'));
+                    }
+                  }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div className="form-group">
+                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>
+                          {(user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? 'Doctor Name *' : 'Attorney Name *'}
+                        </label>
+                        <input type="text" name="attName" className="form-control" placeholder={(user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? 'e.g. Dr. Abraham Belaye' : 'e.g. Dr. Abraham Atbel'} required />
+                      </div>
+                      <div className="form-group">
+                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Role / Title *</label>
+                        <input type="text" name="attRole" className="form-control" placeholder={(user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? 'e.g. Medical Director' : 'e.g. Senior Managing Partner'} required />
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div className="form-group">
+                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Specialties / Areas of Care *</label>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', padding: '12px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-glass)', borderRadius: '8px', minHeight: '100px' }}>
+                          {((user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? [
+                            { key: 'GENERAL_CHECKUP', label: 'GENERAL CHECKUP', value: 'General Checkup' },
+                            { key: 'LABORATORY', label: 'LABORATORY', value: 'Laboratory' },
+                            { key: 'PHARMACY', label: 'PHARMACY', value: 'Pharmacy' },
+                            { key: 'DENTAL', label: 'DENTAL', value: 'Dental' },
+                            { key: 'EYE_CARE', label: 'EYE CARE', value: 'Eye Care' },
+                            { key: 'WOMENS_HEALTH', label: 'WOMENS HEALTH', value: 'Women’s Health' }
+                          ] : [
+                            { key: 'FAMILY_LAW', label: 'FAMILY LAW', value: 'Family Law' },
+                            { key: 'BUSINESS_LAW', label: 'BUSINESS LAW', value: 'Business Law' },
+                            { key: 'IMMIGRATION', label: 'IMMIGRATION', value: 'Immigration' },
+                            { key: 'REAL_ESTATE_LAW', label: 'REAL ESTATE LAW', value: 'Real Estate Law' },
+                            { key: 'CONTRACT_REVIEW', label: 'CONTRACT REVIEW', value: 'Contract Review' },
+                            { key: 'CONSULTATION', label: 'CONSULTATION', value: 'Consultation' }
+                          ]).map((item) => (
+                            <label key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', cursor: 'pointer', textTransform: 'uppercase' }}>
+                              <input 
+                                type="checkbox" 
+                                name="attSpecs" 
+                                value={item.value} 
+                                style={{ width: 'auto', margin: 0 }}
+                              />
+                              {item.label}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="form-group" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>
+                          {(user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? 'Doctor Headshot / Photo' : 'Attorney Headshot / Photo'}
+                        </label>
+                        <input 
+                          type="file" 
+                          accept="image/*"
+                          className="form-control"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setAttorneyPhoto(reader.result);
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          style={{ padding: '8px' }}
+                        />
+                      </div>
+                    </div>
+                    <div className="form-group">
+                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Short Biography / Bio</label>
+                      <textarea name="attBio" className="form-control" rows="3" placeholder={(user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? 'Share a brief overview of their medical credentials and experience...' : 'Share a brief overview of their legal credentials and experience...'}></textarea>
+                    </div>
+                    <button type="submit" className="btn btn-primary mt-2 py-2 fw-semibold" style={{ width: 'fit-content', padding: '10px 24px' }}>
+                      {(user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? 'Add Doctor to Team' : 'Add Attorney to Team'}
+                    </button>
+                  </form>
+                </div>
+
+              </div>
+            </div>
+          )}
+
           {/* TAB 1: OVERVIEW METRICS */}
           {activeTab === 'overview' && (
             <div className="tab-pane-view">
@@ -1547,7 +1833,7 @@ const Dashboard = () => {
                     className="btn btn-primary"
                     style={{ borderRadius: '8px', padding: '8px 16px', fontWeight: 'bold' }}
                   >
-                    + Add / {user?.role === 'business' ? (user?.category || 'Listing') : (user?.role === 'handyman' ? 'Handyman Skill' : 'Item')}
+                    + Add / {user?.role === 'business' ? ((user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? 'Clinic Service' : (user?.category === 'Cleaning Agency' ? 'Cleaning Service' : (user?.category || 'Listing'))) : (user?.role === 'handyman' ? 'Handyman Skill' : 'Item')}
                   </button>
                 </div>
 
@@ -1814,19 +2100,27 @@ const Dashboard = () => {
           {activeTab === 'inquiries' && (
             <div className="tab-pane-view">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '10px' }}>
-                <h2 style={{ margin: 0, borderLeft: '3px solid var(--accent-primary)', paddingLeft: '10px' }}>📩 Customer Requests Log</h2>
+                <h2 style={{ margin: 0, borderLeft: '3px solid var(--accent-primary)', paddingLeft: '10px' }}>
+                  {['Clinic', 'Dental Clinic', 'Cleaning Agency', 'Law Office', 'Tax Office', 'Consulting Firm'].includes(user?.category) ? '📅 Manage Bookings Portal' : '📩 Customer Requests Log'}
+                </h2>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                   <span className="badge badge-cyan" style={{ fontSize: '0.85rem', padding: '6px 12px' }}>
-                    Showing {filteredInquiries.length} of {inquiries.length} Requests
+                    Showing {filteredInquiries.length} of {inquiries.length} {['Clinic', 'Dental Clinic', 'Cleaning Agency', 'Law Office', 'Tax Office', 'Consulting Firm'].includes(user?.category) ? 'Bookings' : 'Requests'}
                   </span>
                 </div>
               </div>
 
               {inquiries.length === 0 ? (
                 <div className="glass-panel flex-center" style={{ padding: '60px', textAlign: 'center' }}>
-                  <span style={{ fontSize: '3rem', display: 'block', marginBottom: '16px' }}>📬</span>
-                  <h3>No Customer Requests Yet</h3>
-                  <p>When customers submit requests via the storefront contact modal, they will list here in real-time.</p>
+                  <span style={{ fontSize: '3rem', display: 'block', marginBottom: '16px' }}>📅</span>
+                  <h3>
+                    {['Clinic', 'Dental Clinic', 'Cleaning Agency', 'Law Office', 'Tax Office', 'Consulting Firm'].includes(user?.category) ? 'No Bookings Scheduled Yet' : 'No Customer Requests Yet'}
+                  </h3>
+                  <p>
+                    {['Clinic', 'Dental Clinic', 'Cleaning Agency', 'Law Office', 'Tax Office', 'Consulting Firm'].includes(user?.category)
+                      ? 'When customers schedule appointments or services via the storefront, they will list here in real-time.'
+                      : 'When customers submit requests via the storefront contact modal, they will list here in real-time.'}
+                  </p>
                 </div>
               ) : (
                 <>
@@ -1887,6 +2181,28 @@ const Dashboard = () => {
                             <div>
                               📄 <strong>Prescription Attachment:</strong> <span style={{ color: 'var(--accent-secondary)' }}>{inq.details.fileName}</span>
                               {inq.details.notes && <p style={{ marginTop: '8px', marginBottom: 0 }}>💬 <strong>Note:</strong> {inq.details.notes}</p>}
+                            </div>
+                          )}
+                           {inq.businessType === 'clinic' && (
+                            <div>
+                              🗓️ <strong>Clinic Appointment Proposal:</strong> {inq.details.date} at {inq.details.time}<br/>
+                              🩺 <strong>Requested Doctor:</strong> {inq.details.topic}<br/>
+                              {inq.details.reason && <p style={{ marginTop: '8px', marginBottom: 0 }}>💬 <strong>Reason / Symptoms:</strong> {inq.details.reason}</p>}
+                            </div>
+                          )}
+                           {inq.businessType === 'cleaning' && (
+                            <div>
+                              🗓️ <strong>Cleaning Schedule Slot:</strong> {inq.details.date} at {inq.details.time}<br/>
+                              🧹 <strong>Requested Service:</strong> {inq.details.topic}<br/>
+                              {inq.details.address && <>📍 <strong>Cleaning Address:</strong> {inq.details.address}<br/></>}
+                              {inq.details.reason && <p style={{ marginTop: '8px', marginBottom: 0 }}>💬 <strong>Special Instructions:</strong> {inq.details.reason}</p>}
+                            </div>
+                          )}
+                           {inq.businessType === 'beauty' && (
+                            <div>
+                              🗓️ <strong>Salon Booking Slot:</strong> {inq.details.date} at {inq.details.time}<br/>
+                              💄 <strong>Requested Service:</strong> {inq.details.topic}<br/>
+                              {inq.details.reason && <p style={{ marginTop: '8px', marginBottom: 0 }}>💬 <strong>Style Instructions / Requests:</strong> {inq.details.reason}</p>}
                             </div>
                           )}
                           {inq.businessType === 'law' && (
@@ -2112,7 +2428,7 @@ const Dashboard = () => {
                     />
                   </div>
                 </div>
-              ) : !['Law Office', 'Tax Office', 'Dental Clinic', 'Consulting Firm'].includes(editingListing?.category || editForm.category) ? (
+              ) : !['Law Office', 'Tax Office', 'Clinic', 'Dental Clinic', 'Consulting Firm', 'Cleaning Agency'].includes(editingListing?.category || editForm.category) ? (
                 <div className="form-group">
                   <label>Price / Value Offered ($) <span style={{ fontWeight: 400, fontSize: '0.82rem', opacity: 0.8 }}>(Optional — Leave blank for "Contact for Price")</span></label>
                   <input 
@@ -2214,6 +2530,27 @@ const Dashboard = () => {
               {(editingListing?.category || editForm.category) === 'Grocery Store' && (
                 <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
                   <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Grocery Product Specs</h4>
+                  
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label>Grocery Section / Category *</label>
+                    <select 
+                      className="form-control" 
+                      value={editForm.grocerySubcategory || 'Fruits & Vegetables'} 
+                      onChange={(e) => setEditForm({ ...editForm, grocerySubcategory: e.target.value })}
+                      required
+                      style={{ backgroundColor: 'var(--bg-app)', color: 'var(--text-main)', borderColor: 'rgba(var(--text-main-rgb, 0), 0.15)' }}
+                    >
+                      <option value="Fruits & Vegetables">{t('grocery_fruits_vegetables') || 'Fruits & Vegetables'}</option>
+                      <option value="Meat & Fish">{t('grocery_meat_fish') || 'Meat & Fish'}</option>
+                      <option value="Dairy & Eggs">{t('grocery_dairy_eggs') || 'Dairy & Eggs'}</option>
+                      <option value="Bakery">{t('grocery_bakery') || 'Bakery'}</option>
+                      <option value="Pantry">{t('grocery_pantry') || 'Pantry'}</option>
+                      <option value="Drinks">{t('grocery_drinks') || 'Drinks'}</option>
+                      <option value="Household">{t('grocery_household') || 'Household'}</option>
+                      <option value="Baby & Personal Care">{t('grocery_baby_personal_care') || 'Baby & Personal Care'}</option>
+                    </select>
+                  </div>
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div className="form-group">
                       <label>Brand</label>
@@ -2240,6 +2577,30 @@ const Dashboard = () => {
               {(editingListing?.category || editForm.category) === 'Liquor Store' && (
                 <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
                   <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Liquor Product Specs</h4>
+                  
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label>Liquor Section / Category *</label>
+                    <select 
+                      className="form-control" 
+                      value={editForm.liquorSubcategory || 'Wine'} 
+                      onChange={(e) => setEditForm({ ...editForm, liquorSubcategory: e.target.value })}
+                      required
+                      style={{ backgroundColor: 'var(--bg-app)', color: 'var(--text-main)', borderColor: 'rgba(var(--text-main-rgb, 0), 0.15)' }}
+                    >
+                      <option value="Wine">{t('liquor_wine') || 'Wine'}</option>
+                      <option value="Beer">{t('liquor_beer') || 'Beer'}</option>
+                      <option value="Whiskey">{t('liquor_whiskey') || 'Whiskey'}</option>
+                      <option value="Vodka">{t('liquor_vodka') || 'Vodka'}</option>
+                      <option value="Gin">{t('liquor_gin') || 'Gin'}</option>
+                      <option value="Rum">{t('liquor_rum') || 'Rum'}</option>
+                      <option value="Tequila">{t('liquor_tequila') || 'Tequila'}</option>
+                      <option value="Champagne">{t('liquor_champagne') || 'Champagne'}</option>
+                      <option value="Mixers">{t('liquor_mixers') || 'Mixers'}</option>
+                      <option value="Snacks">{t('liquor_snacks') || 'Snacks'}</option>
+                      <option value="Gift Sets">{t('liquor_gift_sets') || 'Gift Sets'}</option>
+                    </select>
+                  </div>
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div className="form-group">
                       <label>Volume / Size</label>
@@ -2260,6 +2621,26 @@ const Dashboard = () => {
               {(editingListing?.category || editForm.category) === 'Electronics Shop' && (
                 <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
                   <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Electronics Specs</h4>
+                  
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label>Electronics Section / Category *</label>
+                    <select 
+                      className="form-control" 
+                      value={editForm.electronicsSubcategory || 'Phones'} 
+                      onChange={(e) => setEditForm({ ...editForm, electronicsSubcategory: e.target.value })}
+                      required
+                      style={{ backgroundColor: 'var(--bg-app)', color: 'var(--text-main)', borderColor: 'rgba(var(--text-main-rgb, 0), 0.15)' }}
+                    >
+                      <option value="Phones">{t('electronics_phones') || 'Phones'}</option>
+                      <option value="Laptops">{t('electronics_laptops') || 'Laptops'}</option>
+                      <option value="TV & Audio">{t('electronics_tv_audio') || 'TV & Audio'}</option>
+                      <option value="Gaming">{t('electronics_gaming') || 'Gaming'}</option>
+                      <option value="Accessories">{t('electronics_accessories') || 'Accessories'}</option>
+                      <option value="Smart Devices">{t('electronics_smart_devices') || 'Smart Devices'}</option>
+                      <option value="Appliances">{t('electronics_appliances') || 'Appliances'}</option>
+                    </select>
+                  </div>
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div className="form-group">
                       <label>Brand</label>
@@ -2296,8 +2677,23 @@ const Dashboard = () => {
                 <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
                   <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Legal Service Info (No Price Required)</h4>
                   <div className="form-group">
-                    <label>Specialties / Practice Areas (comma-separated)</label>
-                    <input type="text" className="form-control" placeholder="e.g. Family Law, Corporate Tax, Criminal Defense" value={editForm.specialties} onChange={(e) => setEditForm({ ...editForm, specialties: e.target.value })} />
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Specialties / Practice Areas *</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', background: 'rgba(255,255,255,0.01)', padding: '12px', borderRadius: '6px', border: '1px solid var(--border-glass)', marginBottom: '12px' }}>
+                      {['Family Law', 'Business Law', 'Immigration', 'Real Estate Law', 'Contract Review', 'Consultation'].map((spec) => {
+                        const checked = (editForm.specialties || '').split(',').map(s => s.trim()).includes(spec);
+                        return (
+                          <label key={spec} style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, cursor: 'pointer', fontSize: '0.9rem' }}>
+                            <input 
+                              type="checkbox" 
+                              checked={checked}
+                              onChange={() => handleSpecialtyCheckboxChange(spec, true)} 
+                              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                            />
+                            {spec}
+                          </label>
+                        );
+                      })}
+                    </div>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div className="form-group">
@@ -2324,8 +2720,23 @@ const Dashboard = () => {
                 <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
                   <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Tax & Accounting Service Specs</h4>
                   <div className="form-group">
-                    <label>Tax Services Offered (comma-separated)</label>
-                    <input type="text" className="form-control" placeholder="e.g. Personal Return, Corporate Audits, Bookkeeping" value={editForm.taxServices} onChange={(e) => setEditForm({ ...editForm, taxServices: e.target.value })} />
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Specialties / Practice Areas *</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', background: 'rgba(255,255,255,0.01)', padding: '12px', borderRadius: '6px', border: '1px solid var(--border-glass)', marginBottom: '12px' }}>
+                      {['Personal Tax', 'Business Tax', 'VAT', 'Payroll Tax', 'Accounting', 'Bookkeeping', 'Tax Consultation'].map((spec) => {
+                        const checked = (editForm.specialties || '').split(',').map(s => s.trim()).includes(spec);
+                        return (
+                          <label key={spec} style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, cursor: 'pointer', fontSize: '0.9rem' }}>
+                            <input 
+                              type="checkbox" 
+                              checked={checked}
+                              onChange={() => handleSpecialtyCheckboxChange(spec, true)} 
+                              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                            />
+                            {spec}
+                          </label>
+                        );
+                      })}
+                    </div>
                   </div>
                   <div className="form-group">
                     <label>Tax Years Handled (comma-separated)</label>
@@ -2338,27 +2749,64 @@ const Dashboard = () => {
                 </div>
               )}
 
-              {(editingListing?.category || editForm.category) === 'Dental Clinic' && (
+              {['Clinic', 'Dental Clinic', 'Cleaning Agency'].includes(editingListing?.category || editForm.category) && (
                 <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
-                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Clinic / Medical Services Specs</h4>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>
+                    {['Clinic', 'Dental Clinic'].includes(editingListing?.category || editForm.category) ? 'Clinic & Medical Service Specs' : 'Cleaning Agency Service Specs'}
+                  </h4>
                   <div className="form-group">
-                    <label>Clinic Specialties (comma-separated)</label>
-                    <input type="text" className="form-control" placeholder="e.g. Orthodontics, Pediatrics, Cosmetic" value={editForm.specialties} onChange={(e) => setEditForm({ ...editForm, specialties: e.target.value })} />
-                  </div>
-                  <div className="form-group">
-                    <label>Services Offered (comma-separated)</label>
-                    <input type="text" className="form-control" placeholder="e.g. Root Canal, Teeth Whitening, Routine Exam" value={editForm.clinicServices} onChange={(e) => setEditForm({ ...editForm, clinicServices: e.target.value })} />
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', alignItems: 'center', marginBottom: 0 }}>
-                    <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label>Accepted Insurances</label>
-                      <input type="text" className="form-control" placeholder="e.g. BlueCross, Aetna" value={editForm.acceptedInsurances} onChange={(e) => setEditForm({ ...editForm, acceptedInsurances: e.target.value })} />
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Specialties / Areas of Service *</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', background: 'rgba(255,255,255,0.01)', padding: '12px', borderRadius: '6px', border: '1px solid var(--border-glass)', marginBottom: '12px' }}>
+                      {((['Clinic', 'Dental Clinic'].includes(editingListing?.category || editForm.category) ? 
+                        ['General Checkup', 'Laboratory', 'Pharmacy', 'Dental', 'Eye Care', 'Women’s Health'] :
+                        ['House Cleaning', 'Office Cleaning', 'Deep Cleaning', 'Move-In / Move-Out', 'Carpet Cleaning', 'Disinfection']
+                      )).map((spec) => {
+                        const checked = (editForm.specialties || '').split(',').map(s => s.trim()).includes(spec);
+                        return (
+                          <label key={spec} style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, cursor: 'pointer', fontSize: '0.9rem' }}>
+                            <input 
+                              type="checkbox" 
+                              checked={checked}
+                              onChange={() => handleSpecialtyCheckboxChange(spec, true)} 
+                              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                            />
+                            {spec}
+                          </label>
+                        );
+                      })}
                     </div>
-                    <div className="form-group" style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '20px' }}>
-                      <input type="checkbox" id="editEmergencyServices" checked={editForm.emergencyServices} onChange={(e) => setEditForm({ ...editForm, emergencyServices: e.target.checked })} />
-                      <label htmlFor="editEmergencyServices" style={{ margin: 0, cursor: 'pointer' }}>Offers 24/7 Emergency Care</label>
-                    </div>
                   </div>
+                  {['Clinic', 'Dental Clinic'].includes(editingListing?.category || editForm.category) ? (
+                    <>
+                      <div className="form-group">
+                        <label>Services Offered (comma-separated)</label>
+                        <input type="text" className="form-control" placeholder="e.g. Routine Exam, Blood Tests, Prescriptions" value={editForm.clinicServices} onChange={(e) => setEditForm({ ...editForm, clinicServices: e.target.value })} />
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', alignItems: 'center', marginBottom: 0 }}>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                          <label>Accepted Insurances</label>
+                          <input type="text" className="form-control" placeholder="e.g. BlueCross, Aetna" value={editForm.acceptedInsurances} onChange={(e) => setEditForm({ ...editForm, acceptedInsurances: e.target.value })} />
+                        </div>
+                        <div className="form-group" style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '20px' }}>
+                          <input type="checkbox" id="editEmergencyServices" checked={editForm.emergencyServices} onChange={(e) => setEditForm({ ...editForm, emergencyServices: e.target.checked })} />
+                          <label htmlFor="editEmergencyServices" style={{ margin: 0, cursor: 'pointer' }}>Offers 24/7 Emergency Care</label>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', alignItems: 'center', marginBottom: 0 }}>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                          <label>Average Service Time (e.g. 2-4 Hours)</label>
+                          <input type="text" className="form-control" placeholder="e.g. 3 Hours" value={editForm.clinicServices} onChange={(e) => setEditForm({ ...editForm, clinicServices: e.target.value })} />
+                        </div>
+                        <div className="form-group" style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '20px' }}>
+                          <input type="checkbox" id="editEcoFriendly" checked={editForm.emergencyServices} onChange={(e) => setEditForm({ ...editForm, emergencyServices: e.target.checked })} />
+                          <label htmlFor="editEcoFriendly" style={{ margin: 0, cursor: 'pointer' }}>Uses Eco-Friendly Products</label>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -2756,7 +3204,7 @@ const Dashboard = () => {
                 <label>
                   {user?.role === 'handyman' ? t('label_service_title') :
                    user?.role === 'business' && user.businessType === 'store' ? t('label_product_name') :
-                   user?.role === 'business' && user.businessType === 'service' ? t('label_service_name') :
+                   user?.role === 'business' && user.businessType === 'service' ? getServiceLabel() :
                    user?.role === 'business' && user.businessType === 'organization' ? t('label_job_title') :
                    user?.role === 'business' && user.businessType === 'real_estate' ? t('label_property_title') :
                    user?.role === 'business' && user.businessType === 'automotive' ? t('label_vehicle_title') :
@@ -2768,7 +3216,7 @@ const Dashboard = () => {
                   placeholder={
                     user?.role === 'handyman' ? t('placeholder_service_title') :
                     user?.role === 'business' && user.businessType === 'store' ? t('placeholder_product_name') :
-                    user?.role === 'business' && user.businessType === 'service' ? t('placeholder_service_name') :
+                    user?.role === 'business' && user.businessType === 'service' ? getServicePlaceholder() :
                     user?.role === 'business' && user.businessType === 'organization' ? t('placeholder_job_title') :
                     user?.role === 'business' && user.businessType === 'real_estate' ? t('placeholder_property_title') :
                     user?.role === 'business' && user.businessType === 'automotive' ? t('placeholder_vehicle_title') :
@@ -2844,7 +3292,7 @@ const Dashboard = () => {
                     />
                   </div>
                 </div>
-              ) : !['Law Office', 'Tax Office', 'Dental Clinic', 'Consulting Firm'].includes(user?.category) ? (
+              ) : !['Law Office', 'Tax Office', 'Clinic', 'Dental Clinic', 'Consulting Firm', 'Cleaning Agency'].includes(user?.category) ? (
                 <div className="form-group">
                   <label>{t('label_price_optional') || 'Price / Value Offered ($) (Optional — Leave blank for "Contact for Price")'}</label>
                   <input 
@@ -2947,6 +3395,27 @@ const Dashboard = () => {
               {user?.role === 'business' && user.category === 'Grocery Store' && (
                 <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
                   <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Grocery Product Specs</h4>
+                  
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label>Grocery Section / Category *</label>
+                    <select 
+                      className="form-control" 
+                      value={listingForm.grocerySubcategory || 'Fruits & Vegetables'} 
+                      onChange={(e) => setListingForm({ ...listingForm, grocerySubcategory: e.target.value })}
+                      required
+                      style={{ backgroundColor: 'var(--bg-app)', color: 'var(--text-main)', borderColor: 'rgba(var(--text-main-rgb, 0), 0.15)' }}
+                    >
+                      <option value="Fruits & Vegetables">{t('grocery_fruits_vegetables') || 'Fruits & Vegetables'}</option>
+                      <option value="Meat & Fish">{t('grocery_meat_fish') || 'Meat & Fish'}</option>
+                      <option value="Dairy & Eggs">{t('grocery_dairy_eggs') || 'Dairy & Eggs'}</option>
+                      <option value="Bakery">{t('grocery_bakery') || 'Bakery'}</option>
+                      <option value="Pantry">{t('grocery_pantry') || 'Pantry'}</option>
+                      <option value="Drinks">{t('grocery_drinks') || 'Drinks'}</option>
+                      <option value="Household">{t('grocery_household') || 'Household'}</option>
+                      <option value="Baby & Personal Care">{t('grocery_baby_personal_care') || 'Baby & Personal Care'}</option>
+                    </select>
+                  </div>
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div className="form-group">
                       <label>Brand</label>
@@ -2973,6 +3442,30 @@ const Dashboard = () => {
               {user?.role === 'business' && user.category === 'Liquor Store' && (
                 <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
                   <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Liquor Product Specs</h4>
+                  
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label>Liquor Section / Category *</label>
+                    <select 
+                      className="form-control" 
+                      value={listingForm.liquorSubcategory || 'Wine'} 
+                      onChange={(e) => setListingForm({ ...listingForm, liquorSubcategory: e.target.value })}
+                      required
+                      style={{ backgroundColor: 'var(--bg-app)', color: 'var(--text-main)', borderColor: 'rgba(var(--text-main-rgb, 0), 0.15)' }}
+                    >
+                      <option value="Wine">{t('liquor_wine') || 'Wine'}</option>
+                      <option value="Beer">{t('liquor_beer') || 'Beer'}</option>
+                      <option value="Whiskey">{t('liquor_whiskey') || 'Whiskey'}</option>
+                      <option value="Vodka">{t('liquor_vodka') || 'Vodka'}</option>
+                      <option value="Gin">{t('liquor_gin') || 'Gin'}</option>
+                      <option value="Rum">{t('liquor_rum') || 'Rum'}</option>
+                      <option value="Tequila">{t('liquor_tequila') || 'Tequila'}</option>
+                      <option value="Champagne">{t('liquor_champagne') || 'Champagne'}</option>
+                      <option value="Mixers">{t('liquor_mixers') || 'Mixers'}</option>
+                      <option value="Snacks">{t('liquor_snacks') || 'Snacks'}</option>
+                      <option value="Gift Sets">{t('liquor_gift_sets') || 'Gift Sets'}</option>
+                    </select>
+                  </div>
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div className="form-group">
                       <label>Volume / Size</label>
@@ -2993,6 +3486,26 @@ const Dashboard = () => {
               {user?.role === 'business' && user.category === 'Electronics Shop' && (
                 <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
                   <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Electronics Specs</h4>
+                  
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label>Electronics Section / Category *</label>
+                    <select 
+                      className="form-control" 
+                      value={listingForm.electronicsSubcategory || 'Phones'} 
+                      onChange={(e) => setListingForm({ ...listingForm, electronicsSubcategory: e.target.value })}
+                      required
+                      style={{ backgroundColor: 'var(--bg-app)', color: 'var(--text-main)', borderColor: 'rgba(var(--text-main-rgb, 0), 0.15)' }}
+                    >
+                      <option value="Phones">{t('electronics_phones') || 'Phones'}</option>
+                      <option value="Laptops">{t('electronics_laptops') || 'Laptops'}</option>
+                      <option value="TV & Audio">{t('electronics_tv_audio') || 'TV & Audio'}</option>
+                      <option value="Gaming">{t('electronics_gaming') || 'Gaming'}</option>
+                      <option value="Accessories">{t('electronics_accessories') || 'Accessories'}</option>
+                      <option value="Smart Devices">{t('electronics_smart_devices') || 'Smart Devices'}</option>
+                      <option value="Appliances">{t('electronics_appliances') || 'Appliances'}</option>
+                    </select>
+                  </div>
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div className="form-group">
                       <label>Brand</label>
@@ -3029,8 +3542,23 @@ const Dashboard = () => {
                 <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
                   <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Legal Service Info (No Price Required)</h4>
                   <div className="form-group">
-                    <label>Specialties / Practice Areas (comma-separated)</label>
-                    <input type="text" className="form-control" placeholder="e.g. Family Law, Corporate Tax, Criminal Defense" value={listingForm.specialties} onChange={(e) => setListingForm({ ...listingForm, specialties: e.target.value })} />
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Specialties / Practice Areas *</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', background: 'rgba(255,255,255,0.01)', padding: '12px', borderRadius: '6px', border: '1px solid var(--border-glass)', marginBottom: '12px' }}>
+                      {['Family Law', 'Business Law', 'Immigration', 'Real Estate Law', 'Contract Review', 'Consultation'].map((spec) => {
+                        const checked = (listingForm.specialties || '').split(',').map(s => s.trim()).includes(spec);
+                        return (
+                          <label key={spec} style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, cursor: 'pointer', fontSize: '0.9rem' }}>
+                            <input 
+                              type="checkbox" 
+                              checked={checked}
+                              onChange={() => handleSpecialtyCheckboxChange(spec, false)} 
+                              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                            />
+                            {spec}
+                          </label>
+                        );
+                      })}
+                    </div>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div className="form-group">
@@ -3057,8 +3585,23 @@ const Dashboard = () => {
                 <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
                   <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Tax & Accounting Service Specs</h4>
                   <div className="form-group">
-                    <label>Tax Services Offered (comma-separated)</label>
-                    <input type="text" className="form-control" placeholder="e.g. Personal Return, Corporate Audits, Bookkeeping" value={listingForm.taxServices} onChange={(e) => setListingForm({ ...listingForm, taxServices: e.target.value })} />
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Specialties / Practice Areas *</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', background: 'rgba(255,255,255,0.01)', padding: '12px', borderRadius: '6px', border: '1px solid var(--border-glass)', marginBottom: '12px' }}>
+                      {['Personal Tax', 'Business Tax', 'VAT', 'Payroll Tax', 'Accounting', 'Bookkeeping', 'Tax Consultation'].map((spec) => {
+                        const checked = (listingForm.specialties || '').split(',').map(s => s.trim()).includes(spec);
+                        return (
+                          <label key={spec} style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, cursor: 'pointer', fontSize: '0.9rem' }}>
+                            <input 
+                              type="checkbox" 
+                              checked={checked}
+                              onChange={() => handleSpecialtyCheckboxChange(spec, false)} 
+                              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                            />
+                            {spec}
+                          </label>
+                        );
+                      })}
+                    </div>
                   </div>
                   <div className="form-group">
                     <label>Tax Years Handled (comma-separated)</label>
@@ -3071,27 +3614,64 @@ const Dashboard = () => {
                 </div>
               )}
 
-              {user?.role === 'business' && user.category === 'Dental Clinic' && (
+              {user?.role === 'business' && ['Clinic', 'Dental Clinic', 'Cleaning Agency'].includes(user.category) && (
                 <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-glass)', marginBottom: '16px' }}>
-                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Clinic / Medical Services Specs</h4>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>
+                    {['Clinic', 'Dental Clinic'].includes(user.category) ? 'Clinic & Medical Service Specs' : 'Cleaning Agency Service Specs'}
+                  </h4>
                   <div className="form-group">
-                    <label>Clinic Specialties (comma-separated)</label>
-                    <input type="text" className="form-control" placeholder="e.g. Orthodontics, Pediatrics, Cosmetic" value={listingForm.specialties} onChange={(e) => setListingForm({ ...listingForm, specialties: e.target.value })} />
-                  </div>
-                  <div className="form-group">
-                    <label>Services Offered (comma-separated)</label>
-                    <input type="text" className="form-control" placeholder="e.g. Root Canal, Teeth Whitening, Routine Exam" value={listingForm.clinicServices} onChange={(e) => setListingForm({ ...listingForm, clinicServices: e.target.value })} />
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', alignItems: 'center', marginBottom: 0 }}>
-                    <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label>Accepted Insurances</label>
-                      <input type="text" className="form-control" placeholder="e.g. BlueCross, Aetna" value={listingForm.acceptedInsurances} onChange={(e) => setListingForm({ ...listingForm, acceptedInsurances: e.target.value })} />
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Specialties / Areas of Service *</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', background: 'rgba(255,255,255,0.01)', padding: '12px', borderRadius: '6px', border: '1px solid var(--border-glass)', marginBottom: '12px' }}>
+                      {((['Clinic', 'Dental Clinic'].includes(user.category) ? 
+                        ['General Checkup', 'Laboratory', 'Pharmacy', 'Dental', 'Eye Care', 'Women’s Health'] :
+                        ['House Cleaning', 'Office Cleaning', 'Deep Cleaning', 'Move-In / Move-Out', 'Carpet Cleaning', 'Disinfection']
+                      )).map((spec) => {
+                        const checked = (listingForm.specialties || '').split(',').map(s => s.trim()).includes(spec);
+                        return (
+                          <label key={spec} style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, cursor: 'pointer', fontSize: '0.9rem' }}>
+                            <input 
+                              type="checkbox" 
+                              checked={checked}
+                              onChange={() => handleSpecialtyCheckboxChange(spec, false)} 
+                              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                            />
+                            {spec}
+                          </label>
+                        );
+                      })}
                     </div>
-                    <div className="form-group" style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '20px' }}>
-                      <input type="checkbox" id="emergencyServices" checked={listingForm.emergencyServices} onChange={(e) => setListingForm({ ...listingForm, emergencyServices: e.target.checked })} />
-                      <label htmlFor="emergencyServices" style={{ margin: 0, cursor: 'pointer' }}>Offers 24/7 Emergency Care</label>
-                    </div>
                   </div>
+                  {['Clinic', 'Dental Clinic'].includes(user.category) ? (
+                    <>
+                      <div className="form-group">
+                        <label>Services Offered (comma-separated)</label>
+                        <input type="text" className="form-control" placeholder="e.g. Routine Exam, Blood Tests, Prescriptions" value={listingForm.clinicServices} onChange={(e) => setListingForm({ ...listingForm, clinicServices: e.target.value })} />
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', alignItems: 'center', marginBottom: 0 }}>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                          <label>Accepted Insurances</label>
+                          <input type="text" className="form-control" placeholder="e.g. BlueCross, Aetna" value={listingForm.acceptedInsurances} onChange={(e) => setListingForm({ ...listingForm, acceptedInsurances: e.target.value })} />
+                        </div>
+                        <div className="form-group" style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '20px' }}>
+                          <input type="checkbox" id="emergencyServices" checked={listingForm.emergencyServices} onChange={(e) => setListingForm({ ...listingForm, emergencyServices: e.target.checked })} />
+                          <label htmlFor="emergencyServices" style={{ margin: 0, cursor: 'pointer' }}>Offers 24/7 Emergency Care</label>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', alignItems: 'center', marginBottom: 0 }}>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                          <label>Average Service Time (e.g. 2-4 Hours)</label>
+                          <input type="text" className="form-control" placeholder="e.g. 3 Hours" value={listingForm.clinicServices} onChange={(e) => setListingForm({ ...listingForm, clinicServices: e.target.value })} />
+                        </div>
+                        <div className="form-group" style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '20px' }}>
+                          <input type="checkbox" id="ecoFriendly" checked={listingForm.emergencyServices} onChange={(e) => setListingForm({ ...listingForm, emergencyServices: e.target.checked })} />
+                          <label htmlFor="ecoFriendly" style={{ margin: 0, cursor: 'pointer' }}>Uses Eco-Friendly Products</label>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 

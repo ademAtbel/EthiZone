@@ -21,6 +21,35 @@ const Home = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [sortBy, setSortBy] = useState('newest');
 
+  const getCategoryTranslationKey = (name) => {
+    const map = {
+      'Boutique': 'boutique',
+      'Pharmacy': 'pharmacy',
+      'Liquor Store': 'liquor_store',
+      'Grocery Store': 'grocery_store',
+      'Electronics Shop': 'electronics_shop',
+      'Bookstore': 'bookstore',
+      'Furniture': 'furniture',
+      'Hardware Store': 'hardware_store',
+      'Cafe & Restaurant': 'cafe_slots_restaurant',
+      'Jewelry & Accessories': 'jewelry_slots_accessories',
+      'Gift & Toy Shop': 'gift_slots_toy_shop',
+      'Other Store': 'other',
+      'Other': 'other'
+    };
+    return map[name] || name.toLowerCase().replace(/ & /g, '_slots_').replace(/ /g, '_');
+  };
+
+  const storeCategoryNames = [
+    'Boutique', 'Pharmacy', 'Liquor Store', 'Grocery Store', 'Electronics Shop',
+    'Bookstore', 'Furniture', 'Hardware Store', 'Cafe & Restaurant',
+    'Jewelry & Accessories', 'Gift & Toy Shop', 'Other Store', 'Other'
+  ];
+
+  const serviceCategoryNames = [
+    'Law Office', 'Tax Office', 'Clinic', 'Consulting Firm', 'Cleaning Agency', 'Beauty Salon'
+  ];
+
   // Mobile sidebar open state
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -144,15 +173,32 @@ const Home = () => {
       })
       .catch(() => {
         const fallbacks = [
-          { name: 'Boutique' },
-          { name: 'Pharmacy' },
-          { name: 'Law Office' },
-          { name: 'Tax Office' },
-          { name: 'Liquor Store' },
-          { name: 'Residential Homes' },
-          { name: 'Rental Apartments' },
-          { name: 'Used Car Dealership' },
-          { name: 'Car Rental Service' }
+          { name: 'Boutique', type: 'store' },
+          { name: 'Pharmacy', type: 'store' },
+          { name: 'Liquor Store', type: 'store' },
+          { name: 'Grocery Store', type: 'store' },
+          { name: 'Electronics Shop', type: 'store' },
+          { name: 'Bookstore', type: 'store' },
+          { name: 'Furniture', type: 'store' },
+          { name: 'Hardware Store', type: 'store' },
+          { name: 'Cafe & Restaurant', type: 'store' },
+          { name: 'Jewelry & Accessories', type: 'store' },
+          { name: 'Gift & Toy Shop', type: 'store' },
+          { name: 'Other Store', type: 'store' },
+          { name: 'Law Office', type: 'service' },
+          { name: 'Tax Office', type: 'service' },
+          { name: 'Clinic', type: 'service' },
+          { name: 'Consulting Firm', type: 'service' },
+          { name: 'Cleaning Agency', type: 'service' },
+          { name: 'Beauty Salon', type: 'service' },
+          { name: 'Residential Homes', type: 'real_estate' },
+          { name: 'Rental Apartments', type: 'real_estate' },
+          { name: 'Commercial Real Estate', type: 'real_estate' },
+          { name: 'Land & Lots', type: 'real_estate' },
+          { name: 'Used Car Dealership', type: 'automotive' },
+          { name: 'Car Rental Service', type: 'automotive' },
+          { name: 'Auto Repair Workshop', type: 'automotive' },
+          { name: 'Spare Parts Dealer', type: 'automotive' }
         ];
         setCategories(fallbacks);
       });
@@ -527,6 +573,10 @@ const Home = () => {
     }
 
     if (item.type === 'service') {
+      if (selectedCategory) {
+        const itemCat = item.category || '';
+        if (itemCat.toLowerCase() !== selectedCategory.toLowerCase()) return false;
+      }
       if (pricingModel !== 'All') {
         const priceModelStr = item.description || '';
         if (!priceModelStr.toLowerCase().includes(pricingModel.toLowerCase())) return false;
@@ -1350,6 +1400,26 @@ const Home = () => {
                   <div className="space-y-4">
                     <h2 className="fs-4 fw-bold pb-2 border-bottom">{t('filters')}</h2>
 
+                    {/* Category */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('category')}</h4>
+                      {[
+                        { name: 'All' },
+                        ...categories.filter(cat => cat.type === 'service' || serviceCategoryNames.includes(cat.name))
+                      ].map((item) => (
+                        <label key={item.name + '-' + (item._id || 'all')} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                          <input
+                            type="radio"
+                            name="serviceCategory"
+                            className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                            checked={(item.name === 'All' && !selectedCategory) || selectedCategory === item.name}
+                            onChange={() => setSelectedCategory(item.name === 'All' ? '' : item.name)}
+                          />
+                          <span>{item.name === 'All' ? t('all') : (t(getCategoryTranslationKey(item.name)) || item.name)}</span>
+                        </label>
+                      ))}
+                    </div>
+
                     {/* Pricing Model */}
                     <div className="mt-3">
                       <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('pricing_model')}</h4>
@@ -1408,6 +1478,7 @@ const Home = () => {
                           setPricingModel('All');
                           setMinExp(0);
                           setLocationFilter('');
+                          setSelectedCategory('');
                           setSearchQuery('');
                         }}
                         className="btn btn-light border w-100 py-2 rounded-3 fw-semibold transition-all"
@@ -1552,23 +1623,18 @@ const Home = () => {
                     <div className="mt-3">
                       <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('category')}</h4>
                       {[
-                        { value: 'All', key: 'all' },
-                        { value: 'Boutique', key: 'boutique' },
-                        { value: 'Pharmacy', key: 'pharmacy' },
-                        { value: 'Liquor Store', key: 'liquor_store' },
-                        { value: 'Grocery Store', key: 'grocery_store' },
-                        { value: 'Electronics Shop', key: 'electronics_shop' },
-                        { value: 'Bookstore', key: 'bookstore' }
+                        { name: 'All' },
+                        ...categories.filter(cat => cat.type === 'store' || storeCategoryNames.includes(cat.name))
                       ].map((item) => (
-                        <label key={item.value} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                        <label key={item.name + '-' + (item._id || 'all')} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
                           <input
                             type="radio"
                             name="storeCategory"
                             className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
-                            checked={(item.value === 'All' && !selectedCategory) || selectedCategory === item.value}
-                            onChange={() => setSelectedCategory(item.value === 'All' ? '' : item.value)}
+                            checked={(item.name === 'All' && !selectedCategory) || selectedCategory === item.name}
+                            onChange={() => setSelectedCategory(item.name === 'All' ? '' : item.name)}
                           />
-                          <span>{t(item.key)}</span>
+                          <span>{item.name === 'All' ? t('all') : (t(getCategoryTranslationKey(item.name)) || item.name)}</span>
                         </label>
                       ))}
                     </div>

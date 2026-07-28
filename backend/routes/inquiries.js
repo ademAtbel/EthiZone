@@ -5,7 +5,7 @@ const Inquiry = require('../models/Inquiry');
 const User = require('../models/User');
 const { verifyToken } = require('../middleware/auth');
 const { validateEmail, validatePhone } = require('../utils/validation');
-const { sendOtpEmail } = require('../utils/email');
+const { sendOtpEmail, sendNotificationEmail } = require('../utils/email');
 
 // In-memory OTP storage for guest inquiries
 const otpStore = new Map();
@@ -27,10 +27,11 @@ router.post('/send-otp', async (req, res) => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     otpStore.set(email.toLowerCase().trim(), {
       code,
-      expires: Date.now() + 5 * 60 * 1000 // Valid for 5 minutes
+      expires: Date.now() + 60 * 1000 // Valid for 60 seconds
     });
 
-    await sendOtpEmail(email, code);
+    // Send the OTP email immediately in the background
+    sendOtpEmail(email, code).catch(err => console.error('Background email error:', err.message));
 
     res.json({ message: 'Verification code sent to your email!' });
   } catch (error) {
@@ -57,7 +58,7 @@ router.post('/', async (req, res) => {
     // Verify OTP code
     const storedOtp = otpStore.get(customerEmail.toLowerCase().trim());
     if (!storedOtp || storedOtp.code !== otpCode.toString().trim() || Date.now() > storedOtp.expires) {
-      return res.status(400).json({ message: 'Invalid or expired email verification code. Please request a new one.' });
+      return res.status(400).json({ message: 'Invalid or expired email verification code. Code expires in 60 seconds.' });
     }
 
     // Clear OTP code once verified successfully
@@ -105,6 +106,8 @@ router.post('/', async (req, res) => {
       detailSummary = `Liquor pickup pre-order: "${details.orderNotes || 'Catalog items'}"`;
     } else if (businessType === 'grocery') {
       detailSummary = `Grocery order (${details.groceryServiceType === 'delivery' ? 'Home Delivery' : 'In-Store Pickup'}): "${details.groceryItems}". Notes: "${details.groceryNotes || 'None'}". Preferred Time: ${details.groceryTime}`;
+    } else if (businessType === 'beauty') {
+      detailSummary = `Beauty salon appointment on ${details.date} at ${details.time} for "${details.topic}". Special Requests: "${details.reason || 'None'}"`;
     } else {
       detailSummary = `General Inquiry: "${details.message || 'No additional details'}"`;
     }
@@ -172,6 +175,10 @@ router.post('/', async (req, res) => {
     ========================================================================`;
     console.log(smsOwnerText);
     simulatedLogs.push({ type: 'sms', recipient: 'owner', text: smsOwnerText });
+
+    // Send real emails in background (non-blocking)
+    sendNotificationEmail(customerEmail, `Inquiry Confirmation - ${businessName}`, emailCustomerText, `<pre style="font-family: sans-serif; font-size: 14px; padding: 20px; background: #f8fafc; border-radius: 8px; line-height: 1.5; color: #334155;">${emailCustomerText}</pre>`).catch(err => console.error('Real customer notification email error:', err.message));
+    sendNotificationEmail(businessOwner.email, `🔔 New Customer Request Received!`, emailOwnerText, `<pre style="font-family: sans-serif; font-size: 14px; padding: 20px; background: #f8fafc; border-radius: 8px; line-height: 1.5; color: #334155;">${emailOwnerText}</pre>`).catch(err => console.error('Real owner notification email error:', err.message));
 
     res.status(201).json({
       message: 'Inquiry submitted successfully, and notifications sent!',

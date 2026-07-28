@@ -36,6 +36,21 @@ const CategoryTemplate = ({
     return <BoutiqueLayout ownerName={ownerName} ownerPhone={ownerPhone} onOpenModal={onOpenModal} />;
   }
 
+  // 6. CLINIC TEMPLATE
+  if (normalizedCategory.includes('clinic') || normalizedCategory.includes('medical') || normalizedCategory.includes('dental')) {
+    return <ClinicLayout ownerName={ownerName} ownerPhone={ownerPhone} onOpenModal={onOpenModal} />;
+  }
+
+  // 7. CLEANING AGENCY TEMPLATE
+  if (normalizedCategory.includes('cleaning') || normalizedCategory.includes('sanitation')) {
+    return <CleaningLayout ownerName={ownerName} ownerPhone={ownerPhone} onOpenModal={onOpenModal} />;
+  }
+
+  // 8. BEAUTY SALON TEMPLATE
+  if (normalizedCategory.includes('beauty') || normalizedCategory.includes('salon')) {
+    return <BeautySalonLayout ownerName={ownerName} ownerPhone={ownerPhone} onOpenModal={onOpenModal} />;
+  }
+
   // DEFAULT FALLBACK TEMPLATE
   return (
     <div className="glass-panel template-section">
@@ -180,6 +195,57 @@ const BoutiqueLayout = ({ ownerName, ownerPhone, onOpenModal }) => {
 
       <button onClick={onOpenModal} className="btn btn-primary w-full d-flex align-items-center justify-content-center gap-2" style={{ padding: '12px', fontSize: '1rem', fontWeight: 600 }}>
         <ShoppingBag size={18}/> Check Product Availability Form
+      </button>
+    </div>
+  );
+};
+
+// ----------------------------------------------------
+// CLINIC SUB-COMPONENT
+// ----------------------------------------------------
+const ClinicLayout = ({ ownerName, ownerPhone, onOpenModal }) => {
+  return (
+    <div className="glass-panel template-section clinic-theme">
+      <div className="theme-banner" style={{ background: '#10b981', color: 'white', padding: '4px 10px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold', width: 'fit-content', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}><Activity size={14}/> Medical Clinic Portal</div>
+      <h3>Book Doctor Appointment</h3>
+      <p className="template-intro">Schedule a consultation with our experienced medical doctors and specialists. Submit this request, and our administrative desk will confirm your slot.</p>
+      
+      <button onClick={onOpenModal} className="btn btn-primary w-full d-flex align-items-center justify-content-center gap-2" style={{ padding: '12px', fontSize: '1rem', fontWeight: 600, background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))', border: 'none' }}>
+        <Calendar size={18}/> Book Appointment Now
+      </button>
+    </div>
+  );
+};
+
+// ----------------------------------------------------
+// CLEANING SUB-COMPONENT
+// ----------------------------------------------------
+const CleaningLayout = ({ ownerName, ownerPhone, onOpenModal }) => {
+  return (
+    <div className="glass-panel template-section cleaning-theme">
+      <div className="theme-banner" style={{ background: '#0ea5e9', color: 'white', padding: '4px 10px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold', width: 'fit-content', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}><Activity size={14}/> Professional Cleaning Agency</div>
+      <h3>Book Cleaning Service</h3>
+      <p className="template-intro">Book a background-checked professional cleaner for your home or office. Submit this request, and our administrative desk will confirm your slot.</p>
+      
+      <button onClick={onOpenModal} className="btn btn-primary w-full d-flex align-items-center justify-content-center gap-2" style={{ padding: '12px', fontSize: '1rem', fontWeight: 600, background: 'linear-gradient(135deg, #0ea5e9, #38bdf8)', border: 'none' }}>
+        <Calendar size={18}/> Book Cleaning Now
+      </button>
+    </div>
+  );
+};
+
+// ----------------------------------------------------
+// BEAUTY SALON SUB-COMPONENT
+// ----------------------------------------------------
+const BeautySalonLayout = ({ ownerName, ownerPhone, onOpenModal }) => {
+  return (
+    <div className="glass-panel template-section beauty-theme">
+      <div className="theme-banner" style={{ background: '#ec4899', color: 'white', padding: '4px 10px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold', width: 'fit-content', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}><Activity size={14}/> Beauty Salon & Styling Portal</div>
+      <h3>Book Salon Session</h3>
+      <p className="template-intro">Book a consultation or service session with our professional stylists and beauty experts. Submit this request, and our desk will confirm your slot.</p>
+      
+      <button onClick={onOpenModal} className="btn btn-primary w-full d-flex align-items-center justify-content-center gap-2" style={{ padding: '12px', fontSize: '1rem', fontWeight: 600, background: 'linear-gradient(135deg, #ec4899, #f472b6)', border: 'none' }}>
+        <Calendar size={18}/> Book Salon Session Now
       </button>
     </div>
   );

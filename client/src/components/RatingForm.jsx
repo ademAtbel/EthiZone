@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 
-const RatingForm = ({ targetId, onRatingSubmitted }) => {
+const RatingForm = ({ targetId, listingId, onRatingSubmitted }) => {
   const { t } = useApp();
   const [formData, setFormData] = useState({
     name: '',
@@ -47,7 +47,8 @@ const RatingForm = ({ targetId, onRatingSubmitted }) => {
         },
         body: JSON.stringify({
           email: formData.email,
-          targetId
+          targetId,
+          listingId
         })
       });
 
@@ -80,6 +81,7 @@ const RatingForm = ({ targetId, onRatingSubmitted }) => {
         body: JSON.stringify({
           email: formData.email,
           targetId,
+          listingId,
           code: enteredCode
         })
       });
@@ -116,6 +118,7 @@ const RatingForm = ({ targetId, onRatingSubmitted }) => {
         },
         body: JSON.stringify({
           targetId,
+          listingId,
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
@@ -297,8 +300,21 @@ const RatingForm = ({ targetId, onRatingSubmitted }) => {
         <button 
           type="submit" 
           disabled={submitting || !verified} 
-          className="btn btn-primary w-full"
-          style={{ cursor: (!verified || submitting) ? 'not-allowed' : 'pointer' }}
+          className="w-full"
+          style={{ 
+            cursor: (!verified || submitting) ? 'not-allowed' : 'pointer',
+            background: (!verified || submitting) ? '#e2e8f0' : 'linear-gradient(135deg, #d4af37, #ffd700)',
+            border: 'none',
+            color: (!verified || submitting) ? '#94a3b8' : '#000',
+            fontWeight: 'bold',
+            padding: '12px 24px',
+            borderRadius: '6px',
+            fontSize: '1rem',
+            boxShadow: (!verified || submitting) ? 'none' : '0 4px 15px rgba(212, 175, 55, 0.3)',
+            transition: 'all 0.3s ease',
+            display: 'block',
+            textAlign: 'center'
+          }}
         >
           {submitting ? 'Submitting...' : t('post_reference')}
         </button>
