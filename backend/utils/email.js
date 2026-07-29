@@ -6,6 +6,23 @@ const nodemailer = (() => {
   }
 })();
 
+const getTransporter = (user, pass, host, port) => {
+  if ((host && host.includes('gmail')) || (user && user.includes('gmail'))) {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user, pass },
+      tls: { rejectUnauthorized: false }
+    });
+  }
+  return nodemailer.createTransport({
+    host: host || 'smtp.gmail.com',
+    port: parseInt(port) || 587,
+    secure: parseInt(port) === 465,
+    auth: { user, pass },
+    tls: { rejectUnauthorized: false }
+  });
+};
+
 /**
  * Sends an OTP email to the user.
  * If SMTP configurations are missing or nodemailer is not installed, it falls back to printing to the terminal.
@@ -61,15 +78,7 @@ const sendOtpEmail = async (email, code) => {
   }
 
   try {
-    const transporter = nodemailer.createTransport({
-      host: host || (parseInt(port) === 465 ? 'smtp.gmail.com' : undefined),
-      port: parseInt(port),
-      secure: parseInt(port) === 465,
-      auth: {
-        user,
-        pass,
-      },
-    });
+    const transporter = getTransporter(user, pass, host, port);
 
     const info = await transporter.sendMail({
       from: `"EthiZone Support" <${user}>`,
@@ -177,15 +186,7 @@ const sendContactInquiryEmail = async (inquiry) => {
   }
 
   try {
-    const transporter = nodemailer.createTransport({
-      host: host || (parseInt(port) === 465 ? 'smtp.gmail.com' : undefined),
-      port: parseInt(port),
-      secure: parseInt(port) === 465,
-      auth: {
-        user,
-        pass,
-      },
-    });
+    const transporter = getTransporter(user, pass, host, port);
 
     const info = await transporter.sendMail({
       from: `"EthiZone Contact System" <${user}>`,
@@ -218,15 +219,7 @@ const sendNotificationEmail = async (toEmail, subject, text, html) => {
   }
 
   try {
-    const transporter = nodemailer.createTransport({
-      host: host || (parseInt(port) === 465 ? 'smtp.gmail.com' : undefined),
-      port: parseInt(port),
-      secure: parseInt(port) === 465,
-      auth: {
-        user,
-        pass,
-      },
-    });
+    const transporter = getTransporter(user, pass, host, port);
 
     const info = await transporter.sendMail({
       from: `"EthiZone Notifications" <${user}>`,

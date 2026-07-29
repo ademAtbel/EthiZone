@@ -15,14 +15,14 @@ const EventsPage = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
 
   const categories = [
-    { name: 'All', icon: '🌟' },
-    { name: 'Entertainment', icon: '🎬' },
-    { name: 'Arts & Culture', icon: '🎨' },
-    { name: 'Religious', icon: '⛪' },
-    { name: 'Social', icon: '🤝' },
-    { name: 'Educational', icon: '📚' },
-    { name: 'Sports', icon: '🏆' },
-    { name: 'Charity', icon: '❤️' }
+    { name: 'All', label: t('events_cat_all') || 'All', icon: '🌟' },
+    { name: 'Entertainment', label: t('events_entertainment') || 'Entertainment', icon: '🎬' },
+    { name: 'Arts & Culture', label: t('events_arts_culture') || 'Arts & Culture', icon: '🎨' },
+    { name: 'Religious', label: t('events_religious') || 'Religious', icon: '⛪' },
+    { name: 'Social', label: t('events_social') || 'Social', icon: '🤝' },
+    { name: 'Educational', label: t('events_educational') || 'Educational', icon: '📚' },
+    { name: 'Sports', label: t('events_sports') || 'Sports', icon: '🏆' },
+    { name: 'Charity', label: t('events_charity') || 'Charity', icon: '❤️' }
   ];
 
   // Fetch events based on filters
@@ -75,7 +75,7 @@ const EventsPage = () => {
   };
 
   const getEventPriceLabel = (price) => {
-    if (!price || price === 0) return 'FREE';
+    if (!price || price === 0) return t('events_free') || 'FREE';
     return `$${price}`;
   };
 
@@ -84,10 +84,10 @@ const EventsPage = () => {
       {/* Header section */}
       <div className="text-center mb-5">
         <h1 className="fw-bold mb-2" style={{ fontSize: '2.5rem', background: 'linear-gradient(135deg, var(--text-main) 0%, var(--accent-primary) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          Explore Events Nearby
+          {t('events_explore_title') || 'Explore Events Nearby'}
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
-          Find concerts, workshops, community gatherings, sports tournaments, and other events hosted near you.
+          {t('events_explore_subtitle') || 'Find concerts, workshops, community gatherings, sports tournaments, and other events hosted near you.'}
         </p>
       </div>
 
@@ -99,7 +99,7 @@ const EventsPage = () => {
               <Search className="position-absolute translate-middle-y" style={{ left: '12px', top: '50%', color: 'var(--text-muted)' }} size={16} />
               <input
                 type="text"
-                placeholder="Search event title, description or keywords..."
+                placeholder={t('events_search_placeholder') || 'Search event title, description or keywords...'}
                 className="form-control"
                 style={{ paddingLeft: '38px', backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-glass)', color: 'var(--text-main)', height: '45px' }}
                 value={searchInput}
@@ -112,7 +112,7 @@ const EventsPage = () => {
               <MapPin className="position-absolute translate-middle-y" style={{ left: '12px', top: '50%', color: 'var(--accent-secondary)' }} size={16} />
               <input
                 type="text"
-                placeholder="Search City or Location (e.g. Bole)..."
+                placeholder={t('events_location_placeholder') || 'Search City or Location (e.g. Bole)...'}
                 className="form-control"
                 style={{ paddingLeft: '38px', backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-glass)', color: 'var(--text-main)', height: '45px' }}
                 value={locationInput}
@@ -126,7 +126,7 @@ const EventsPage = () => {
               className="btn btn-primary w-100 fw-semibold"
               style={{ height: '45px', background: 'var(--accent-primary)', border: 'none' }}
             >
-              Search Events
+              {t('events_search_btn') || 'Search Events'}
             </button>
           </div>
         </form>
@@ -147,7 +147,7 @@ const EventsPage = () => {
               borderColor: selectedCategory === cat.name ? 'var(--accent-primary)' : 'var(--border-glass)'
             }}
           >
-            <span>{cat.icon}</span> {cat.name}
+            <span>{cat.icon}</span> {cat.label}
           </button>
         ))}
       </div>
@@ -158,7 +158,7 @@ const EventsPage = () => {
           <div className="spinner-border text-success" role="status">
             <span className="visually-hidden">Loading...</span>
           </div>
-          <p className="mt-2 text-secondary">Searching events nearby...</p>
+          <p className="mt-2 text-secondary">{t('events_searching') || 'Searching events nearby...'}</p>
         </div>
       )}
 
@@ -174,8 +174,8 @@ const EventsPage = () => {
           {events.length === 0 ? (
             <div className="text-center py-5 glass-panel" style={{ borderRadius: '12px', border: '1px solid var(--border-glass)', padding: '50px' }}>
               <Calendar size={48} style={{ color: 'var(--text-muted)', marginBottom: '16px' }} />
-              <h4 className="fw-bold mb-2">No Events Found</h4>
-              <p style={{ color: 'var(--text-secondary)' }}>We couldn't find any events matching your selected category or location. Try clearing filters.</p>
+              <h4 className="fw-bold mb-2">{t('events_no_found') || 'No Events Found'}</h4>
+              <p style={{ color: 'var(--text-secondary)' }}>{t('events_no_found_desc') || "We couldn't find any events matching your selected category or location. Try clearing filters."}</p>
               <button
                 onClick={() => {
                   setSearchInput('');
@@ -184,7 +184,7 @@ const EventsPage = () => {
                 }}
                 className="btn btn-secondary mt-3"
               >
-                Clear Filters
+                {t('events_clear_filters') || 'Clear Filters'}
               </button>
             </div>
           ) : (
@@ -271,14 +271,14 @@ const EventsPage = () => {
                           className="btn btn-success flex-grow-1 d-flex align-items-center justify-content-center gap-2 py-2"
                           style={{ fontSize: '0.85rem' }}
                         >
-                          <Phone size={14} /> Call Organizer
+                          <Phone size={14} /> {t('events_call') || 'Call Organizer'}
                         </a>
                         <a 
                           href={`sms:${event.ownerPhone}?body=Hi, I am interested in your event: ${event.title}`} 
                           className="btn btn-primary flex-grow-1 d-flex align-items-center justify-content-center gap-2 py-2"
                           style={{ fontSize: '0.85rem' }}
                         >
-                          <MessageCircle size={14} /> SMS
+                          <MessageCircle size={14} /> {t('events_sms') || 'SMS Host'}
                         </a>
                       </div>
                     </div>
@@ -355,7 +355,7 @@ const EventsPage = () => {
                   fontWeight: 'bold'
                 }}
               >
-                Price: {getEventPriceLabel(selectedEvent.price)}
+                {t('price') || 'Price'}: {getEventPriceLabel(selectedEvent.price)}
               </span>
             </div>
 
@@ -378,20 +378,20 @@ const EventsPage = () => {
                 <div className="col-sm-6">
                   <div className="d-flex align-items-center gap-2 text-secondary">
                     <Calendar size={14} style={{ color: 'var(--accent-primary)' }} />
-                    <span>Date: <strong>{formatDate(selectedEvent.eventDate)}</strong></span>
+                    <span>{t('events_date') || 'Date'}: <strong>{formatDate(selectedEvent.eventDate)}</strong></span>
                   </div>
                 </div>
                 <div className="col-sm-6">
                   <div className="d-flex align-items-center gap-2 text-secondary">
                     <Clock size={14} style={{ color: 'var(--accent-primary)' }} />
-                    <span>Time: <strong>{selectedEvent.eventTime}</strong></span>
+                    <span>{t('events_time') || 'Time'}: <strong>{selectedEvent.eventTime}</strong></span>
                   </div>
                 </div>
                 <div className="col-12 border-top pt-2 mt-2">
                   <div className="d-flex align-items-start gap-2 text-secondary">
                     <MapPin size={14} style={{ color: 'var(--accent-secondary)', marginTop: '2px' }} />
                     <span>
-                      Location:{' '}
+                      {t('events_venue') || 'Location'}:{' '}
                       <a 
                         href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
                           `${selectedEvent.address || ''} ${selectedEvent.location || ''}`.trim()
@@ -414,27 +414,27 @@ const EventsPage = () => {
               </div>
 
               <div className="mb-4">
-                <h5 className="fw-bold mb-2">Description</h5>
+                <h5 className="fw-bold mb-2">{t('events_details_title') || 'Description'}</h5>
                 <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.95rem', whiteSpace: 'pre-wrap' }}>
                   {selectedEvent.description}
                 </p>
               </div>
 
               <div className="border-top pt-4">
-                <h5 className="fw-bold mb-2">Organizer Contact Details</h5>
+                <h5 className="fw-bold mb-2">{t('events_hosted_by') || 'Organizer Contact Details'}</h5>
                 <p className="text-secondary small mb-3">Posted by: <strong>{selectedEvent.ownerName}</strong></p>
                 <div className="d-flex gap-2">
                   <a 
                     href={`tel:${selectedEvent.ownerPhone}`} 
                     className="btn btn-success flex-grow-1 d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold"
                   >
-                    <Phone size={16} /> Call Organizer
+                    <Phone size={16} /> {t('events_call') || 'Call Organizer'}
                   </a>
                   <a 
                     href={`sms:${selectedEvent.ownerPhone}?body=Hi, I am interested in your event: ${selectedEvent.title}`} 
                     className="btn btn-primary flex-grow-1 d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold"
                   >
-                    <MessageCircle size={16} /> Send SMS
+                    <MessageCircle size={16} /> {t('events_sms') || 'SMS Host'}
                   </a>
                 </div>
               </div>

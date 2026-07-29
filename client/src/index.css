@@ -831,3 +831,54 @@ body:not(.light-theme) .reusable-theme-toggle-btn:hover {
   border: 3px solid var(--bg-app, #090d16);
   box-shadow: 0 0 5px rgba(0,0,0,0.5);
 }
+
+/* Mobile Spacing & Bottom Tabbar Offset Safeguards */
+@media (max-width: 991.98px) {
+  body {
+    padding-bottom: 75px !important; /* Keeps page content, buttons, and footers from getting covered by bottom tab bar */
+  }
+
+  .container, 
+  .directory-page-content,
+  .hero-section,
+  .category-browse-grid,
+  .featured-section {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* ========================================================
+   SCROLL REVEAL SLIDING ANIMATIONS (Excludes Nav & Tabbar)
+   ======================================================== */
+.scroll-reveal-init {
+  opacity: 0;
+  transform: translateY(35px) scale(0.98);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+/* Stagger animation delays for grid elements */
+.horizontal-scroll-row .scroll-reveal-init:nth-child(1) { transition-delay: 0.05s; }
+.horizontal-scroll-row .scroll-reveal-init:nth-child(2) { transition-delay: 0.12s; }
+.horizontal-scroll-row .scroll-reveal-init:nth-child(3) { transition-delay: 0.19s; }
+.horizontal-scroll-row .scroll-reveal-init:nth-child(4) { transition-delay: 0.26s; }
+
+.steps-row .scroll-reveal-init:nth-child(1) { transition-delay: 0.05s; }
+.steps-row .scroll-reveal-init:nth-child(2) { transition-delay: 0.15s; }
+.steps-row .scroll-reveal-init:nth-child(3) { transition-delay: 0.25s; }
+
+.scroll-animated {
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+/* Navbar and Mobile Bottom Tabbar MUST stay static & sticky */
+nav.navbar,
+.navbar,
+.mobile-bottom-tabbar,
+.mobile-bottom-tabbar * {
+  transform: none !important;
+  opacity: 1 !important;
+  will-change: auto !important;
+}

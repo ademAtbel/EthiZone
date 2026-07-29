@@ -55,6 +55,60 @@ const AppContent = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [location.pathname, location.search]);
 
+  // Scroll Reveal Animations Observer
+  React.useEffect(() => {
+    let observer;
+    const targetSelectors = [
+      '.home-featured-card',
+      '.cat-card-large',
+      '.cat-card-small',
+      '.featured-section',
+      '.how-it-works-section',
+      '.step-col',
+      '.glass-panel',
+      '.event-card',
+      '.listing-card',
+      '.section-header-row',
+      '.scroll-animate'
+    ];
+
+    const initObserver = () => {
+      const elements = document.querySelectorAll(targetSelectors.join(','));
+      if (!elements.length) return;
+
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('scroll-animated');
+            } else {
+              // Re-animates when scrolling up or down back into view
+              entry.target.classList.remove('scroll-animated');
+            }
+          });
+        },
+        {
+          threshold: 0.1,
+          rootMargin: '0px 0px -40px 0px'
+        }
+      );
+
+      elements.forEach((el) => {
+        if (!el.classList.contains('scroll-reveal-init')) {
+          el.classList.add('scroll-reveal-init');
+        }
+        observer.observe(el);
+      });
+    };
+
+    const timer = setTimeout(initObserver, 200);
+
+    return () => {
+      clearTimeout(timer);
+      if (observer) observer.disconnect();
+    };
+  }, [location.pathname, location.search]);
+
   return (
     <>
       <Navbar />

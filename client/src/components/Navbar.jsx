@@ -175,7 +175,7 @@ const Navbar = () => {
         </div>
 
         {/* Center: Business Category Filter Badges */}
-        {showFilters && (
+        {!isPublicStorefront && (
           <div className="navbar-center-filters">
             <button
               onClick={() => handleTypeSelect('store_product')}
@@ -224,7 +224,7 @@ const Navbar = () => {
               className={`filter-badge ${location.pathname === '/events' ? 'active' : ''}`}
               style={{ textDecoration: 'none' }}
             >
-              Events
+              {t('events') || 'Events'}
             </Link>
           </div>
         )}
@@ -749,7 +749,7 @@ const Navbar = () => {
           -webkit-backdrop-filter: var(--blur-glass);
           border-top: 1px solid var(--border-glass);
           z-index: 1000;
-          padding: 8px 4px;
+          padding: 8px 12px;
           padding-bottom: env(safe-area-inset-bottom, 8px);
           overflow-x: auto;
           gap: 6px;
@@ -805,7 +805,7 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Bottom Tabbar */}
-      {showFilters && !isPublicStorefront && (
+      {!isPublicStorefront && (
         <div className="mobile-bottom-tabbar d-lg-none">
           <button
             onClick={() => { handleTypeSelect('store_product'); setMobileMenuOpen(false); }}
@@ -849,6 +849,14 @@ const Navbar = () => {
           >
             <span className="tab-label">{t('used_items')}</span>
           </button>
+          <Link
+            to="/events"
+            onClick={() => setMobileMenuOpen(false)}
+            className={`mobile-tab-btn ${location.pathname === '/events' ? 'active' : ''}`}
+            style={{ textDecoration: 'none' }}
+          >
+            <span className="tab-label">{t('events') || 'Events'}</span>
+          </Link>
         </div>
       )}
     </>

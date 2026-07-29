@@ -218,6 +218,40 @@ if (isClustered && cluster.isMaster) {
   require('./models/PersonalListing');
 
   // Security & Scaling Middlewares
+  app.disable('x-powered-by'); // Prevent server fingerprinting
+
+  // HTTP Security Headers
+  app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    next();
+  });
+
+  // NoSQL Query & Input Sanitizer (Prevents MongoDB $gt / $ne Injection attacks)
+  const sanitizeInputData = (data) => {
+    if (!data || typeof data !== 'object') return data;
+    if (Array.isArray(data)) {
+      return data.map(sanitizeInputData);
+    }
+    const cleanObj = {};
+    for (const key in data) {
+      if (Object.prototype.hasOwnProperty.call(data, key)) {
+        const cleanKey = key.replace(/^\$|\./g, '');
+        cleanObj[cleanKey] = sanitizeInputData(data[key]);
+      }
+    }
+    return cleanObj;
+  };
+
+  app.use((req, res, next) => {
+    if (req.body) req.body = sanitizeInputData(req.body);
+    if (req.query) req.query = sanitizeInputData(req.query);
+    if (req.params) req.params = sanitizeInputData(req.params);
+    next();
+  });
+
   app.use(cors({
     exposedHeaders: ['X-Total-Count', 'X-Total-Pages', 'X-Current-Page', 'X-Limit']
   }));
@@ -247,6 +281,16 @@ if (isClustered && cluster.isMaster) {
     message: { message: 'Too many requests from this IP, please try again after 15 minutes.' }
   });
   app.use('/api/', apiLimiter);
+
+  // Strict Rate Limiter for Authentication Endpoints (Prevents Brute-Force & OTP Spamming)
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 30, // Limit each IP to 30 authentication requests per 15 minutes
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: 'Too many authentication attempts from this IP. Please try again after 15 minutes.' }
+  });
+  app.use('/api/auth', authLimiter);
 
   // API Route mounts
   app.use('/api/auth', authRoutes);
