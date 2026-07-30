@@ -123,7 +123,7 @@ export default function MarketplacePage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/products")
+    fetch("/api/products")
       .then((res) => {
         if (!res.ok) throw new Error("API response not OK");
         return res.json();

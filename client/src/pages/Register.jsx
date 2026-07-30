@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { validateEmail, validatePhone } from '../utils/validation';
 import { User, Wrench, Store, ShoppingBag, Briefcase, Building2, Home as HomeIcon, Car, Tag, Calendar } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import AnimatedLogo from '../components/AnimatedLogo';
 
 const getSubcategories = (cat) => {
   const subcategoriesMap = {
@@ -206,6 +207,9 @@ const Register = () => {
   return (
     <div className="register-page container flex-center">
       <div className="glass-panel auth-card">
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+          <AnimatedLogo size="lg" />
+        </div>
         <h2>{t('reg_title')}</h2>
         <p className="auth-subtitle">{t('reg_subtitle')}</p>
 

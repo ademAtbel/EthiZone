@@ -1291,7 +1291,14 @@ export const AppProvider = ({ children }) => {
   };
 
   const t = (key) => {
-    return translations[language][key] || key;
+    if (!key) return '';
+    if (translations[language] && translations[language][key] !== undefined) {
+      return translations[language][key];
+    }
+    if (translations.en && translations.en[key] !== undefined) {
+      return translations.en[key];
+    }
+    return key.replace(/^[a-zA-Z0-9_]+\./, '').replace(/_/g, ' ');
   };
 
   return (

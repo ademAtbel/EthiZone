@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import AnimatedLogo from '../components/AnimatedLogo';
 
 const Login = () => {
   const { t } = useApp();
@@ -144,6 +145,9 @@ const Login = () => {
   return (
     <div className="login-page container flex-center">
       <div className="glass-panel auth-card">
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+          <AnimatedLogo size="lg" />
+        </div>
         <h2>{loginMode === 'password' ? t('login_title_pw') : t('login_title_otp')}</h2>
         <p className="auth-subtitle">
           {loginMode === 'password' 

@@ -12,7 +12,7 @@ export default function HomePage() {
 
   useEffect(() => {
     // 1. Fetch popular products
-    fetch("http://localhost:5000/api/products")
+    fetch("/api/products")
       .then((res) => {
         if (!res.ok) throw new Error("API response not OK");
         return res.json();
@@ -36,7 +36,7 @@ export default function HomePage() {
       );
 
     // 2. Fetch featured stores
-    fetch("http://localhost:5000/api/stores")
+    fetch("/api/stores")
       .then((res) => {
         if (!res.ok) throw new Error("API response not OK");
         return res.json();

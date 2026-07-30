@@ -27,7 +27,7 @@ export default function SellerHubPage() {
     const fetchStores = async () => {
       let list = [];
       try {
-        const res = await fetch('http://localhost:5000/api/stores');
+        const res = await fetch('/api/stores');
         if (!res.ok) throw new Error("API failed");
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
@@ -88,7 +88,7 @@ export default function SellerHubPage() {
 
     // Attempt live API update
     try {
-      const res = await fetch(`http://localhost:5000/api/stores/${storeSlug}`, {
+      const res = await fetch(`/api/stores/${storeSlug}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

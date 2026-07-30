@@ -30,8 +30,8 @@ const Inbox = () => {
     const user = JSON.parse(userStr);
     setCurrentUser(user);
 
-    // Initialize Socket
-    socketRef.current = io('http://localhost:5001');
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5001' : window.location.origin);
+    socketRef.current = io(socketUrl);
     socketRef.current.emit('join', user.id);
 
     socketRef.current.on('newMessage', (message) => {

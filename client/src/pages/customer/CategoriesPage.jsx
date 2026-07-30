@@ -11,7 +11,7 @@ export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/categories")
+    fetch("/api/categories")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch categories");
         return res.json();

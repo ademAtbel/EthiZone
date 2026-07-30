@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import Breadcrumbs from './Breadcrumbs';
 import QrModal from './QrModal';
 import ThemeToggle from './ThemeToggle';
+import AnimatedLogo from './AnimatedLogo';
 import { Printer, User, Key, LayoutDashboard, Store, LogOut, Menu, X, Globe, Mail, Phone, Lock, Eye, EyeOff } from 'lucide-react';
 
 const Navbar = () => {
@@ -165,14 +166,9 @@ const Navbar = () => {
       </div>
       <nav className="glass-navbar">
         <div className="container nav-container" style={{ position: 'relative' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-          <Link to="/" className="logo" onClick={() => setMobileMenuOpen(false)} style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
-            <img src="/logo.png" alt="Ethiozone Logo" style={{ height: '112px', objectFit: 'contain' }} />
+          <Link to="/" className="logo" onClick={() => setMobileMenuOpen(false)} style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none', padding: '6px 0' }}>
+            <AnimatedLogo size="md" showMotto mottoText={t('logo_motto_slogan')} />
           </Link>
-          <span className="logo-motto" style={{ fontSize: '0.66rem', color: 'var(--accent-secondary)', fontStyle: 'italic', fontWeight: 600, marginTop: '2px', paddingLeft: '4px', letterSpacing: '0.02em' }}>
-            {t('logo_motto_slogan')}
-          </span>
-        </div>
 
         {/* Center: Business Category Filter Badges */}
         {!isPublicStorefront && (

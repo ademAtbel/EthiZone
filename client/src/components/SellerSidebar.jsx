@@ -14,6 +14,8 @@ import {
   X
 } from "lucide-react";
 
+import AnimatedLogo from "./AnimatedLogo";
+
 export default function SellerSidebar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -57,8 +59,8 @@ export default function SellerSidebar() {
             {/* Header / Brand */}
             <div className="mb-xl flex items-center justify-between pb-4 border-b border-surface-container-high">
               <div>
-                <h2 className="text-title-md font-title-md text-primary font-bold">EthiZone Seller</h2>
-                <p className="text-body-xs font-body-xs text-on_surface_variant">{user?.storeName || 'Partner Portal'}</p>
+                <AnimatedLogo size="sm" subtitle="Seller Portal" />
+                <p className="text-body-xs font-body-xs text-on_surface_variant mt-1">{user?.storeName || 'Partner Portal'}</p>
               </div>
             </div>
 
