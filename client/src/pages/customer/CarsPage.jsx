@@ -9,6 +9,8 @@ export default function CarsPage() {
 
   // Side Filter States
   const [status, setStatus] = useState("All"); // All, Rent, Sale
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [brandFilter, setBrandFilter] = useState("All");
   const [condition, setCondition] = useState("All"); // All, New, Used
   const [bodyType, setBodyType] = useState("All"); // All, Sedan, SUV, Luxury, Electric
   const [transmission, setTransmission] = useState("All"); // All, Automatic, Manual
@@ -36,14 +38,37 @@ export default function CarsPage() {
       );
   }, []);
 
+  const postedCarBrands = Array.from(new Set(
+    cars.map(c => c.metadata?.make || c.metadata?.brand || c.make || c.brand).filter(Boolean)
+  ));
+  const dynamicBrands = ["All", ...(postedCarBrands.length > 0 ? postedCarBrands : ["Tesla", "BMW", "Ford", "Toyota", "Honda", "Hyundai", "Nissan"])];
+
   const filteredCars = cars.filter((car) => {
     // Resolve offerType (Sale vs Rent)
     const carOfferStatus = car.metadata?.offerType || car.status || 'Sale';
-    if (status !== "All" && carOfferStatus.toLowerCase() !== status.toLowerCase()) return false;
+    if (status !== "All" && !carOfferStatus.toLowerCase().includes(status.toLowerCase())) return false;
+
+    // Resolve category
+    if (categoryFilter !== "All") {
+      const cat = (car.category || '').toLowerCase();
+      const target = categoryFilter.toLowerCase();
+      if (!cat.includes(target) && !target.includes(cat)) {
+        if (target.includes('used') && !cat.includes('used')) return false;
+        if (target.includes('repair') && !cat.includes('repair')) return false;
+        if (target.includes('spare') && !cat.includes('spare')) return false;
+        if (target.includes('rental') && !cat.includes('rental')) return false;
+      }
+    }
+
+    // Resolve Brand
+    if (brandFilter !== "All") {
+      const make = (car.metadata?.make || car.metadata?.brand || car.make || car.brand || '').toLowerCase();
+      if (!make.includes(brandFilter.toLowerCase())) return false;
+    }
 
     // Resolve condition
     const carCondition = car.metadata?.condition || car.condition || 'Used';
-    if (condition !== "All" && carCondition.toLowerCase() !== condition.toLowerCase()) return false;
+    if (condition !== "All" && !carCondition.toLowerCase().includes(condition.toLowerCase())) return false;
 
     // Resolve body type
     const carBodyType = car.metadata?.bodyType || car.type || 'Sedan';
@@ -161,6 +186,95 @@ export default function CarsPage() {
                 <h2 className="text-h3 font-h3 text-on-surface border-b border-outline-variant pb-sm">
                   Filters
                 </h2>
+
+                {/* Offer Type */}
+                <section>
+                  <h3 className="text-label-md font-label-md text-on-surface uppercase tracking-wider mb-md">
+                    Offer Type
+                  </h3>
+                  <div className="space-y-sm">
+                    {[
+                      { value: 'All', label: 'All Offers (Sale & Rent)' },
+                      { value: 'Sale', label: '🏷️ For Sale' },
+                      { value: 'Rent', label: '🔑 For Rent' }
+                    ].map((item) => (
+                      <label
+                        key={item.value}
+                        className="flex items-center gap-sm cursor-pointer group"
+                      >
+                        <input
+                          type="radio"
+                          name="status"
+                          className="w-4 h-4 text-primary focus:ring-primary-container"
+                          checked={status === item.value}
+                          onChange={() => setStatus(item.value)}
+                        />
+                        <span className="text-body-sm text-on-surface-variant group-hover:text-on-surface">
+                          {item.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </section>
+
+                {/* Category & Services */}
+                <section>
+                  <h3 className="text-label-md font-label-md text-on-surface uppercase tracking-wider mb-md">
+                    Category & Services
+                  </h3>
+                  <div className="space-y-sm">
+                    {[
+                      { value: 'All', label: 'All Categories' },
+                      { value: 'Used Car Dealership', label: '🚘 Used Car Dealership' },
+                      { value: 'New Car', label: '🏎️ New Car' },
+                      { value: 'Car Rental Service', label: '🔑 Car Rental Service' },
+                      { value: 'Auto Repair Workshop', label: '🛠️ Auto Repair Workshop' },
+                      { value: 'Spare Parts Dealer', label: '⚙️ Spare Parts Dealer' }
+                    ].map((item) => (
+                      <label
+                        key={item.value}
+                        className="flex items-center gap-sm cursor-pointer group"
+                      >
+                        <input
+                          type="radio"
+                          name="categoryFilter"
+                          className="w-4 h-4 text-primary focus:ring-primary-container"
+                          checked={categoryFilter === item.value}
+                          onChange={() => setCategoryFilter(item.value)}
+                        />
+                        <span className="text-body-sm text-on-surface-variant group-hover:text-on-surface">
+                          {item.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </section>
+
+                {/* Brand / Car Maker (Dynamic) */}
+                <section>
+                  <h3 className="text-label-md font-label-md text-on-surface uppercase tracking-wider mb-md">
+                    Brand / Maker
+                  </h3>
+                  <div className="space-y-sm">
+                    {dynamicBrands.map((b) => (
+                      <label
+                        key={b}
+                        className="flex items-center gap-sm cursor-pointer group"
+                      >
+                        <input
+                          type="radio"
+                          name="brandFilter"
+                          className="w-4 h-4 text-primary focus:ring-primary-container"
+                          checked={brandFilter === b}
+                          onChange={() => setBrandFilter(b)}
+                        />
+                        <span className="text-body-sm text-on-surface-variant group-hover:text-on-surface">
+                          {b}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </section>
 
                 {/* Condition */}
                 <section>

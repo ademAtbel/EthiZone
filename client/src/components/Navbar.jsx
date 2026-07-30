@@ -236,6 +236,7 @@ const Navbar = () => {
             onClick={toggleLanguage} 
             className="btn-navbar-tool btn-lang"
             title="Switch Language / ቋንቋ ቀይር"
+            aria-label="Switch Language / ቋንቋ ቀይር"
             style={{ fontSize: '0.8rem', padding: '6px 10px', height: '34px', minWidth: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
           >
             {language === 'en' ? 'አማ' : 'EN'}
@@ -798,6 +799,38 @@ const Navbar = () => {
           font-size: 0.75rem;
           font-weight: 600;
           white-space: nowrap;
+        }
+        @media (max-width: 768px) {
+          .nav-container {
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 0 8px;
+          }
+          .nav-links {
+            gap: 6px;
+            flex-wrap: wrap;
+          }
+          .nav-links .btn, .nav-links .btn-navbar-tool {
+            padding: 5px 10px !important;
+            font-size: 0.78rem !important;
+          }
+          .logo img {
+            height: 28px !important;
+          }
+          .mobile-bottom-tabbar {
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 1000 !important;
+            background: var(--bg-navbar, #0f172a) !important;
+            border-top: 1px solid var(--border-glass, rgba(255,255,255,0.1)) !important;
+            display: flex !important;
+            overflow-x: auto !important;
+            white-space: nowrap !important;
+            padding: 6px 4px !important;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.3) !important;
+          }
         }
       `}</style>
       </nav>

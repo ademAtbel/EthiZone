@@ -36,6 +36,7 @@ const runSeeding = async () => {
       { name: 'Cafe & Restaurant', type: 'store', description: 'Fresh food, drinks, coffee and dining service' },
       { name: 'Jewelry & Accessories', type: 'store', description: 'Gold, silver, watches, bags and fashion accessories retail' },
       { name: 'Gift & Toy Shop', type: 'store', description: 'Souvenirs, birthday gifts, kids toys and game boards retail' },
+      { name: 'Spare Parts Dealer', type: 'store', description: 'Car batteries, tires, filters and engine parts retail' },
       { name: 'Other Store', type: 'store', description: 'Other retail stores' },
 
       // SERVICES
@@ -357,6 +358,7 @@ if (isClustered && cluster.isMaster) {
         { name: 'Cafe & Restaurant', type: 'store', description: 'Fresh food, drinks, coffee and dining service' },
         { name: 'Jewelry & Accessories', type: 'store', description: 'Gold, silver, watches, bags and fashion accessories retail' },
         { name: 'Gift & Toy Shop', type: 'store', description: 'Souvenirs, birthday gifts, kids toys and game boards retail' },
+        { name: 'Spare Parts Dealer', type: 'store', description: 'Car batteries, tires, filters and engine parts retail' },
         { name: 'Other', type: 'store', description: 'Other retail stores' },
 
         // SERVICES

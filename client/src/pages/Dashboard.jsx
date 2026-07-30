@@ -348,7 +348,7 @@ const Dashboard = () => {
           }
         } else {
           const fallbacks = {
-            store: ['Boutique', 'Pharmacy', 'Liquor Store', 'Grocery Store', 'Electronics Shop', 'Bookstore', 'Furniture', 'Hardware Store', 'Cafe & Restaurant', 'Jewelry & Accessories', 'Gift & Toy Shop', 'Other'],
+            store: ['Boutique', 'Pharmacy', 'Liquor Store', 'Grocery Store', 'Electronics Shop', 'Bookstore', 'Furniture', 'Hardware Store', 'Cafe & Restaurant', 'Jewelry & Accessories', 'Gift & Toy Shop', 'Spare Parts Dealer', 'Other'],
             service: ['Law Office', 'Tax Office', 'Clinic', 'Consulting Firm', 'Cleaning Agency', 'Beauty Salon'],
             organization: ['Tech Corporation', 'Construction Company', 'Healthcare Group', 'Educational Institution', 'Non-Profit Org', 'Other'],
             real_estate: ['Residential Homes', 'Rental Apartments', 'Commercial Real Estate', 'Land & Lots'],
@@ -363,7 +363,7 @@ const Dashboard = () => {
       })
       .catch(() => {
         const fallbacks = {
-          store: ['Boutique', 'Pharmacy', 'Liquor Store', 'Grocery Store', 'Electronics Shop', 'Bookstore', 'Furniture', 'Hardware Store', 'Cafe & Restaurant', 'Jewelry & Accessories', 'Gift & Toy Shop', 'Other'],
+          store: ['Boutique', 'Pharmacy', 'Liquor Store', 'Grocery Store', 'Electronics Shop', 'Bookstore', 'Furniture', 'Hardware Store', 'Cafe & Restaurant', 'Jewelry & Accessories', 'Gift & Toy Shop', 'Spare Parts Dealer', 'Other'],
           service: ['Law Office', 'Tax Office', 'Clinic', 'Consulting Firm', 'Cleaning Agency', 'Beauty Salon'],
           organization: ['Tech Corporation', 'Construction Company', 'Healthcare Group', 'Educational Institution', 'Non-Profit Org', 'Other'],
           real_estate: ['Residential Homes', 'Rental Apartments', 'Commercial Real Estate', 'Land & Lots'],

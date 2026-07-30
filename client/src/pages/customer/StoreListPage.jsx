@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import CustomerFooter from "../../components/CustomerFooter";
 import CustomerNavbar from "../../components/CustomerNavbar";
+import { useApp } from "../../context/AppContext";
 
 export default function StoreListPage() {
+  const { t } = useApp();
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
@@ -11,6 +13,27 @@ export default function StoreListPage() {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedLocation, setSelectedLocation] = useState("All Locations");
   const [selectedRating, setSelectedRating] = useState("Any Rating");
+
+  const getCategoryTranslationKey = (name) => {
+    if (!name) return '';
+    const map = {
+      'Boutique': 'boutique',
+      'Pharmacy': 'pharmacy',
+      'Liquor Store': 'liquor_store',
+      'Grocery Store': 'grocery_store',
+      'Electronics Shop': 'electronics_shop',
+      'Bookstore': 'bookstore',
+      'Furniture': 'furniture',
+      'Hardware Store': 'hardware_store',
+      'Cafe & Restaurant': 'cafe_restaurant',
+      'Jewelry & Accessories': 'jewelry_accessories',
+      'Gift & Toy Shop': 'gift_toy',
+      'Other Store': 'other_store',
+      'Other': 'other',
+      'Spare Parts Dealer': 'spare_parts_dealer'
+    };
+    return map[name] || '';
+  };
 
   // Initialize selectedCategory from URL query parameter
   const location = useLocation();
@@ -24,7 +47,7 @@ export default function StoreListPage() {
 
   // Fetch categories for filter options
   useEffect(() => {
-    fetch("http://localhost:5000/api/categories")
+    fetch("/api/categories")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch categories");
         return res.json();
@@ -37,7 +60,7 @@ export default function StoreListPage() {
 
   // Existing effect to fetch stores
   useEffect(() => {
-    fetch("http://localhost:5000/api/stores")
+    fetch("/api/stores")
       .then((res) => {
         if (!res.ok) throw new Error("API error");
         return res.json();
@@ -137,16 +160,21 @@ export default function StoreListPage() {
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
                   >
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                    <option>All Categories</option>
-                    <option>Fashion &amp; Apparel</option>
-                    <option>Electronics</option>
-                    <option>Furniture</option>
-                    <option>Health &amp; Beauty</option>
+                    <option value="All Categories">{t('all_categories') || 'All Categories'}</option>
+                    {Array.from(new Set([
+                      ...categories.map((c) => (typeof c === "object" ? c.name : c)),
+                      "Boutique", "Pharmacy", "Liquor Store", "Grocery Store", "Electronics Shop",
+                      "Bookstore", "Furniture", "Hardware Store", "Cafe & Restaurant",
+                      "Jewelry & Accessories", "Gift & Toy Shop", "Spare Parts Dealer"
+                    ])).filter(Boolean).map((catName) => {
+                      const key = getCategoryTranslationKey(catName);
+                      const translated = key && t(key) ? t(key) : catName;
+                      return (
+                        <option key={catName} value={catName}>
+                          {translated}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
 

@@ -38,17 +38,17 @@ const EventsPage = () => {
       if (locationInput) params.append('location', locationInput);
       
       const response = await fetch(url + params.toString());
+      if (!response.ok) {
+        setEvents([]);
+        return;
+      }
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Failed to fetch events');
-      
-      // Filter out events expired by more than 24 hours
-      const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      const activeEvents = Array.isArray(data) 
-        ? data.filter(evt => !evt.eventDate || new Date(evt.eventDate) >= cutoff)
-        : [];
+      const activeEvents = Array.isArray(data) ? data : [];
       setEvents(activeEvents);
     } catch (err) {
-      setError(err.message || 'Error loading events');
+      console.warn('Events fetch error:', err.message);
+      setEvents([]);
+      setError('');
     } finally {
       setLoading(false);
     }

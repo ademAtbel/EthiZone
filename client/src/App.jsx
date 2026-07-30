@@ -29,10 +29,11 @@ import ShippingRulesPage from './pages/seller/ShippingRulesPage';
 import SellerChatInbox from './pages/seller/SellerChatInbox';
 import SellertoAdminSupportChat from './pages/seller/SellertoAdminSupportChat';
 
-// Customer / Registration Imports
 import RegistrationPage from './pages/customer/RegistrationPage';
 import PhoneEntryModal from './pages/customer/PhoneEntryModal';
 import SMSCodeModal from './pages/customer/SMSCodeModal';
+import CarsPage from './pages/customer/CarsPage';
+import StoreListPage from './pages/customer/StoreListPage';
 import { Globe, Mail, Phone, ArrowRight } from 'lucide-react';
 
 // Sub-wrapper component to handle global layout styling
@@ -122,6 +123,9 @@ const AppContent = () => {
           <Route path="/store/:storeName/dashboard" element={<Dashboard />} />
           <Route path="/store/:storeName" element={<Storefront />} />
           <Route path="/events" element={<EventsPage />} />
+          <Route path="/cars" element={<CarsPage />} />
+          <Route path="/storelist" element={<StoreListPage />} />
+          <Route path="/stores" element={<StoreListPage />} />
 
           {/* Customer / Partner Auth Portals */}
           <Route path="/partner-register" element={<RegistrationPage />} />

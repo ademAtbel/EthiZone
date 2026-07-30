@@ -80,7 +80,7 @@ const StaticPage = () => {
       <div className="row g-4 my-4">
         <div className="col-md-6">
           <div className="p-4 h-100 border rounded-3" style={{ backgroundColor: 'rgba(var(--text-main-rgb, 0), 0.02)', borderColor: 'rgba(var(--text-main-rgb, 0), 0.08)' }}>
-            <h3 className="fw-bold h5 mb-3" style={{ color: 'var(--text-main)' }}>Our Mission</h3>
+            <h3 className="fw-bold h5 mb-3" style={{ color: 'var(--text-main)' }}>{t('our_mission')}</h3>
             <p className="mb-0 text-secondary" style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>
               To create a trusted, accessible, and modern marketplace where individuals and businesses can sell, buy, rent, offer services, hire, and find opportunities with greater convenience.
             </p>
@@ -88,7 +88,7 @@ const StaticPage = () => {
         </div>
         <div className="col-md-6">
           <div className="p-4 h-100 border rounded-3" style={{ backgroundColor: 'rgba(var(--text-main-rgb, 0), 0.02)', borderColor: 'rgba(var(--text-main-rgb, 0), 0.08)' }}>
-            <h3 className="fw-bold h5 mb-3" style={{ color: 'var(--text-main)' }}>Our Vision</h3>
+            <h3 className="fw-bold h5 mb-3" style={{ color: 'var(--text-main)' }}>{t('our_vision')}</h3>
             <p className="mb-0 text-secondary" style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>
               To become a leading digital marketplace that supports local commerce, entrepreneurship, service delivery, employment, and trusted connections.
             </p>
@@ -97,7 +97,7 @@ const StaticPage = () => {
       </div>
 
       <div className="my-5">
-        <h3 className="fw-bold h5 mb-3" style={{ color: 'var(--text-main)' }}>What EthiZone Provides</h3>
+        <h3 className="fw-bold h5 mb-3" style={{ color: 'var(--text-main)' }}>{t('what_ethizone_provides')}</h3>
         <div className="row g-3" style={{ color: 'var(--text-secondary)' }}>
           <div className="col-sm-6">✓ Marketplace visibility & seller profiles</div>
           <div className="col-sm-6">✓ Customer-facing store pages & QR links</div>
@@ -109,7 +109,7 @@ const StaticPage = () => {
       </div>
 
       <div className="p-4 border rounded-3 mt-4" style={{ backgroundColor: 'rgba(255, 193, 7, 0.05)', borderColor: 'rgba(255, 193, 7, 0.3)' }}>
-        <h3 className="fw-bold h5 mb-2 text-warning">What EthiZone Does Not Do</h3>
+        <h3 className="fw-bold h5 mb-2 text-warning">{t('what_ethizone_does_not')}</h3>
         <p className="mb-0 text-secondary" style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>
           EthiZone does not automatically guarantee the truth, quality, safety, legality, ownership, price, delivery, payment, or performance of every listing or transaction. EthiZone provides the platform, while users remain responsible for their own decisions and agreements.
         </p>

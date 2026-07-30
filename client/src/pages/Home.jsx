@@ -79,6 +79,7 @@ const Home = () => {
   }, [widgetLocation]);
 
   const getCategoryTranslationKey = (name) => {
+    if (!name) return '';
     const map = {
       'Boutique': 'boutique',
       'Pharmacy': 'pharmacy',
@@ -91,7 +92,8 @@ const Home = () => {
       'Cafe & Restaurant': 'cafe_restaurant',
       'Jewelry & Accessories': 'jewelry_accessories',
       'Gift & Toy Shop': 'gift_toy',
-      'Other': 'other_store',
+      'Other Store': 'other_store',
+      'Other': 'other',
       'Law Office': 'law_office',
       'Tax Office': 'tax_office',
       'Clinic': 'clinic',
@@ -113,7 +115,7 @@ const Home = () => {
   const storeCategoryNames = [
     'Boutique', 'Pharmacy', 'Liquor Store', 'Grocery Store', 'Electronics Shop',
     'Bookstore', 'Furniture', 'Hardware Store', 'Cafe & Restaurant',
-    'Jewelry & Accessories', 'Gift & Toy Shop', 'Other Store', 'Other'
+    'Jewelry & Accessories', 'Gift & Toy Shop', 'Spare Parts Dealer', 'Other Store', 'Other'
   ];
 
   const serviceCategoryNames = [
@@ -133,6 +135,9 @@ const Home = () => {
   const [radius, setRadius] = useState(50);
 
   // Automotive / Cars filters
+  const [carOfferType, setCarOfferType] = useState('All');
+  const [carCategoryFilter, setCarCategoryFilter] = useState('All');
+  const [carConditionFilter, setCarConditionFilter] = useState('All');
   const [carStatus, setCarStatus] = useState('All');
   const [brandFilter, setBrandFilter] = useState('All');
   const [minYear, setMinYear] = useState('All');
@@ -168,6 +173,7 @@ const Home = () => {
   const fetchListings = async (page = 1) => {
     try {
       setLoading(true);
+      setError('');
       
       let url = `/api/listings?status=active&page=${page}&limit=20`;
       if (searchQuery) url += `&query=${encodeURIComponent(searchQuery)}`;
@@ -175,15 +181,20 @@ const Home = () => {
       if (selectedCategory) url += `&category=${encodeURIComponent(selectedCategory)}`;
 
       const response = await fetch(url);
+      if (!response.ok) {
+        setListings([]);
+        setLoading(false);
+        return;
+      }
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
-      
-      setListings(data);
+      setListings(Array.isArray(data) ? data : []);
       const pagesCount = parseInt(response.headers.get('X-Total-Pages')) || 1;
       setTotalPages(pagesCount);
       setCurrentPage(page);
     } catch (err) {
-      setError('Failed to load listings directory.');
+      console.warn('Listings fetch error:', err.message);
+      setListings([]);
+      setError('');
     } finally {
       setLoading(false);
     }
@@ -254,6 +265,7 @@ const Home = () => {
           { name: 'Cafe & Restaurant', type: 'store' },
           { name: 'Jewelry & Accessories', type: 'store' },
           { name: 'Gift & Toy Shop', type: 'store' },
+          { name: 'Spare Parts Dealer', type: 'store' },
           { name: 'Other Store', type: 'store' },
           { name: 'Law Office', type: 'service' },
           { name: 'Tax Office', type: 'service' },
@@ -593,30 +605,66 @@ const Home = () => {
       }
     }
 
-    if (item.type === 'car') {
+    if (item.type === 'car' || item.category === 'Used Car Dealership' || item.category === 'Spare Parts Dealer' || item.category === 'Auto Repair Workshop' || item.category === 'Car Rental Service') {
       const meta = item.metadata || {};
-      if (carStatus !== 'All' && item.category !== carStatus) return false;
-      if (brandFilter !== 'All') {
-        const make = meta.make || '';
-        if (make.toLowerCase() !== brandFilter.toLowerCase()) return false;
+      
+      if (carOfferType !== 'All') {
+        const itemOffer = (item.offerType || meta.offerType || (item.category === 'Car Rental Service' ? 'rent' : 'sale')).toLowerCase();
+        if (carOfferType === 'sale' && !itemOffer.includes('sale')) return false;
+        if (carOfferType === 'rent' && !itemOffer.includes('rent')) return false;
       }
+
+      if (carCategoryFilter !== 'All') {
+        const itemCat = (item.category || '').toLowerCase();
+        const targetCat = carCategoryFilter.toLowerCase();
+        if (!itemCat.includes(targetCat) && !targetCat.includes(itemCat)) {
+          if (targetCat.includes('used') && !itemCat.includes('used')) return false;
+          if (targetCat.includes('repair') && !itemCat.includes('repair')) return false;
+          if (targetCat.includes('spare') && !itemCat.includes('spare')) return false;
+          if (targetCat.includes('rental') && !itemCat.includes('rental')) return false;
+          if (targetCat.includes('new') && !itemCat.includes('new') && meta.condition !== 'new') return false;
+        }
+      }
+
+      if (carConditionFilter !== 'All') {
+        const cond = (meta.condition || item.condition || '').toLowerCase();
+        if (carConditionFilter === 'new' && !cond.includes('new')) return false;
+        if (carConditionFilter === 'used' && cond.includes('new') && !cond.includes('used')) return false;
+      }
+
+      if (brandFilter !== 'All') {
+        const make = (meta.make || meta.brand || item.make || item.brand || '').toLowerCase();
+        if (!make.includes(brandFilter.toLowerCase())) return false;
+      }
+
       if (minYear !== 'All') {
         const yearNum = parseInt(meta.year) || 0;
         const targetYear = parseInt(minYear.replace('+', '')) || 0;
         if (yearNum < targetYear) return false;
       }
+
       if (transmissionFilter !== 'All') {
-        const trans = meta.transmission || '';
-        if (trans.toLowerCase() !== transmissionFilter.toLowerCase()) return false;
+        const trans = (meta.transmission || '').toLowerCase();
+        if (!trans.includes(transmissionFilter.toLowerCase())) return false;
       }
+
       if (fuelType !== 'All') {
-        const fuel = meta.fuelType || '';
-        if (fuel.toLowerCase() !== fuelType.toLowerCase()) return false;
+        const fuel = (meta.fuelType || '').toLowerCase();
+        if (!fuel.includes(fuelType.toLowerCase())) return false;
       }
+
       const pMin = minPrice !== '' ? minPrice : 0;
       const pMax = maxPrice !== '' ? maxPrice : Infinity;
       const itemPrice = item.price || 0;
       if (itemPrice < pMin || itemPrice > pMax) return false;
+
+      if (locationFilter) {
+        const addressVal = (item.metadata?.address || item.ownerId?.address || '').toLowerCase();
+        const textVal = ((item.description || '') + ' ' + (item.title || '') + ' ' + (item.category || '')).toLowerCase();
+        if (!addressVal.includes(locationFilter.toLowerCase()) && !textVal.includes(locationFilter.toLowerCase())) {
+          return false;
+        }
+      }
     }
 
     if (item.type === 'job_opening') {
@@ -891,6 +939,73 @@ const Home = () => {
                       value={widgetLocation}
                       onChange={(e) => setWidgetLocation(e.target.value)}
                     />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Webapp Explanation & About Section */}
+          <section className="container mb-5 mt-4">
+            <div className="glass-panel p-4 p-md-5" style={{ borderRadius: '20px', border: '1px solid var(--border-glass)', background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.4) 100%)', boxShadow: '0 12px 32px rgba(0,0,0,0.2)' }}>
+              <div className="text-center max-w-3xl mx-auto mb-4">
+                <span className="badge bg-primary/20 text-primary px-3 py-2 rounded-pill font-label-sm mb-2" style={{ fontSize: '0.8rem', letterSpacing: '0.5px' }}>
+                  🌐 {t('about_app_subtitle')}
+                </span>
+                <h2 style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--text-main)', margin: '12px 0' }}>
+                  {t('about_app_title')}
+                </h2>
+                <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: '1.7', margin: 0 }}>
+                  {t('about_app_desc')}
+                </p>
+              </div>
+
+              <div className="row g-4 mt-2">
+                <div className="col-12 col-md-6 col-lg-3">
+                  <div className="p-3 rounded-3 h-100" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-glass)', transition: 'all 0.3s' }}>
+                    <div className="mb-2" style={{ fontSize: '2rem' }}>🛍️</div>
+                    <h5 style={{ color: 'var(--text-main)', fontWeight: '700', fontSize: '1.05rem', marginBottom: '8px' }}>
+                      {t('expl_feature1_title')}
+                    </h5>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem', margin: 0, lineHeight: '1.5' }}>
+                      {t('expl_feature1_desc')}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="col-12 col-md-6 col-lg-3">
+                  <div className="p-3 rounded-3 h-100" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-glass)', transition: 'all 0.3s' }}>
+                    <div className="mb-2" style={{ fontSize: '2rem' }}>🚗</div>
+                    <h5 style={{ color: 'var(--text-main)', fontWeight: '700', fontSize: '1.05rem', marginBottom: '8px' }}>
+                      {t('expl_feature2_title')}
+                    </h5>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem', margin: 0, lineHeight: '1.5' }}>
+                      {t('expl_feature2_desc')}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="col-12 col-md-6 col-lg-3">
+                  <div className="p-3 rounded-3 h-100" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-glass)', transition: 'all 0.3s' }}>
+                    <div className="mb-2" style={{ fontSize: '2rem' }}>🛠️</div>
+                    <h5 style={{ color: 'var(--text-main)', fontWeight: '700', fontSize: '1.05rem', marginBottom: '8px' }}>
+                      {t('expl_feature3_title')}
+                    </h5>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem', margin: 0, lineHeight: '1.5' }}>
+                      {t('expl_feature3_desc')}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="col-12 col-md-6 col-lg-3">
+                  <div className="p-3 rounded-3 h-100" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-glass)', transition: 'all 0.3s' }}>
+                    <div className="mb-2" style={{ fontSize: '2rem' }}>⚡</div>
+                    <h5 style={{ color: 'var(--text-main)', fontWeight: '700', fontSize: '1.05rem', marginBottom: '8px' }}>
+                      {t('expl_feature4_title')}
+                    </h5>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem', margin: 0, lineHeight: '1.5' }}>
+                      {t('expl_feature4_desc')}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -1339,31 +1454,98 @@ const Home = () => {
                   </div>
                 )}
 
-                {selectedType === 'car' && (
+                {selectedType === 'car' && (() => {
+                  const postedCarBrands = Array.from(new Set(
+                    listings
+                      .filter(item => item.type === 'car' || item.category === 'Used Car Dealership' || item.category === 'Spare Parts Dealer' || item.category === 'Auto Repair Workshop' || item.category === 'Car Rental Service')
+                      .map(item => item.metadata?.make || item.metadata?.brand || item.make || item.brand)
+                      .filter(Boolean)
+                  ));
+                  const dynamicCarBrands = ['All', ...(postedCarBrands.length > 0 ? postedCarBrands : ['Tesla', 'BMW', 'Ford', 'Toyota', 'Honda', 'Hyundai', 'Nissan'])];
+
+                  return (
                   <div className="space-y-4">
                     <h2 className="fs-4 fw-bold pb-2 border-bottom">{t('filters')}</h2>
 
-                    {/* Brand */}
+                    {/* Listing Offer Type (For Sale / For Rent) */}
                     <div className="mt-3">
-                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('brand')}</h4>
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Listing Offer Type</h4>
                       {[
-                        { value: 'All', key: 'all' },
-                        { value: 'Tesla' },
-                        { value: 'BMW' },
-                        { value: 'Ford' },
-                        { value: 'Porsche' },
-                        { value: 'Honda' },
-                        { value: 'Toyota' }
+                        { value: 'All', label: 'All Offers (Sale & Rent)' },
+                        { value: 'sale', label: '🏷️ For Sale' },
+                        { value: 'rent', label: '🔑 For Rent' }
                       ].map((item) => (
                         <label key={item.value} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
                           <input
                             type="radio"
+                            name="carOfferType"
+                            className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                            checked={carOfferType === item.value}
+                            onChange={() => setCarOfferType(item.value)}
+                          />
+                          <span>{item.label}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Automotive Category / Service */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Category & Services</h4>
+                      {[
+                        { value: 'All', label: 'All Categories' },
+                        { value: 'Used Car Dealership', label: '🚘 Used Car Dealership' },
+                        { value: 'New Car', label: '🏎️ New Car' },
+                        { value: 'Car Rental Service', label: '🔑 Car Rental Service' },
+                        { value: 'Auto Repair Workshop', label: '🛠️ Auto Repair Workshop' },
+                        { value: 'Spare Parts Dealer', label: '⚙️ Spare Parts Dealer' }
+                      ].map((item) => (
+                        <label key={item.value} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                          <input
+                            type="radio"
+                            name="carCategoryFilter"
+                            className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                            checked={carCategoryFilter === item.value}
+                            onChange={() => setCarCategoryFilter(item.value)}
+                          />
+                          <span>{item.label}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Condition (New / Used) */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>Condition</h4>
+                      {[
+                        { value: 'All', label: 'All Conditions' },
+                        { value: 'new', label: '✨ New' },
+                        { value: 'used', label: '🚘 Used / Pre-Owned' }
+                      ].map((item) => (
+                        <label key={item.value} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                          <input
+                            type="radio"
+                            name="carConditionFilter"
+                            className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                            checked={carConditionFilter === item.value}
+                            onChange={() => setCarConditionFilter(item.value)}
+                          />
+                          <span>{item.label}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Dynamic Brand / Car Maker */}
+                    <div className="mt-3">
+                      <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('brand')}</h4>
+                      {dynamicCarBrands.map((b) => (
+                        <label key={b} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                          <input
+                            type="radio"
                             name="brandFilter"
                             className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
-                            checked={brandFilter === item.value}
-                            onChange={() => setBrandFilter(item.value)}
+                            checked={brandFilter === b}
+                            onChange={() => setBrandFilter(b)}
                           />
-                          <span>{item.key ? t(item.key) : item.value}</span>
+                          <span>{b === 'All' ? t('all') : b}</span>
                         </label>
                       ))}
                     </div>
@@ -1495,6 +1677,9 @@ const Home = () => {
                     <div className="pt-4 border-top">
                       <button
                         onClick={() => {
+                          setCarOfferType('All');
+                          setCarCategoryFilter('All');
+                          setCarConditionFilter('All');
                           setCarStatus('All');
                           setBrandFilter('All');
                           setMinYear('All');
@@ -1511,7 +1696,8 @@ const Home = () => {
                       </button>
                     </div>
                   </div>
-                )}
+                  );
+                })()}
 
                 {selectedType === 'job_opening' && (
                   <div className="space-y-4">
@@ -1841,19 +2027,32 @@ const Home = () => {
                       <h4 className="text-xs fw-bold text-uppercase mb-2" style={{ fontSize: '0.75rem' }}>{t('category')}</h4>
                       {[
                         { name: 'All' },
-                        ...categories.filter(cat => cat.type === 'store' || storeCategoryNames.includes(cat.name))
-                      ].map((item) => (
-                        <label key={item.name + '-' + (item._id || 'all')} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
-                          <input
-                            type="radio"
-                            name="storeCategory"
-                            className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
-                            checked={(item.name === 'All' && !selectedCategory) || selectedCategory === item.name}
-                            onChange={() => setSelectedCategory(item.name === 'All' ? '' : item.name)}
-                          />
-                          <span>{item.name === 'All' ? t('all') : (t(getCategoryTranslationKey(item.name)) || item.name)}</span>
-                        </label>
-                      ))}
+                        ...categories
+                          .filter(cat => cat.type === 'store' || storeCategoryNames.includes(cat.name))
+                          .reduce((acc, cat) => {
+                            const catName = typeof cat === 'object' ? cat.name : cat;
+                            if (catName && !acc.some(c => (typeof c === 'object' ? c.name : c) === catName)) {
+                              acc.push(cat);
+                            }
+                            return acc;
+                          }, [])
+                      ].map((item) => {
+                        const itemName = typeof item === 'object' ? item.name : item;
+                        const translationKey = getCategoryTranslationKey(itemName);
+                        const labelText = itemName === 'All' ? t('all') : (translationKey && t(translationKey) ? t(translationKey) : itemName);
+                        return (
+                          <label key={itemName + '-' + (item._id || 'all')} className="d-flex align-items-center gap-2 mb-2 cursor-pointer font-medium" style={{ fontSize: '0.9rem' }}>
+                            <input
+                              type="radio"
+                              name="storeCategory"
+                              className="form-check-input text-blue-600 focus:ring-blue-500 accent-blue-600"
+                              checked={(itemName === 'All' && !selectedCategory) || selectedCategory === itemName}
+                              onChange={() => setSelectedCategory(itemName === 'All' ? '' : itemName)}
+                            />
+                            <span>{labelText}</span>
+                          </label>
+                        );
+                      })}
                     </div>
 
                     {/* Store Type */}

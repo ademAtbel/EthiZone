@@ -55,7 +55,7 @@ const Register = () => {
               { name: 'Boutique' }, { name: 'Pharmacy' }, { name: 'Liquor Store' },
               { name: 'Grocery Store' }, { name: 'Electronics Shop' }, { name: 'Bookstore' },
               { name: 'Furniture' }, { name: 'Hardware Store' }, { name: 'Cafe & Restaurant' },
-              { name: 'Jewelry & Accessories' }, { name: 'Gift & Toy Shop' }, { name: 'Other' }
+              { name: 'Jewelry & Accessories' }, { name: 'Gift & Toy Shop' }, { name: 'Spare Parts Dealer' }, { name: 'Other' }
             ],
             service: [
               { name: 'Law Office' }, { name: 'Tax Office' }, { name: 'Clinic' },
@@ -91,7 +91,7 @@ const Register = () => {
             { name: 'Boutique' }, { name: 'Pharmacy' }, { name: 'Liquor Store' },
             { name: 'Grocery Store' }, { name: 'Electronics Shop' }, { name: 'Bookstore' },
             { name: 'Furniture' }, { name: 'Hardware Store' }, { name: 'Cafe & Restaurant' },
-            { name: 'Jewelry & Accessories' }, { name: 'Gift & Toy Shop' }, { name: 'Other' }
+            { name: 'Jewelry & Accessories' }, { name: 'Gift & Toy Shop' }, { name: 'Spare Parts Dealer' }, { name: 'Other' }
           ],
           service: [
             { name: 'Law Office' }, { name: 'Tax Office' }, { name: 'Clinic' },
@@ -200,22 +200,29 @@ const Register = () => {
     }
   };
 
+  // Password Visibility Toggle
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <div className="register-page container flex-center">
       <div className="glass-panel auth-card">
         <h2>{t('reg_title')}</h2>
         <p className="auth-subtitle">{t('reg_subtitle')}</p>
 
-        {error && <div className="alert alert-danger">{error}</div>}
+        {error && (
+          <div className="alert alert-danger mb-3 p-3 rounded-3" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.3)', fontSize: '0.9rem' }}>
+            ⚠️ {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="username">{t('reg_fullname')}</label>
+          <div className="form-group mb-3">
+            <label htmlFor="username" className="fw-semibold mb-1" style={{ fontSize: '0.9rem' }}>{t('reg_fullname')}</label>
             <input
               type="text"
               id="username"
               name="username"
-              className="form-control"
+              className="form-control py-2 px-3"
               placeholder="John Doe"
               value={formData.username}
               onChange={handleChange}
@@ -590,7 +597,10 @@ const Register = () => {
       <style>{`
         .register-page {
           min-height: calc(100vh - 80px);
-          padding: 40px 20px;
+          padding: 120px 20px 60px 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         .auth-card {
           width: 100%;

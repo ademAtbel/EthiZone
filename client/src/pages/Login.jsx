@@ -138,6 +138,9 @@ const Login = () => {
     }
   };
 
+  // Password Visibility Toggle
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <div className="login-page container flex-center">
       <div className="glass-panel auth-card">
@@ -148,17 +151,17 @@ const Login = () => {
             : t('login_subtitle_otp')}
         </p>
 
-        {error && <div className="alert alert-danger">{error}</div>}
+        {error && <div className="alert alert-danger mb-3">{error}</div>}
 
         {loginMode === 'password' ? (
           // STANDARD PASSWORD LOGIN FORM
           <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="email">{t('login_email')}</label>
+            <div className="form-group mb-3">
+              <label htmlFor="email" className="fw-semibold mb-1" style={{ fontSize: '0.9rem' }}>{t('login_email')}</label>
               <input
                 type="email"
                 id="email"
-                className="form-control"
+                className="form-control py-2 px-3"
                 placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -166,12 +169,22 @@ const Login = () => {
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="password">{t('login_password')}</label>
+            <div className="form-group mb-3">
+              <div className="d-flex justify-content-between align-items-center mb-1">
+                <label htmlFor="password" className="fw-semibold mb-0" style={{ fontSize: '0.9rem' }}>{t('login_password')}</label>
+                <button
+                  type="button"
+                  className="btn btn-link p-0 text-decoration-none text-muted"
+                  style={{ fontSize: '0.8rem' }}
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? '👁️ Hide' : '👁️ Show'}
+                </button>
+              </div>
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 id="password"
-                className="form-control"
+                className="form-control py-2 px-3"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -179,10 +192,11 @@ const Login = () => {
               />
             </div>
 
-            <div className="form-helper-row text-right">
+            <div className="form-helper-row text-right mb-3">
               <button
                 type="button"
-                className="link-btn text-accent"
+                className="link-btn text-accent border-0 bg-transparent cursor-pointer"
+                style={{ fontSize: '0.85rem' }}
                 onClick={() => {
                   setLoginMode('otp');
                   setOtpSent(false);
@@ -194,19 +208,19 @@ const Login = () => {
               </button>
             </div>
 
-            <button type="submit" className="btn btn-primary w-full" disabled={loading}>
+            <button type="submit" className="btn btn-primary w-full py-2.5 fw-bold" disabled={loading}>
               {loading ? t('login_btn_loading') : t('login_btn_pw')}
             </button>
           </form>
         ) : (
           // OTP LOGIN FORM
           <form onSubmit={otpSent ? handleOtpLogin : handleRequestOtp}>
-            <div className="form-group">
-              <label htmlFor="otp-email">{t('login_email')}</label>
+            <div className="form-group mb-3">
+              <label htmlFor="otp-email" className="fw-semibold mb-1" style={{ fontSize: '0.9rem' }}>{t('login_email')}</label>
               <input
                 type="email"
                 id="otp-email"
-                className="form-control"
+                className="form-control py-2 px-3"
                 placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -216,12 +230,12 @@ const Login = () => {
             </div>
 
             {otpSent && (
-              <div className="form-group otp-group">
-                <label htmlFor="otp-code">{t('login_otp_label')}</label>
+              <div className="form-group otp-group mb-3">
+                <label htmlFor="otp-code" className="fw-semibold mb-1" style={{ fontSize: '0.9rem' }}>{t('login_otp_label')}</label>
                 <input
                   type="text"
                   id="otp-code"
-                  className="form-control text-center code-input"
+                  className="form-control text-center code-input py-2"
                   placeholder="0 0 0 0 0 0"
                   maxLength="6"
                   pattern="[0-9]{6}"
@@ -231,17 +245,17 @@ const Login = () => {
                   autoFocus
                 />
                 
-                <div className="otp-timer-row">
+                <div className="otp-timer-row mt-2">
                   {timer > 0 ? (
-                    <span className="timer-text warning">
+                    <span className="timer-text warning" style={{ fontSize: '0.82rem' }}>
                       {t('login_expires_in')} <strong>{timer}</strong> {t('login_seconds')}
                     </span>
                   ) : (
                     <div className="timer-expired">
-                      <span className="error-text">{t('login_expired')} </span>
+                      <span className="error-text" style={{ fontSize: '0.82rem' }}>{t('login_expired')} </span>
                       <button
                         type="button"
-                        className="link-btn text-accent font-semibold"
+                        className="link-btn text-accent font-semibold border-0 bg-transparent cursor-pointer"
                         onClick={handleRequestOtp}
                         disabled={loading}
                       >
@@ -253,7 +267,7 @@ const Login = () => {
               </div>
             )}
 
-            <button type="submit" className="btn btn-primary w-full" disabled={loading}>
+            <button type="submit" className="btn btn-primary w-full py-2.5 fw-bold" disabled={loading}>
               {loading 
                 ? t('login_processing') 
                 : otpSent 
@@ -264,7 +278,7 @@ const Login = () => {
             <div className="form-helper-row text-center mt-4">
               <button
                 type="button"
-                className="link-btn text-secondary"
+                className="link-btn text-secondary border-0 bg-transparent cursor-pointer"
                 onClick={() => {
                   setLoginMode('password');
                   setError('');
@@ -277,15 +291,18 @@ const Login = () => {
           </form>
         )}
 
-        <p className="auth-footer">
-          {t('login_no_account')} <Link to="/register">{t('login_register_here')}</Link>
+        <p className="auth-footer mt-4 text-center">
+          {t('login_no_account')} <Link to="/register" className="fw-bold">{t('login_register_here')}</Link>
         </p>
       </div>
 
       <style>{`
         .login-page {
           min-height: calc(100vh - 80px);
-          padding: 40px 20px;
+          padding: 120px 20px 60px 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         .auth-card {
           width: 100%;

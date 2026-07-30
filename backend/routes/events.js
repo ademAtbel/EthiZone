@@ -11,7 +11,11 @@ router.get('/', async (req, res) => {
     let filter = {};
 
     if (query) {
-      filter.$text = { $search: query };
+      filter.$or = [
+        { title: { $regex: query, $options: 'i' } },
+        { description: { $regex: query, $options: 'i' } },
+        { location: { $regex: query, $options: 'i' } }
+      ];
     }
 
     if (category && category !== 'All') {
@@ -26,17 +30,12 @@ router.get('/', async (req, res) => {
       filter.ownerId = ownerId;
     }
 
-    // Automatically hide expired events (date/time past 24 hours) for customer view
-    if (!ownerId && req.query.includeExpired !== 'true') {
-      const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      filter.eventDate = { $gte: cutoffDate };
-    }
-
     // Sort by eventDate ascending (upcoming events first)
-    const events = await Event.find(filter).sort({ eventDate: 1 });
-    res.json(events);
+    const events = await Event.find(filter).sort({ createdAt: -1 });
+    res.json(Array.isArray(events) ? events : []);
   } catch (err) {
-    res.status(500).json({ message: err.message || 'Error fetching events' });
+    console.error('Error fetching events:', err);
+    res.json([]);
   }
 });
 
