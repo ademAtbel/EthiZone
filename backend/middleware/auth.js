@@ -8,8 +8,16 @@ const verifyToken = (req, res, next) => {
 
   const token = authHeader.split(' ')[1];
 
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    console.error('CRITICAL SECURITY WARNING: JWT_SECRET environment variable is missing.');
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(500).json({ message: 'Server Security Configuration Error' });
+    }
+  }
+
   try {
-    const verified = jwt.verify(token, process.env.JWT_SECRET || 'secretkey123');
+    const verified = jwt.verify(token, secret || 'secretkey123');
     req.user = verified;
     next();
   } catch (error) {

@@ -947,22 +947,22 @@ const Home = () => {
 
           {/* Webapp Explanation & About Section */}
           <section className="container mb-5 mt-4">
-            <div className="glass-panel p-4 p-md-5" style={{ borderRadius: '20px', border: '1px solid var(--border-glass)', background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.4) 100%)', boxShadow: '0 12px 32px rgba(0,0,0,0.2)' }}>
-              <div className="text-center max-w-3xl mx-auto mb-4">
-                <span className="badge bg-primary/20 text-primary px-3 py-2 rounded-pill font-label-sm mb-2" style={{ fontSize: '0.8rem', letterSpacing: '0.5px' }}>
+            <div className="glass-panel p-4 p-md-5 shadow-sm" style={{ borderRadius: '20px', border: '1px solid var(--border-glass)', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' }}>
+              <div className="text-center mx-auto mb-4" style={{ maxWidth: '800px' }}>
+                <span className="badge px-3 py-2 rounded-pill mb-3" style={{ fontSize: '0.82rem', letterSpacing: '0.5px', whiteSpace: 'normal', wordBreak: 'break-word', display: 'inline-block', maxWidth: '100%', backgroundColor: 'rgba(197, 168, 90, 0.12)', color: 'var(--accent-secondary)', border: '1px solid rgba(197, 168, 90, 0.3)' }}>
                   🌐 {t('about_app_subtitle')}
                 </span>
-                <h2 style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--text-main)', margin: '12px 0' }}>
+                <h2 style={{ fontSize: '1.85rem', fontWeight: '800', color: 'var(--text-main)', margin: '10px 0' }}>
                   {t('about_app_title')}
                 </h2>
-                <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: '1.7', margin: 0 }}>
+                <p style={{ fontSize: '0.98rem', color: 'var(--text-secondary)', lineHeight: '1.7', margin: 0 }}>
                   {t('about_app_desc')}
                 </p>
               </div>
 
               <div className="row g-4 mt-2">
                 <div className="col-12 col-md-6 col-lg-3">
-                  <div className="p-3 rounded-3 h-100" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-glass)', transition: 'all 0.3s' }}>
+                  <div className="p-4 rounded-3 h-100" style={{ background: 'var(--bg-card-hover, rgba(0,0,0,0.02))', border: '1px solid var(--border-glass)', transition: 'all 0.3s' }}>
                     <div className="mb-2" style={{ fontSize: '2rem' }}>🛍️</div>
                     <h5 style={{ color: 'var(--text-main)', fontWeight: '700', fontSize: '1.05rem', marginBottom: '8px' }}>
                       {t('expl_feature1_title')}
@@ -974,7 +974,7 @@ const Home = () => {
                 </div>
 
                 <div className="col-12 col-md-6 col-lg-3">
-                  <div className="p-3 rounded-3 h-100" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-glass)', transition: 'all 0.3s' }}>
+                  <div className="p-4 rounded-3 h-100" style={{ background: 'var(--bg-card-hover, rgba(0,0,0,0.02))', border: '1px solid var(--border-glass)', transition: 'all 0.3s' }}>
                     <div className="mb-2" style={{ fontSize: '2rem' }}>🚗</div>
                     <h5 style={{ color: 'var(--text-main)', fontWeight: '700', fontSize: '1.05rem', marginBottom: '8px' }}>
                       {t('expl_feature2_title')}
@@ -986,7 +986,7 @@ const Home = () => {
                 </div>
 
                 <div className="col-12 col-md-6 col-lg-3">
-                  <div className="p-3 rounded-3 h-100" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-glass)', transition: 'all 0.3s' }}>
+                  <div className="p-4 rounded-3 h-100" style={{ background: 'var(--bg-card-hover, rgba(0,0,0,0.02))', border: '1px solid var(--border-glass)', transition: 'all 0.3s' }}>
                     <div className="mb-2" style={{ fontSize: '2rem' }}>🛠️</div>
                     <h5 style={{ color: 'var(--text-main)', fontWeight: '700', fontSize: '1.05rem', marginBottom: '8px' }}>
                       {t('expl_feature3_title')}
@@ -998,7 +998,7 @@ const Home = () => {
                 </div>
 
                 <div className="col-12 col-md-6 col-lg-3">
-                  <div className="p-3 rounded-3 h-100" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-glass)', transition: 'all 0.3s' }}>
+                  <div className="p-4 rounded-3 h-100" style={{ background: 'var(--bg-card-hover, rgba(0,0,0,0.02))', border: '1px solid var(--border-glass)', transition: 'all 0.3s' }}>
                     <div className="mb-2" style={{ fontSize: '2rem' }}>⚡</div>
                     <h5 style={{ color: 'var(--text-main)', fontWeight: '700', fontSize: '1.05rem', marginBottom: '8px' }}>
                       {t('expl_feature4_title')}
@@ -1021,41 +1021,53 @@ const Home = () => {
               <h3>{t('landing_browse_category')}</h3>
               <button onClick={() => handleTypeSelect('store_product')} className="btn-view-all">{t('landing_view_all')}</button>
             </div>
-            <div className="grid-categories">
+            <div className="row g-3 g-md-4 align-items-stretch">
               {/* Left Large Card */}
-              <div className="cat-card-large" onClick={() => handleTypeSelect('personal_item')}>
-                <div className="cat-img-wrapper">
-                  <img src="https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=800&q=80" alt="Used Items" />
-                  <div className="cat-overlay">
-                    <span className="cat-badge-tag">ACTIVE</span>
-                    <h4>{t('used_items')}</h4>
+              <div className="col-12 col-lg-6 mb-3 mb-lg-0">
+                <div className="cat-card-large h-100" onClick={() => handleTypeSelect('personal_item')} style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', minHeight: '260px' }}>
+                  <div className="cat-img-wrapper" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <img src="https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=800&q=80" alt="Used Items" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <div className="cat-overlay" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '24px', zIndex: 2 }}>
+                      <span className="cat-badge-tag" style={{ background: '#c5a85a', color: '#000000', fontWeight: '800', fontSize: '0.72rem', padding: '4px 10px', borderRadius: '6px', width: 'fit-content', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ACTIVE</span>
+                      <h4 style={{ color: '#ffffff', fontWeight: '800', fontSize: '1.75rem', margin: 0, textShadow: '0 2px 8px rgba(0,0,0,0.95)', letterSpacing: '-0.02em' }}>{t('used_items')}</h4>
+                    </div>
                   </div>
                 </div>
               </div>
               {/* Right 4-card Grid */}
-              <div className="cat-grid-small">
-                <div className="cat-card-small" onClick={() => handleTypeSelect('car')}>
-                  <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=400&q=80" alt="Automotive" />
-                  <div className="cat-overlay-small">
-                    <h4>{t('automotive')}</h4>
+              <div className="col-12 col-lg-6">
+                <div className="row g-3">
+                  <div className="col-6">
+                    <div className="cat-card-small" onClick={() => handleTypeSelect('car')} style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', height: '140px' }}>
+                      <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=400&q=80" alt="Automotive" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <div className="cat-overlay-small" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)', display: 'flex', alignItems: 'flex-end', padding: '14px', zIndex: 2 }}>
+                        <h4 style={{ color: '#ffffff', fontWeight: '800', fontSize: '1.1rem', margin: 0, textShadow: '0 2px 8px rgba(0,0,0,0.95)', letterSpacing: '-0.01em' }}>{t('automotive')}</h4>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="cat-card-small" onClick={() => handleTypeSelect('house')}>
-                  <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80" alt="Real Estate" />
-                  <div className="cat-overlay-small">
-                    <h4>{t('real_estate')}</h4>
+                  <div className="col-6">
+                    <div className="cat-card-small" onClick={() => handleTypeSelect('house')} style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', height: '140px' }}>
+                      <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80" alt="Real Estate" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <div className="cat-overlay-small" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)', display: 'flex', alignItems: 'flex-end', padding: '14px', zIndex: 2 }}>
+                        <h4 style={{ color: '#ffffff', fontWeight: '800', fontSize: '1.1rem', margin: 0, textShadow: '0 2px 8px rgba(0,0,0,0.95)', letterSpacing: '-0.01em' }}>{t('real_estate')}</h4>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="cat-card-small" onClick={() => handleTypeSelect('job_opening')}>
-                  <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=400&q=80" alt="Jobs" />
-                  <div className="cat-overlay-small">
-                    <h4>{t('organizations')}</h4>
+                  <div className="col-6">
+                    <div className="cat-card-small" onClick={() => handleTypeSelect('job_opening')} style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', height: '140px' }}>
+                      <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=400&q=80" alt="Jobs" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <div className="cat-overlay-small" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)', display: 'flex', alignItems: 'flex-end', padding: '14px', zIndex: 2 }}>
+                        <h4 style={{ color: '#ffffff', fontWeight: '800', fontSize: '1.1rem', margin: 0, textShadow: '0 2px 8px rgba(0,0,0,0.95)', letterSpacing: '-0.01em' }}>{t('organizations')}</h4>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="cat-card-small" onClick={() => handleTypeSelect('service')}>
-                  <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80" alt="Services" />
-                  <div className="cat-overlay-small">
-                    <h4>{t('services')}</h4>
+                  <div className="col-6">
+                    <div className="cat-card-small" onClick={() => handleTypeSelect('service')} style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', height: '140px' }}>
+                      <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80" alt="Services" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <div className="cat-overlay-small" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)', display: 'flex', alignItems: 'flex-end', padding: '14px', zIndex: 2 }}>
+                        <h4 style={{ color: '#ffffff', fontWeight: '800', fontSize: '1.1rem', margin: 0, textShadow: '0 2px 8px rgba(0,0,0,0.95)', letterSpacing: '-0.01em' }}>{t('services')}</h4>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
