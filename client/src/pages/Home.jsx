@@ -2769,8 +2769,9 @@ const Home = () => {
           color: #fff;
         }
         .empty-popular-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
           gap: 24px;
         }
         .mock-card {
@@ -2914,10 +2915,12 @@ const Home = () => {
           display: flex;
           flex-wrap: nowrap;
           overflow-x: auto;
-          gap: 20px;
-          padding: 10px 4px 20px 4px;
+          gap: 24px;
+          padding: 10px 0 20px 0;
           scroll-snap-type: x mandatory;
           -webkit-overflow-scrolling: touch;
+          justify-content: flex-start;
+          width: 100%;
         }
         .horizontal-scroll-row::-webkit-scrollbar {
           height: 6px;
@@ -3055,6 +3058,12 @@ const Home = () => {
           padding: 10px 4px 20px 4px;
           scroll-snap-type: x mandatory;
           -webkit-overflow-scrolling: touch;
+          justify-content: center;
+        }
+        @media (max-width: 1080px) {
+          .professionals-row {
+            justify-content: flex-start;
+          }
         }
         .professionals-row::-webkit-scrollbar {
           height: 6px;

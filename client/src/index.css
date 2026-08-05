@@ -163,12 +163,37 @@ body.light-theme .cat-overlay-small h4 {
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95) !important;
 }
 
-/* Layout Utilities */
-.container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px;
+/* Master Website Centered Layout System (Aligns Navbar, titles, and card grids harmoniously) */
+.container,
+.nav-container,
+.hero-grid,
+.landing-hero,
+.home-page-container,
+.search-header-bar .container,
+.directory-page-content,
+.featured-section {
+  width: 90% !important;
+  max-width: 1080px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+  .container,
+  .nav-container,
+  .hero-grid,
+  .landing-hero,
+  .home-page-container,
+  .search-header-bar .container,
+  .directory-page-content,
+  .featured-section {
+    width: 100% !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
 }
 
 .flex-center {
@@ -862,6 +887,18 @@ body:not(.light-theme) .reusable-theme-toggle-btn:hover {
   }
 }
 
+/* Centered Layout Utilities for Featured Sections & Card Rows */
+.horizontal-scroll-row,
+.professionals-row {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  justify-content: flex-start !important;
+  gap: 24px !important;
+  padding: 10px 0 20px 0 !important;
+  width: 100% !important;
+}
+
 /* ========================================================
    SCROLL REVEAL SLIDING ANIMATIONS (Excludes Nav & Tabbar)
    ======================================================== */
@@ -963,4 +1000,131 @@ header,
   .app-main-content {
     padding-top: 95px !important;
   }
+}
+
+/* ========================================================
+   NAVBAR USER AVATAR DROPDOWN OVERFLOW OVERRIDE
+   ======================================================== */
+.navbar-avatar-container {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.navbar-user-dropdown {
+  position: absolute !important;
+  top: 50px !important;
+  right: 0 !important;
+  width: 260px !important;
+  min-width: 260px !important;
+  max-width: 280px !important;
+  box-sizing: border-box !important;
+  word-break: normal !important;
+  white-space: normal !important;
+  overflow-wrap: normal !important;
+  writing-mode: horizontal-tb !important;
+  z-index: 10010 !important;
+}
+
+.dropdown-user-header h6,
+.dropdown-user-header span {
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  white-space: normal !important;
+  writing-mode: horizontal-tb !important;
+}
+
+/* ========================================================
+   SELLER PORTAL DESIGN TOKENS & UTILITIES
+   ======================================================== */
+:root {
+  --surface: #ffffff;
+  --on-surface: #0f172a;
+  --on-surface-variant: #64748b;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f8fafc;
+  --surface-container-high: #f1f5f9;
+  --surface-container-highest: #e2e8f0;
+  --outline-variant: #cbd5e1;
+  --primary-color: #0d5c3a;
+  --on-primary: #ffffff;
+  --primary-container: #dcfce7;
+  --on-primary-container: #14532d;
+  --secondary-container: #fef3c7;
+  --on-secondary-container: #92400e;
+  --error-color: #ef4444;
+  --error-container: #fee2e2;
+  --on-error-container: #991b1b;
+}
+
+.dark {
+  --surface: #1e293b;
+  --on-surface: #f8fafc;
+  --on-surface-variant: #94a3b8;
+  --surface-container-lowest: #0f172a;
+  --surface-container-low: #1e293b;
+  --surface-container-high: #334155;
+  --surface-container-highest: #475569;
+  --outline-variant: #334155;
+}
+
+/* Backgrounds & Text */
+.bg-surface { background-color: var(--surface) !important; }
+.text-on_surface { color: var(--on-surface) !important; }
+.text-on_surface_variant { color: var(--on-surface-variant) !important; }
+.bg-surface_container_lowest { background-color: var(--surface-container-lowest) !important; }
+.bg-surface_container_low { background-color: var(--surface-container-low) !important; }
+.bg-surface_container_high { background-color: var(--surface-container-high) !important; }
+.bg-surface_container_highest { background-color: var(--surface-container-highest) !important; }
+.bg-primary { background-color: var(--primary-color) !important; }
+.text-on_primary { color: var(--on-primary) !important; }
+.bg-primary_container { background-color: var(--primary-container) !important; }
+.text-on_primary_container { color: var(--on-primary-container) !important; }
+.bg-secondary_container { background-color: var(--secondary-container) !important; }
+.text-on_secondary_container { color: var(--on-secondary-container) !important; }
+.border-outline_variant { border-color: var(--outline-variant) !important; }
+.border-surface-container-high { border-color: var(--surface-container-high) !important; }
+.text-error { color: var(--error-color) !important; }
+.bg-error_container { background-color: var(--error-container) !important; }
+.text-on_error_container { color: var(--on-error-container) !important; }
+
+/* Spacing & Layout Utilities */
+.px-gutter-mobile { padding-left: 1rem !important; padding-right: 1rem !important; }
+.px-gutter-desktop { padding-left: 2rem !important; padding-right: 2rem !important; }
+.py-md { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
+.p-lg { padding: 1.5rem !important; }
+.p-stack-md { padding: 1.25rem !important; }
+.p-margin-desktop { margin-top: 1rem !important; }
+.gap-stack-md { gap: 1rem !important; }
+.gap-md { gap: 0.75rem !important; }
+.gap-sm { gap: 0.5rem !important; }
+
+/* Typography Scale */
+.text-headline-lg { font-size: 1.75rem !important; line-height: 2.25rem !important; font-weight: 700 !important; }
+.font-headline-lg { font-weight: 700 !important; }
+.text-title-lg { font-size: 1.25rem !important; line-height: 1.75rem !important; font-weight: 600 !important; }
+.font-title-lg { font-weight: 600 !important; }
+.text-label-lg { font-size: 0.95rem !important; line-height: 1.35rem !important; font-weight: 600 !important; }
+.font-label-lg { font-weight: 600 !important; }
+.text-label-md { font-size: 0.88rem !important; line-height: 1.25rem !important; font-weight: 500 !important; }
+.font-label-md { font-weight: 500 !important; }
+.text-label-sm { font-size: 0.78rem !important; line-height: 1rem !important; font-weight: 600 !important; }
+.font-label-sm { font-weight: 600 !important; }
+.text-body-xs { font-size: 0.75rem !important; line-height: 1rem !important; }
+.font-body-xs { font-weight: 400 !important; }
+
+/* Material Symbols Ligature Font Rule */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined' !important;
+  font-weight: normal !important;
+  font-style: normal !important;
+  font-size: 20px;
+  line-height: 1 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  display: inline-block !important;
+  white-space: nowrap !important;
+  word-wrap: normal !important;
+  direction: ltr !important;
+  -webkit-font-feature-settings: 'liga' !important;
+  -webkit-font-smoothing: antialiased !important;
 }
