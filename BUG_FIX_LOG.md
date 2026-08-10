@@ -113,6 +113,15 @@ This log documents every architectural issue, routing bug, hardcoded URL, securi
   - `backend/server.js`
 - **Fix**: Configured `cors` middleware to dynamically handle `process.env.CLIENT_URL` (supporting single or comma-separated origins) with `credentials: true`.
 
+---
+
+## 12. AI Chatbot Floating Window Positioning & Width Fix
+- **Issue**: The `.chatbot-window` was using `position: absolute; right: 0;` inside a bounded parent wrapper, which caused parent overflow clipping to compress the chat panel into an unreadable ~60px vertical strip with single-character text wrapping.
+- **Files Modified**:
+  - `client/src/components/Chatbot.jsx`
+- **Fix**: Updated `.chatbot-window` CSS to use viewport-fixed positioning (`position: fixed; right: 24px; bottom: 90px; z-index: 99999`) with `width: 380px`, `min-width: 320px`, and `max-width: calc(100vw - 32px)`.
+
+
 
 
 

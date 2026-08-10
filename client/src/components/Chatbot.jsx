@@ -200,17 +200,24 @@ const Chatbot = () => {
         }
 
         .chatbot-window {
-          position: absolute;
-          bottom: 72px;
-          right: 0;
+          position: fixed;
+          bottom: 90px;
+          right: 24px;
           width: 380px;
-          height: 500px;
+          min-width: 320px;
+          max-width: calc(100vw - 32px);
+          height: 520px;
+          max-height: calc(100vh - 120px);
           display: flex;
           flex-direction: column;
           border-radius: 16px;
           border: 1px solid var(--border-glass);
+          background: var(--bg-card, #ffffff);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
           overflow: hidden;
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+          box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+          z-index: 99999;
           animation: slideUpFade 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -445,9 +452,10 @@ const Chatbot = () => {
 
         @media (max-width: 480px) {
           .chatbot-window {
-            width: calc(100vw - 32px);
-            height: calc(100vh - 150px);
-            right: -8px;
+            width: calc(100vw - 24px);
+            height: calc(100vh - 120px);
+            right: 12px;
+            bottom: 80px;
           }
         }
       `}</style>
