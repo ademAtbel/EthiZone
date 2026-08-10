@@ -56,6 +56,37 @@ const Navbar = () => {
     }
     return '/dashboard';
   };
+
+  const getStorefrontLink = () => {
+    if (!user) return '/';
+    if (user.role === 'business') {
+      if (user.businessType === 'real_estate') return '/?type=house';
+      if (user.businessType === 'automotive') return '/cars';
+      if (user.businessType === 'organization') return '/?type=job_opening';
+      if (user.businessType === 'event') return '/events';
+      if (user.businessType === 'service') return '/?type=service';
+      const slug = user.storeSlug || (user.storeName || user.username || '').toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-');
+      return `/store/${slug}`;
+    }
+    if (user.role === 'handyman') return '/?type=handyman_skill';
+    if (user.role === 'individual') return '/?type=personal_item';
+    return '/';
+  };
+
+  const getStorefrontLabel = () => {
+    if (!user) return 'Visit Storefront';
+    if (user.role === 'business') {
+      if (user.businessType === 'real_estate') return 'Real Estate Directory';
+      if (user.businessType === 'automotive') return 'Cars Directory';
+      if (user.businessType === 'organization') return 'Jobs Directory';
+      if (user.businessType === 'event') return 'Events Directory';
+      if (user.businessType === 'service') return 'Services Directory';
+      return 'Visit Storefront';
+    }
+    if (user.role === 'handyman') return 'Hire Me Directory';
+    if (user.role === 'individual') return 'Used Items Directory';
+    return 'Directory';
+  };
   // Fetch translation and theme context states
   const { theme, language, toggleTheme, toggleLanguage, t, activeStoreType, setActiveStoreType } = useApp();
 
@@ -158,6 +189,10 @@ const Navbar = () => {
     }
   };
 
+  const isLoggedIn = Boolean(token && user && user._id);
+  const isDashboardRoute = location.pathname.includes('/dashboard') || location.pathname.startsWith('/seller/') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/super-admin');
+  const hideCenterFilters = isPublicStorefront || isLoggedIn || isDashboardRoute;
+
   return (
     <>
       <div className="header-wrapper">
@@ -167,11 +202,11 @@ const Navbar = () => {
       <nav className="glass-navbar">
         <div className="container nav-container" style={{ position: 'relative' }}>
           <Link to="/" className="logo" onClick={() => setMobileMenuOpen(false)} style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none', padding: '6px 0' }}>
-            <AnimatedLogo size="md" showMotto mottoText={t('logo_motto_slogan')} />
+            <AnimatedLogo size="md" />
           </Link>
 
         {/* Center: Business Category Filter Badges */}
-        {!isPublicStorefront && (
+        {!hideCenterFilters && (
           <div className="navbar-center-filters">
             <button
               onClick={() => handleTypeSelect('store_product')}
@@ -248,13 +283,11 @@ const Navbar = () => {
                     <Printer size={14} /> QR Code
                   </button>
                   <a 
-                    href={`/store/${(user.storeName || user.username || '').toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')}`} 
+                    href={getStorefrontLink()} 
                     className="btn btn-primary"
-                    target="_blank"
-                    rel="noopener noreferrer"
                     style={{ padding: '6px 12px', fontSize: '0.82rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
                   >
-                    Visit Storefront
+                    {getStorefrontLabel()}
                   </a>
                   
                   {/* Notification Bell with Gold Circle */}
@@ -301,21 +334,21 @@ const Navbar = () => {
                         onClick={() => setUserMenuOpen(false)}
                         style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1005, background: 'transparent', cursor: 'default' }}
                       />
-                      <div className="navbar-user-dropdown glass-panel" style={{ position: 'absolute', top: '50px', right: 0, width: '240px', padding: '16px 0', zIndex: 1010, background: 'var(--bg-navbar)', border: '1px solid var(--border-glass)', borderRadius: 'var(--radius-lg)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08)' }}>
-                        <div className="dropdown-user-header" style={{ padding: '0 16px 12px 16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <h6 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-main)' }}>{user.username}</h6>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{user.email || 'User Account'}</span>
-                          <span className={`role-badge-mini ${user.role}`} style={{ display: 'inline-block', width: 'fit-content', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', padding: '1px 6px', borderRadius: '4px', marginTop: '4px', background: user.role === 'business' ? 'rgba(197, 168, 90, 0.15)' : 'rgba(0, 0, 0, 0.05)', color: user.role === 'business' ? 'var(--accent-secondary)' : 'var(--text-main)' }}>
+                      <div className="navbar-user-dropdown glass-panel" style={{ position: 'absolute', top: '50px', right: 0, width: '260px', minWidth: '260px', padding: '16px 0', zIndex: 10010, background: 'var(--bg-navbar, #ffffff)', border: '1px solid var(--border-glass, #cbd5e1)', borderRadius: '16px', boxShadow: '0 20px 40px -10px rgba(15, 23, 42, 0.25)', boxSizing: 'border-box', wordBreak: 'normal', whiteSpace: 'normal', writingMode: 'horizontal-tb' }}>
+                        <div className="dropdown-user-header" style={{ padding: '0 18px 12px 18px', display: 'flex', flexDirection: 'column', gap: '4px', wordBreak: 'break-word' }}>
+                          <h6 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main, #0f172a)', wordBreak: 'break-word' }}>{user.username}</h6>
+                          <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary, #64748b)', wordBreak: 'break-all' }}>{user.email || 'User Account'}</span>
+                          <span className={`role-badge-mini ${user.role}`} style={{ display: 'inline-block', width: 'fit-content', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', padding: '2px 8px', borderRadius: '6px', marginTop: '4px', background: user.role === 'business' ? 'rgba(197, 168, 90, 0.2)' : '#f1f5f9', color: user.role === 'business' ? '#b45309' : '#475569' }}>
                             {user.role === 'business' ? user.businessType : user.role}
                           </span>
                         </div>
-                        <div className="dropdown-divider" style={{ height: '1px', background: 'var(--border-glass)', margin: '8px 0' }}></div>
+                        <div className="dropdown-divider" style={{ height: '1px', background: 'var(--border-glass, #e2e8f0)', margin: '8px 0' }}></div>
                         {(user.role === 'business' || user.role === 'handyman') && (
                           <button 
                             type="button" 
                             onClick={() => { setQrOpen(true); setUserMenuOpen(false); }} 
                             className="dropdown-item d-flex align-items-center gap-2"
-                            style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }}
+                            style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 18px', background: 'none', border: 'none', color: 'var(--text-secondary, #334155)', fontSize: '0.88rem', fontWeight: 500, textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap' }}
                           >
                             <Printer size={16} /> QR Code
                           </button>
@@ -324,31 +357,27 @@ const Navbar = () => {
                           type="button" 
                           onClick={() => { setChangePasswordOpen(true); setUserMenuOpen(false); }} 
                           className="dropdown-item d-flex align-items-center gap-2"
-                          style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }}
+                          style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 18px', background: 'none', border: 'none', color: 'var(--text-secondary, #334155)', fontSize: '0.88rem', fontWeight: 500, textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap' }}
                         >
                           <Key size={16} /> Change Password
                         </button>
-                        <Link to={getDashboardLink()} onClick={() => setUserMenuOpen(false)} className="dropdown-item d-flex align-items-center gap-2" style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', textDecoration: 'none' }}>
+                        <Link to={getDashboardLink()} onClick={() => setUserMenuOpen(false)} className="dropdown-item d-flex align-items-center gap-2" style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 18px', background: 'none', border: 'none', color: 'var(--text-secondary, #334155)', fontSize: '0.88rem', fontWeight: 500, textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', textDecoration: 'none', whiteSpace: 'nowrap' }}>
                           <LayoutDashboard size={16} /> Dashboard
                         </Link>
-                        {(user.role === 'business' || user.role === 'handyman') && (
-                          <a 
-                            href={`/store/${(user.storeName || user.username || '').toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="dropdown-item d-flex align-items-center gap-2"
-                            style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', textDecoration: 'none' }}
-                            onClick={() => setUserMenuOpen(false)}
-                          >
-                            <Store size={16} /> Visit Storefront
-                          </a>
-                        )}
-                        <div className="dropdown-divider" style={{ height: '1px', background: 'var(--border-glass)', margin: '8px 0' }}></div>
+                        <a 
+                          href={getStorefrontLink()}
+                          className="dropdown-item d-flex align-items-center gap-2"
+                          style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 18px', background: 'none', border: 'none', color: 'var(--text-secondary, #334155)', fontSize: '0.88rem', fontWeight: 500, textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', textDecoration: 'none', whiteSpace: 'nowrap' }}
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <Store size={16} /> {getStorefrontLabel()}
+                        </a>
+                        <div className="dropdown-divider" style={{ height: '1px', background: 'var(--border-glass, #e2e8f0)', margin: '8px 0' }}></div>
                         <button 
                           type="button" 
                           onClick={handleLogout} 
                           className="dropdown-item logout-btn d-flex align-items-center gap-2"
-                          style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--accent-danger)', fontSize: '0.88rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s' }}
+                          style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 18px', background: 'none', border: 'none', color: 'var(--accent-danger, #ef4444)', fontSize: '0.88rem', fontWeight: 600, textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap' }}
                         >
                           <LogOut size={16} /> Logout
                         </button>
@@ -469,11 +498,11 @@ const Navbar = () => {
         }
         .logo img {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          filter: invert(1) drop-shadow(0 2px 5px rgba(0, 0, 0, 0.1));
+          filter: drop-shadow(0 2px 8px rgba(197, 168, 90, 0.3));
         }
         .logo:hover img {
-          transform: scale(1.05);
-          filter: invert(1) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+          transform: scale(1.02);
+          filter: drop-shadow(0 4px 14px rgba(197, 168, 90, 0.5));
         }
         .logo-icon {
           font-size: 1.8rem;

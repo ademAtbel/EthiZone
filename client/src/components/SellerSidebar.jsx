@@ -59,7 +59,7 @@ export default function SellerSidebar() {
             {/* Header / Brand */}
             <div className="mb-xl flex items-center justify-between pb-4 border-b border-surface-container-high">
               <div>
-                <AnimatedLogo size="sm" subtitle="Seller Portal" />
+                <AnimatedLogo size="md" />
                 <p className="text-body-xs font-body-xs text-on_surface_variant mt-1">{user?.storeName || 'Partner Portal'}</p>
               </div>
             </div>

@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const RatingSchema = new mongoose.Schema({
   targetId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  listingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Listing', required: true },
+  listingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Listing', required: false },
   rating: { type: Number, required: true, min: 1, max: 5 },
   comment: { type: String, required: true },
   name: { type: String, required: true },
@@ -15,3 +15,4 @@ RatingSchema.index({ targetId: 1 });
 RatingSchema.index({ email: 1, phone: 1 });
 
 module.exports = mongoose.model('Rating', RatingSchema);
+

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import ListingCard from '../components/ListingCard';
+import logoImg from '../assets/logo.png';
 import FilterButton from '../components/FilterButton';
 import { Search, Star, Calendar, Clock, MapPin, Phone, MessageCircle, X, Tag } from 'lucide-react';
 
@@ -1282,7 +1283,7 @@ const Home = () => {
 
 
 
-          <div className="row">
+          <div className="directory-layout-flex">
             {/* Filter Overlay for Mobile */}
             {isFilterOpen && (
               <div 
@@ -1296,8 +1297,8 @@ const Home = () => {
             )}
 
             {/* Sidebar Column */}
-            <aside className={`col-12 col-lg-3 ${isFilterOpen ? 'mobile-filter-drawer' : 'd-none d-lg-block'} mb-4`}>
-              <div className="filter-sidebar-card" style={{ minWidth: '240px', height: '100%', overflowY: 'auto' }}>
+            <aside className={`directory-sidebar-col ${isFilterOpen ? 'mobile-filter-drawer' : 'd-none d-lg-block'} mb-4`}>
+              <div className="filter-sidebar-card" style={{ height: '100%', overflowY: 'auto' }}>
                 <div className="d-flex justify-content-between align-items-center d-lg-none mb-3 pb-2 border-bottom">
                    <span className="fw-bold fs-5" style={{ color: 'var(--text-main)' }}>Filters</span>
                    <button className="btn btn-sm" onClick={() => setIsFilterOpen(false)} style={{ borderRadius: '50%', width: '32px', height: '32px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-glass)' }}>✕</button>
@@ -2192,7 +2193,7 @@ const Home = () => {
             </aside>
 
             {/* Listings Grid Column */}
-            <main className="col-12 col-lg-9 directory-main">
+            <main className="directory-main-col">
 
 
               {error && <div className="alert alert-danger">{error}</div>}
@@ -2200,7 +2201,7 @@ const Home = () => {
               {loading ? (
                 <div className="loading-container flex-center" style={{ flexDirection: 'column', padding: '60px 0' }}>
                   <div className="animated-logo-spinner">
-                    <img src="/logo.png" alt="Loading" className="logo-pulse" />
+                    <img src={logoImg} alt="Loading" className="logo-pulse" />
                   </div>
                   <p style={{ marginTop: '16px', fontWeight: '500', color: 'var(--text-secondary)' }}>{t('searching_active_directories') || 'Searching active directories...'}</p>
                 </div>
@@ -2214,7 +2215,7 @@ const Home = () => {
                 <>
                   <div className="row g-4 listings-directory-grid">
                     {sortedListings.map((item) => (
-                      <div key={item._id} className="col-12 col-sm-6 col-lg-4 col-xl-4">
+                      <div key={item._id} className="col-12 col-sm-6 col-md-6 col-xl-4">
                         <ListingCard listing={item} />
                       </div>
                     ))}
@@ -3354,6 +3355,31 @@ const Home = () => {
           opacity: 0.6;
         }
         
+        /* Directory Layout Flexbox Structure - Clean Non-Overlapping Spacing */
+        .directory-layout-flex {
+          display: flex;
+          gap: 36px;
+          align-items: flex-start;
+          width: 100%;
+        }
+        .directory-sidebar-col {
+          width: 275px;
+          flex-shrink: 0;
+        }
+        .directory-main-col {
+          flex: 1;
+          min-width: 0;
+        }
+        @media (max-width: 991px) {
+          .directory-layout-flex {
+            flex-direction: column;
+            gap: 20px;
+          }
+          .directory-sidebar-col {
+            width: 100%;
+          }
+        }
+        
         /* Premium Filter Sidebar Styling - Dynamic Theme Sync */
         .filter-sidebar-card {
           background: var(--bg-card);
@@ -3365,6 +3391,8 @@ const Home = () => {
           padding: 24px;
           color: var(--text-main);
           transition: var(--transition-smooth);
+          margin: 0;
+          width: 100%;
         }
         .filter-sidebar-card h2 {
           color: var(--text-main) !important;

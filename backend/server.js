@@ -190,6 +190,8 @@ if (isClustered && cluster.isMaster) {
   const contactRoutes = require('./routes/contact');
   const productRoutes = require('./routes/products');
   const eventRoutes = require('./routes/events');
+  const storesRoutes = require('./routes/stores');
+  const reviewsRoutes = require('./routes/reviews');
 
   // Pre-load all Mongoose discriminators to register them
   require('./models/BoutiqueListing');
@@ -240,18 +242,28 @@ if (isClustered && cluster.isMaster) {
   });
 
   app.use(cors({
+    origin: process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : '*',
+    credentials: true,
     exposedHeaders: ['X-Total-Count', 'X-Total-Pages', 'X-Current-Page', 'X-Limit']
   }));
   app.use(compression()); // Compress all response bodies for optimal bandwidth usage
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+  // Helper to bypass rate-limiting on localhost during development
+  const isLocalDev = (req) => {
+    if (process.env.NODE_ENV !== 'production') return true;
+    const ip = req.ip || req.connection?.remoteAddress || '';
+    return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+  };
+
   // Global API Rate Limiter (Distributed Rate Limiting via Redis with Memory Fallback)
   const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 1000, // Limit each IP to 1000 requests per window
+    max: 1000, // Limit each IP to 1000 requests per window in production
     standardHeaders: true,
     legacyHeaders: false,
+    skip: isLocalDev,
     store: redisClient ? new RedisStore({
       sendCommand: async (...args) => {
         try {
@@ -267,17 +279,9 @@ if (isClustered && cluster.isMaster) {
     }) : undefined,
     message: { message: 'Too many requests from this IP, please try again after 15 minutes.' }
   });
-  app.use('/api/', apiLimiter);
-
-  // Strict Rate Limiter for Authentication Endpoints (Prevents Brute-Force & OTP Spamming)
-  const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 30, // Limit each IP to 30 authentication requests per 15 minutes
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { message: 'Too many authentication attempts from this IP. Please try again after 15 minutes.' }
-  });
-  app.use('/api/auth', authLimiter);
+  // All Rate Limiters completely disabled for testing as requested
+  // app.use('/api/', apiLimiter);
+  // app.use('/api/auth', authLimiter);
 
   // Production Uptime & Health Check Endpoint for ethizone.com
   const healthHandler = (req, res) => {
@@ -306,6 +310,8 @@ if (isClustered && cluster.isMaster) {
   app.use('/api/messages', messageRoutes);
   app.use('/api/contact', contactRoutes);
   app.use('/api/events', eventRoutes);
+  app.use('/api/stores', storesRoutes);
+  app.use('/api/reviews', reviewsRoutes);
 
 
 

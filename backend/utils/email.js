@@ -235,4 +235,75 @@ const sendNotificationEmail = async (toEmail, subject, text, html) => {
   }
 };
 
-module.exports = { sendOtpEmail, sendContactInquiryEmail, sendNotificationEmail };
+/**
+ * Sends a registration confirmation email with a 6-digit activation code.
+ * @param {string} email
+ * @param {string} code
+ * @param {string} username
+ */
+const sendRegistrationConfirmationEmail = async (email, code, username = 'User') => {
+  const mailSubject = '✨ Confirm Your EthiZone Account Registration';
+  const mailText = `Welcome to EthiZone, ${username}! Your account confirmation code is: ${code}. This code is valid for 15 minutes.`;
+  const mailHtml = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #ffffff;">
+      <h2 style="color: #0f172a; border-bottom: 2px solid #0d5c3a; padding-bottom: 10px;">Welcome to EthiZone!</h2>
+      <p style="font-size: 16px; color: #4a5568;">Hi <strong>${username}</strong>,</p>
+      <p style="font-size: 16px; color: #4a5568;">Thank you for joining EthiZone Marketplace. To complete your registration and activate your account, please enter the 6-digit confirmation code below:</p>
+      <div style="background-color: #f0fdf4; border: 2px dashed #16a34a; padding: 20px; text-align: center; margin: 25px 0; border-radius: 8px;">
+        <span style="font-size: 38px; font-weight: bold; letter-spacing: 8px; color: #15803d; font-family: monospace;">${code}</span>
+      </div>
+      <p style="font-size: 14px; color: #64748b;">This verification code is valid for <strong>15 minutes</strong>. If you did not create an account on EthiZone, you can safely ignore this message.</p>
+      <p style="font-size: 12px; color: #94a3b8; margin-top: 30px; border-top: 1px solid #edf2f7; padding-top: 15px;">EthiZone Direct-Connect Marketplace</p>
+    </div>
+  `;
+
+  // Always log to terminal console for development visibility
+  const border = '═'.repeat(60);
+  const contentWidth = 58;
+  const toLine = ` Recipient: ${email} (${username})`.padEnd(contentWidth);
+  const codeLine = ` Activation Code: ${code} (Expires in 15 mins)`.padEnd(contentWidth);
+  
+  console.log(`
+╔${border}╗
+║ 📧 EMAIL OUTBOX [ACCOUNT REGISTRATION CONFIRMATION]         ║
+╠${border}╣
+║${toLine}║
+║${codeLine}║
+║ Subject:  ✨ Confirm Your EthiZone Account Registration    ║
+╚${border}╝
+`);
+
+  if (!nodemailer) {
+    console.log('ℹ️ [Email service] nodemailer is not installed. Falling back to console logging.');
+    return;
+  }
+
+  const host = process.env.EMAIL_HOST || '';
+  const port = process.env.EMAIL_PORT || 587;
+  const user = process.env.EMAIL_USER || '';
+  const pass = process.env.EMAIL_PASS || '';
+
+  if (!user || !pass) {
+    console.log('ℹ️ [Email service] EMAIL_USER or EMAIL_PASS environment variables are not set. Falling back to console logging.');
+    return;
+  }
+
+  try {
+    const transporter = getTransporter(user, pass, host, port);
+
+    const info = await transporter.sendMail({
+      from: `"EthiZone Security" <${user}>`,
+      to: email,
+      subject: mailSubject,
+      text: mailText,
+      html: mailHtml,
+    });
+
+    console.log(`✉️ Registration confirmation email sent to ${email}. Message ID: ${info.messageId}`);
+  } catch (error) {
+    console.error(`❌ Error sending registration confirmation email to ${email}:`, error.message);
+  }
+};
+
+module.exports = { sendOtpEmail, sendContactInquiryEmail, sendNotificationEmail, sendRegistrationConfirmationEmail };
+

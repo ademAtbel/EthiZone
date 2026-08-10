@@ -1049,7 +1049,18 @@ const Dashboard = () => {
         stylists: ''
       });
       setSelectedImages([]);
-      alert('Marketplace listing added successfully!');
+      
+      let targetName = 'on EthiZone';
+      if (listingForm.type === 'store_product' || user?.businessType === 'store') targetName = 'on your store in EthiZone';
+      else if (listingForm.type === 'service' || user?.businessType === 'service') targetName = 'your service in EthiZone';
+      else if (listingForm.type === 'handyman_skill' || user?.role === 'handyman') targetName = 'your handyman skills in EthiZone';
+      else if (listingForm.type === 'house' || user?.businessType === 'real_estate') targetName = 'your property in EthiZone';
+      else if (listingForm.type === 'car' || user?.businessType === 'automotive') targetName = 'your vehicle in EthiZone';
+      else if (listingForm.type === 'job_opening' || user?.businessType === 'organization') targetName = 'your job opening in EthiZone';
+      else if (listingForm.type === 'event' || user?.businessType === 'event') targetName = 'your event in EthiZone';
+      else if (listingForm.type === 'personal_item' || user?.role === 'individual') targetName = 'your item for sale in EthiZone';
+
+      alert(`🎉 Congratulations on posting ${targetName}! We are proud to have you as our partner. Let's make our world simple! ✨`);
     } catch (err) {
       alert(err.message);
     }
@@ -1387,9 +1398,35 @@ const Dashboard = () => {
           <span style={{ fontSize: '1.8rem' }}>🏢</span>
           <div>
             <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-main)' }}>{user?.storeName || user?.username} Dashboard</h2>
-            <span style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', fontWeight: 600, textTransform: 'uppercase' }}>{user?.category} Portal</span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', fontWeight: 600, textTransform: 'uppercase' }}>{user?.category || user?.role} Portal</span>
           </div>
         </div>
+
+        <a 
+          href={
+            user?.role === 'individual' ? '/?type=personal_item' :
+            user?.role === 'handyman' ? '/?type=handyman_skill' :
+            user?.role === 'business' && user?.businessType === 'real_estate' ? '/?type=house' :
+            user?.role === 'business' && user?.businessType === 'automotive' ? '/cars' :
+            user?.role === 'business' && user?.businessType === 'organization' ? '/?type=job_opening' :
+            user?.role === 'business' && user?.businessType === 'event' ? '/events' :
+            user?.role === 'business' && user?.businessType === 'service' ? '/?type=service' :
+            `/store/${user?.storeSlug || (user?.storeName ? user.storeName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '') : user?.username)}`
+          }
+          className="btn btn-outline-primary btn-sm"
+          style={{ padding: '8px 16px', fontWeight: 600, borderRadius: '8px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+        >
+          {
+            user?.role === 'individual' ? '📦 View Used Items Directory' :
+            user?.role === 'handyman' ? '🛠️ View Hire Me Directory' :
+            user?.role === 'business' && user?.businessType === 'real_estate' ? '🏠 View Real Estate Directory' :
+            user?.role === 'business' && user?.businessType === 'automotive' ? '🚗 View Cars Directory' :
+            user?.role === 'business' && user?.businessType === 'organization' ? '💼 View Jobs Directory' :
+            user?.role === 'business' && user?.businessType === 'event' ? '🎉 View Events Directory' :
+            user?.role === 'business' && user?.businessType === 'service' ? '⚙️ View Services Directory' :
+            '🔗 Visit Storefront'
+          }
+        </a>
       </div>
       
 
@@ -3702,46 +3739,37 @@ const Dashboard = () => {
                 />
               </div>
 
-              {user?.role === 'business' && (
-                <div className="form-group">
-                  <label>Listing Post Type (Fixed by Business Type)</label>
-                  <select 
-                    className="form-control"
-                    value={listingForm.type}
-                    disabled
-                  >
-                    <option value="store_product">Store Product Item</option>
-                    <option value="service">Professional Service Listing</option>
-                    <option value="job_opening">Job Opening (Hiring Only)</option>
-                    <option value="house">Real Estate House Listing</option>
-                    <option value="car">Automotive Vehicle Listing</option>
-                  </select>
-                </div>
-              )}
-
-              {user?.role === 'individual' && (
-                <div className="form-group">
-                  <label>Listing Post Type</label>
-                  <select 
-                    className="form-control"
-                    value={listingForm.type}
-                    onChange={(e) => {
-                      const newType = e.target.value;
-                      setListingForm(prev => ({ 
-                        ...prev, 
-                        type: newType,
-                        category: newType === 'job_opening' ? 'Other' : (newType === 'car' ? 'Automotive' : newType === 'house' ? 'Real Estate' : '') 
-                      }));
-                    }}
-                    required
-                  >
-                    <option value="personal_item">Personal Item (Sell)</option>
-                    <option value="car">Automotive Vehicle Listing (Car Sale / Rent)</option>
-                    <option value="house">Real Estate House Listing (Sale / Rent)</option>
-                    <option value="job_opening">Job Opening (Hire someone)</option>
-                  </select>
-                </div>
-              )}
+              <div className="form-group mb-3">
+                <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '0.88rem' }}>
+                  LISTING POST TYPE <span style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: '400', marginLeft: '6px' }}>(Fixed by registered role)</span>
+                </label>
+                <input 
+                  type="text"
+                  className="form-control"
+                  value={
+                    listingForm.type === 'personal_item' ? 'Personal Item (Sell)' :
+                    listingForm.type === 'handyman_skill' ? 'Handyman Skill & Service' :
+                    listingForm.type === 'store_product' ? 'Store Product Item' :
+                    listingForm.type === 'service' ? 'Professional Service Listing' :
+                    listingForm.type === 'job_opening' ? 'Job Opening (Hiring Only)' :
+                    listingForm.type === 'house' ? 'Real Estate House Listing' :
+                    listingForm.type === 'car' ? 'Automotive Vehicle Listing' :
+                    listingForm.type === 'event' ? 'Event Posting' : 'Personal Item (Sell)'
+                  }
+                  disabled
+                  readOnly
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    color: 'var(--text-primary, #0f172a)',
+                    fontWeight: '600',
+                    cursor: 'not-allowed',
+                    border: '1px solid var(--border-glass, #cbd5e1)'
+                  }}
+                />
+                <small style={{ display: 'block', marginTop: '6px', color: '#64748b', fontSize: '0.78rem' }}>
+                  🔒 Post type is locked to your registered account role ({user?.role}). To post a different listing type, please register a new account.
+                </small>
+              </div>
 
               {/* Listing Offer Type selector for Real Estate (Placed BEFORE Price) */}
               {listingForm.type === 'house' && (

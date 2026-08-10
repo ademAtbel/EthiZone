@@ -4,12 +4,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { verifyToken } = require('../middleware/auth');
-const { sendOtpEmail } = require('../utils/email');
+const { sendOtpEmail, sendRegistrationConfirmationEmail } = require('../utils/email');
 const { validateEmail, validatePhone } = require('../utils/validation');
 
-
-
-// REGISTER USER
+// REGISTER USER (Requires 6-Digit Email Confirmation)
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password, phone, role, businessType, category, subCategory, storeName, description, address } = req.body;
@@ -29,20 +27,29 @@ router.post('/register', async (req, res) => {
     // Check if user already exists
     let user = await User.findOne({ email });
     if (user) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: 'An account with this email address already exists.' });
     }
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
+    // Generate 6-digit confirmation code (valid for 15 minutes)
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationExpires = new Date(Date.now() + 15 * 60 * 1000);
+
+    // Create unverified user account
     user = new User({
       username,
       email,
       password: hashedPassword,
       phone,
-      role,
+      role: role || 'individual',
+      isVerified: false,
+      emailVerified: false,
+      phoneVerified: false,
+      verificationCode,
+      verificationExpires,
       businessType: role === 'business' ? businessType : undefined,
       category: role === 'business' ? category : undefined,
       subCategory: role === 'business' ? subCategory : undefined,
@@ -54,14 +61,66 @@ router.post('/register', async (req, res) => {
 
     await user.save();
 
-    // Create token
+    // Send registration confirmation email
+    sendRegistrationConfirmationEmail(user.email, verificationCode, user.username).catch(err => {
+      console.error('Background confirmation email error:', err.message);
+    });
+
+    res.status(201).json({
+      requiresVerification: true,
+      message: 'Account registered successfully! A 6-digit confirmation code has been sent to your email address.',
+      email: user.email
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error during registration', error: error.message });
+  }
+});
+
+// VERIFY REGISTRATION CODE (ACTIVATES ACCOUNT & ISSUES TOKEN)
+router.post('/verify-registration', async (req, res) => {
+  try {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+      return res.status(400).json({ message: 'Email address and 6-digit verification code are required.' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User account not found.' });
+    }
+
+    if (user.isVerified) {
+      const token = jwt.sign(
+        { id: user._id, role: user.role, username: user.username },
+        process.env.JWT_SECRET || 'secretkey123',
+        { expiresIn: '7d' }
+      );
+      return res.json({ message: 'Account is already verified.', token, user });
+    }
+
+    // Check code and expiration
+    if (!user.verificationCode || user.verificationCode !== code.toString().trim() || Date.now() > new Date(user.verificationExpires).getTime()) {
+      return res.status(400).json({ message: 'Invalid or expired confirmation code. Please request a new code.' });
+    }
+
+    // Mark account as verified
+    user.isVerified = true;
+    user.emailVerified = true;
+    user.verificationCode = undefined;
+    user.verificationExpires = undefined;
+    await user.save();
+
+    // Issue session JWT token
     const token = jwt.sign(
       { id: user._id, role: user.role, username: user.username },
       process.env.JWT_SECRET || 'secretkey123',
       { expiresIn: '7d' }
     );
 
-    res.status(201).json({
+    res.json({
+      message: 'Account verified successfully! Welcome to EthiZone.',
       token,
       user: {
         id: user._id,
@@ -69,6 +128,7 @@ router.post('/register', async (req, res) => {
         email: user.email,
         phone: user.phone,
         role: user.role,
+        isVerified: user.isVerified,
         businessType: user.businessType,
         category: user.category,
         subCategory: user.subCategory,
@@ -84,7 +144,41 @@ router.post('/register', async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ message: 'Server Error during registration', error: error.message });
+    res.status(500).json({ message: 'Server error during verification', error: error.message });
+  }
+});
+
+// RESEND CONFIRMATION CODE
+router.post('/resend-verification', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email address is required.' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'Account not found.' });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ message: 'This account is already verified.' });
+    }
+
+    // Generate new code and set 15 min expiry
+    const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+    user.verificationCode = newCode;
+    user.verificationExpires = new Date(Date.now() + 15 * 60 * 1000);
+    await user.save();
+
+    // Send code
+    sendRegistrationConfirmationEmail(user.email, newCode, user.username).catch(err => {
+      console.error('Background confirmation resend error:', err.message);
+    });
+
+    res.json({ message: 'A new 6-digit confirmation code has been sent to your email address.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error resending confirmation code', error: error.message });
   }
 });
 
@@ -107,6 +201,15 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
+    // Check account verification status (allow super_admin bypass)
+    if (!user.isVerified && user.role !== 'super_admin') {
+      return res.status(403).json({
+        message: 'Account registration is pending email confirmation. Please enter your verification code.',
+        requiresVerification: true,
+        email: user.email
+      });
+    }
+
     // Create token
     const token = jwt.sign(
       { id: user._id, role: user.role, username: user.username },
@@ -122,6 +225,7 @@ router.post('/login', async (req, res) => {
         email: user.email,
         phone: user.phone,
         role: user.role,
+        isVerified: user.isVerified,
         businessType: user.businessType,
         category: user.category,
         storeName: user.storeName,
@@ -418,23 +522,33 @@ router.get('/store-profile/:storeName', async (req, res) => {
   try {
     const slug = req.params.storeName.toLowerCase().trim();
     
-    // Look up business by unique storeSlug directly
+    // 1. Look up user by unique storeSlug directly (any role: business, individual, handyman, etc.)
     let store = await User.findOne({
-      role: 'business',
       storeSlug: slug
     }).select('-password');
 
-    // Fallback: search by username slug if storeSlug doesn't match
+    // 2. Fallback: search by username slug if storeSlug doesn't match
     if (!store) {
       const cleanUsername = slug.replace(/-/g, ' ');
       store = await User.findOne({
-        role: 'business',
         username: { $regex: new RegExp('^' + cleanUsername + '$', 'i') }
       }).select('-password');
     }
 
+    // 3. Fallback: search by exact username regex (ignoring dashes)
     if (!store) {
-      return res.status(404).json({ message: 'Store not found' });
+      store = await User.findOne({
+        username: { $regex: new RegExp('^' + slug.replace(/[^a-zA-Z0-9]/g, '') + '$', 'i') }
+      }).select('-password');
+    }
+
+    // 4. Fallback: search by ObjectId if slug is a valid Mongo ID
+    if (!store && mongoose.Types.ObjectId.isValid(slug)) {
+      store = await User.findById(slug).select('-password');
+    }
+
+    if (!store) {
+      return res.status(404).json({ message: 'Store profile not found' });
     }
 
     res.json(store);

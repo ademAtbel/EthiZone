@@ -14,30 +14,33 @@ router.post('/', verifyToken, async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Verify correct type mapping for non-stores
-    if (user.role === 'individual' && type !== 'personal_item' && type !== 'job_opening') {
-      return res.status(400).json({ message: 'Individuals can only post personal items or job openings' });
+    // Enforce strict post-type mapping based on registered user role
+    if (user.role === 'individual' && type !== 'personal_item') {
+      return res.status(400).json({ message: 'Individual accounts can only post personal items for sale.' });
     }
     if (user.role === 'handyman' && type !== 'handyman_skill') {
-      return res.status(400).json({ message: 'Handymen can only post handyman skills' });
+      return res.status(400).json({ message: 'Handyman accounts can only post handyman skills and services.' });
     }
 
     // Verify correct type mapping for businesses based on businessType
     if (user.role === 'business') {
       if (user.businessType === 'store' && type !== 'store_product') {
-        return res.status(400).json({ message: 'Stores can only post store products' });
+        return res.status(400).json({ message: 'Store accounts can only post store products.' });
       }
       if (user.businessType === 'service' && type !== 'service') {
-        return res.status(400).json({ message: 'Services can only post service offerings' });
+        return res.status(400).json({ message: 'Service accounts can only post professional service listings.' });
       }
       if (user.businessType === 'organization' && type !== 'job_opening') {
-        return res.status(400).json({ message: 'Organizations can only post job openings (hiring only)' });
+        return res.status(400).json({ message: 'Organization accounts can only post job openings.' });
       }
       if (user.businessType === 'real_estate' && type !== 'house') {
-        return res.status(400).json({ message: 'Real estate agencies can only post houses' });
+        return res.status(400).json({ message: 'Real estate accounts can only post properties.' });
       }
       if (user.businessType === 'automotive' && type !== 'car') {
-        return res.status(400).json({ message: 'Automotive businesses can only post cars' });
+        return res.status(400).json({ message: 'Automotive accounts can only post vehicles.' });
+      }
+      if (user.businessType === 'event' && type !== 'event') {
+        return res.status(400).json({ message: 'Event accounts can only post events.' });
       }
     }
 

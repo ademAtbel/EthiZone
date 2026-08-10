@@ -6,6 +6,7 @@ import QrModal from '../components/QrModal';
 import ListingCard from '../components/ListingCard';
 import CategoryTemplate from '../components/CategoryTemplate';
 import { useApp } from '../context/AppContext';
+import logoImg from '../assets/logo.png';
 import { Building2, MapPin, Phone, MessageCircle, FileText, Shirt, ShoppingBag, Globe } from 'lucide-react';
 
 // Inline SVG social media icons renderer to avoid dependency/version naming conflicts
@@ -654,7 +655,7 @@ const Storefront = () => {
                 <div className="store-hero-info">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '14px', flexWrap: 'wrap' }}>
                     <img 
-                      src={store.storeLogo || '/logo.png'} 
+                      src={store.storeLogo || logoImg} 
                       alt={`${store.storeName || store.username} Logo`} 
                       style={{ 
                         width: '90px', 
@@ -1445,7 +1446,7 @@ const Storefront = () => {
               
               <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
                 <a href={`tel:${store.phone}`} className="btn btn-success" style={{ padding: '12px 28px', fontSize: '1rem' }}>{t('call_now')}</a>
-                <a href={`sms:${store.phone}?body=Hi! I saw your store on Ethiozone and want to inquire.`} className="btn btn-primary" style={{ padding: '12px 28px', fontSize: '1rem' }}>{t('send_sms')}</a>
+                <a href={`sms:${store.phone}?body=Hi! I saw your store on EthiZone and want to inquire.`} className="btn btn-primary" style={{ padding: '12px 28px', fontSize: '1rem' }}>{t('send_sms')}</a>
                 <button 
                   onClick={() => setInquiryModalOpen(true)} 
                   className="btn btn-secondary" 

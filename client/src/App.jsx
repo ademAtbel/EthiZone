@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Link, Navigate } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
@@ -14,6 +14,8 @@ import Inbox from './pages/Inbox';
 import Chatbot from './components/Chatbot';
 import StaticPage from './pages/StaticPage';
 import EventsPage from './pages/EventsPage';
+
+import AnimatedLogo from './components/AnimatedLogo';
 
 // Seller / Partner Imports
 import SellerDashboard from './pages/seller/SellerDashboard';
@@ -110,11 +112,18 @@ const AppContent = () => {
     };
   }, [location.pathname, location.search]);
 
+  const token = localStorage.getItem('token');
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isLoggedIn = Boolean(token && user && user._id);
+  const isDashboardRoute = location.pathname.includes('/dashboard') || location.pathname.startsWith('/seller/') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/super-admin');
+  const isSellerPortal = location.pathname.startsWith('/seller/');
+  const hideFooter = isLoggedIn || isDashboardRoute || isSellerPortal;
+
   return (
     <>
-      <Navbar />
+      {!isSellerPortal && <Navbar />}
       
-      <main className="app-main-content">
+      <main className="app-main-content" style={isSellerPortal ? { paddingTop: 0, minHeight: '100vh' } : {}}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -132,19 +141,8 @@ const AppContent = () => {
           <Route path="/phoneentrymodal" element={<PhoneEntryModal />} />
           <Route path="/smscodemodal" element={<SMSCodeModal />} />
 
-          {/* Seller / Partner Portal Dashboard & Sub-pages */}
-          <Route path="/seller/:storeSlug/sellerdashboard" element={<SellerDashboard />} />
-          <Route path="/seller/:storeSlug/hub" element={<SellerHubPage />} />
-          <Route path="/seller/:storeSlug/manageproducts" element={<ManageProductsPage />} />
-          <Route path="/seller/:storeSlug/addproduct" element={<AddProductPage />} />
-          <Route path="/seller/:storeSlug/addservice" element={<AddServicePage />} />
-          <Route path="/seller/:storeSlug/addjob" element={<AddJobPage />} />
-          <Route path="/seller/:storeSlug/addhouse" element={<AddHousePage />} />
-          <Route path="/seller/:storeSlug/addcar" element={<AddCarPage />} />
-          <Route path="/seller/:storeSlug/manageorders" element={<ManageOrdersPage />} />
-          <Route path="/seller/:storeSlug/shippingrules" element={<ShippingRulesPage />} />
-          <Route path="/seller/:storeSlug/messages" element={<SellerChatInbox />} />
-          <Route path="/seller/:storeSlug/support" element={<SellertoAdminSupportChat />} />
+          {/* Legacy seller template routes redirected to clean unified dashboard */}
+          <Route path="/seller/:storeSlug/*" element={<Navigate to="/dashboard" replace />} />
           <Route path="/admin" element={<SuperAdmin />} />
           <Route path="/super-admin" element={<SuperAdmin />} />
           <Route path="/inbox" element={<Inbox />} />
@@ -158,51 +156,54 @@ const AppContent = () => {
         </Routes>
       </main>
 
-      <footer className="landing-footer">
-        <div className="container footer-grid">
-          <div className="footer-col brand-col">
-            <div className="footer-logo">
-              <img src="/logo.png" alt="Ethizone Logo" style={{ height: '40px', mixBlendMode: 'screen', filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.4))' }} />
+      {!hideFooter && (
+        <footer className="landing-footer">
+          <div className="container footer-grid">
+            <div className="footer-col brand-col">
+              <div className="footer-logo">
+                <AnimatedLogo size="md" />
+              </div>
+              <p>{t('footer_brand_desc')}</p>
+              <div className="social-links">
+                <span onClick={handleUnderConstruction} style={{ cursor: 'pointer' }}><Globe size={20} /></span>
+                <span onClick={handleUnderConstruction} style={{ cursor: 'pointer' }}><Mail size={20} /></span>
+                <span onClick={handleUnderConstruction} style={{ cursor: 'pointer' }}><Phone size={20} /></span>
+              </div>
             </div>
-            <p>{t('footer_brand_desc')}</p>
-            <div className="social-links">
-              <span onClick={handleUnderConstruction} style={{ cursor: 'pointer' }}><Globe size={20} /></span>
-              <span onClick={handleUnderConstruction} style={{ cursor: 'pointer' }}><Mail size={20} /></span>
-              <span onClick={handleUnderConstruction} style={{ cursor: 'pointer' }}><Phone size={20} /></span>
+            <div className="footer-col">
+              <h5>{t('marketplace')}</h5>
+              <ul>
+                <li><Link to="/stores" className="footer-link-btn">{t('stores')}</Link></li>
+                <li><Link to="/?type=service" className="footer-link-btn">{t('services')}</Link></li>
+                <li><Link to="/?type=house" className="footer-link-btn">{t('real_estate')}</Link></li>
+                <li><Link to="/cars" className="footer-link-btn">{t('automotive')}</Link></li>
+                <li><Link to="/?type=job_opening" className="footer-link-btn">{t('organizations')}</Link></li>
+                <li><Link to="/?type=handyman_skill" className="footer-link-btn">{t('handymen')}</Link></li>
+              </ul>
+            </div>
+            <div className="footer-col">
+              <h5>{t('company')}</h5>
+              <ul>
+                <li><Link to="/about-us" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('about_us')}</Link></li>
+                <li><Link to="/contact" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('contact_tab')}</Link></li>
+                <li><Link to="/privacy-policy" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('privacy_policy')}</Link></li>
+                <li><Link to="/terms-of-service" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('terms_of_service')}</Link></li>
+              </ul>
+            </div>
+            <div className="footer-col newsletter-col">
+              <h5>{t('newsletter')}</h5>
+              <p>{t('newsletter_desc')}</p>
+              <form onSubmit={handleNewsletterSubmit} className="newsletter-input-row">
+                <input type="email" placeholder={t('your_email_placeholder')} required />
+                <button type="submit" className="btn-newsletter-send"><ArrowRight size={18} /></button>
+              </form>
             </div>
           </div>
-          <div className="footer-col">
-            <h5>{t('marketplace')}</h5>
-            <ul>
-              <li><Link to="/?type=store_product" className="footer-link-btn">{t('stores')}</Link></li>
-              <li><Link to="/?type=car" className="footer-link-btn">{t('automotive')}</Link></li>
-              <li><Link to="/?type=house" className="footer-link-btn">{t('real_estate')}</Link></li>
-              <li><Link to="/?type=job_opening" className="footer-link-btn">{t('organizations')}</Link></li>
-              <li><Link to="/?type=handyman_skill" className="footer-link-btn">{t('handymen')}</Link></li>
-            </ul>
+          <div className="footer-bottom text-center">
+            <p>{t('footer_copy')}</p>
           </div>
-          <div className="footer-col">
-            <h5>{t('company')}</h5>
-            <ul>
-              <li><Link to="/about-us" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('about_us')}</Link></li>
-              <li><Link to="/contact" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('contact_tab')}</Link></li>
-              <li><Link to="/privacy-policy" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('privacy_policy')}</Link></li>
-              <li><Link to="/terms-of-service" className="footer-link-btn" style={{textDecoration:'none', color:'inherit'}}>{t('terms_of_service')}</Link></li>
-            </ul>
-          </div>
-          <div className="footer-col newsletter-col">
-            <h5>{t('newsletter')}</h5>
-            <p>{t('newsletter_desc')}</p>
-            <form onSubmit={handleNewsletterSubmit} className="newsletter-input-row">
-              <input type="email" placeholder={t('your_email_placeholder')} required />
-              <button type="submit" className="btn-newsletter-send"><ArrowRight size={18} /></button>
-            </form>
-          </div>
-        </div>
-        <div className="footer-bottom text-center">
-          <p>{t('footer_copy')}</p>
-        </div>
-      </footer>
+        </footer>
+      )}
 
       <Chatbot />
 

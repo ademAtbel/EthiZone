@@ -7,13 +7,12 @@ const { sendOtpEmail } = require('../utils/email');
 const { validateEmail, validatePhone } = require('../utils/validation');
 
 // POST: GENERATE AND SEND VERIFICATION CODE
-// POST: GENERATE AND SEND VERIFICATION CODE
 router.post('/send-code', async (req, res) => {
   try {
     const { email, targetId, listingId } = req.body;
 
-    if (!email || !targetId || !listingId) {
-      return res.status(400).json({ message: 'Email, target ID and product/service ID are required.' });
+    if (!email || !targetId) {
+      return res.status(400).json({ message: 'Email and target ID are required.' });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
@@ -30,19 +29,23 @@ router.post('/send-code', async (req, res) => {
       return res.status(404).json({ message: 'Target user/store not found.' });
     }
 
-    // Check if this email has already rated this specific listing/product/service
-    const existingRating = await Rating.findOne({ listingId, email: normalizedEmail });
+    // Check if this email has already rated this target
+    const ratingQuery = listingId ? { listingId, email: normalizedEmail } : { targetId, email: normalizedEmail };
+    const existingRating = await Rating.findOne(ratingQuery);
     if (existingRating) {
-      return res.status(400).json({ message: 'You have already submitted a reference rating for this product/service.' });
+      return res.status(400).json({ message: 'You have already submitted a reference rating for this item or service provider.' });
     }
 
     // Generate 4-digit code
     const code = Math.floor(1000 + Math.random() * 9000).toString();
 
     // Save or update verification document (reset verified status)
+    const verificationQuery = { email: normalizedEmail, targetId };
+    if (listingId) verificationQuery.listingId = listingId;
+
     await RatingVerification.findOneAndUpdate(
-      { email: normalizedEmail, listingId },
-      { targetId, code, verified: false, createdAt: new Date() },
+      verificationQuery,
+      { targetId, listingId: listingId || undefined, code, verified: false, createdAt: new Date() },
       { upsert: true, new: true }
     );
 
@@ -60,19 +63,22 @@ router.post('/verify-code', async (req, res) => {
   try {
     const { email, targetId, listingId, code } = req.body;
 
-    if (!email || !targetId || !listingId || !code) {
-      return res.status(400).json({ message: 'Email, target ID, product/service ID and verification code are required.' });
+    if (!email || !targetId || !code) {
+      return res.status(400).json({ message: 'Email, target ID and verification code are required.' });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Find verification record for this specific product/service
-    const record = await RatingVerification.findOne({ email: normalizedEmail, listingId });
+    // Find verification record for this specific target
+    const verificationQuery = { email: normalizedEmail, targetId };
+    if (listingId) verificationQuery.listingId = listingId;
+
+    const record = await RatingVerification.findOne(verificationQuery);
     if (!record || record.code !== code.trim()) {
       return res.status(400).json({ message: 'Invalid or expired verification code.' });
     }
 
-    // Set verified flag instead of deleting immediately, so main POST rating endpoint can check it
+    // Set verified flag
     record.verified = true;
     await record.save();
 
@@ -87,8 +93,8 @@ router.post('/', async (req, res) => {
   try {
     const { targetId, listingId, rating, comment, name, email, phone } = req.body;
 
-    if (!targetId || !listingId || !rating || !comment || !name || !email || !phone) {
-      return res.status(400).json({ message: 'All fields are required' });
+    if (!targetId || !rating || !comment || !name || !email || !phone) {
+      return res.status(400).json({ message: 'All required fields (targetId, rating, comment, name, email, phone) must be provided.' });
     }
 
     // Verify rating value
@@ -116,20 +122,24 @@ router.post('/', async (req, res) => {
 
     // Enforce backend-level OTP verification check
     const normalizedEmail = email.toLowerCase().trim();
-    const verification = await RatingVerification.findOne({ email: normalizedEmail, listingId, verified: true });
+    const verificationQuery = { email: normalizedEmail, targetId, verified: true };
+    if (listingId) verificationQuery.listingId = listingId;
+
+    const verification = await RatingVerification.findOne(verificationQuery);
     if (!verification) {
       return res.status(400).json({ message: 'Email address verification required before posting review.' });
     }
 
-    // Check if this email address has already rated this specific product/service
-    const existingRating = await Rating.findOne({ listingId, email: normalizedEmail });
+    // Check if this email address has already rated this target
+    const ratingQuery = listingId ? { listingId, email: normalizedEmail } : { targetId, email: normalizedEmail };
+    const existingRating = await Rating.findOne(ratingQuery);
     if (existingRating) {
-      return res.status(400).json({ message: 'You have already submitted a reference rating for this product/service.' });
+      return res.status(400).json({ message: 'You have already submitted a reference rating for this item or service provider.' });
     }
 
     const newRating = new Rating({
       targetId,
-      listingId,
+      listingId: listingId || undefined,
       rating,
       comment,
       name,

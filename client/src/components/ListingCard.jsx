@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import RatingForm from './RatingForm';
 import { Phone, MessageCircle } from 'lucide-react';
+import logoImg from '../assets/logo.png';
 
 const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -179,7 +180,7 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
   };
 
   // Compile pre-filled contextual SMS content
-  const smsMessage = `Hello ${ownerName || 'Provider'}, I saw your post "${title}" on Ethiozone and I am interested. Let's connect!`;
+  const smsMessage = `Hello ${ownerName || 'Provider'}, I saw your post "${title}" on EthiZone and I am interested. Let's connect!`;
   
   // Format listing type labels
   const getBadgeTypeClass = (lType) => {
@@ -237,6 +238,17 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
     }
   };
 
+  const rawPriceDisplay = type === 'job_opening' 
+    ? formatSalary(price, metadata?.salaryRate) 
+    : type === 'handyman_skill'
+      ? (price ? `$${price.toLocaleString()}` : (metadata?.handymanRates || t('contact_for_price')))
+      : (listing.isOnSale && listing.salePrice 
+          ? `$${listing.salePrice.toLocaleString()}` 
+          : (price ? `$${price.toLocaleString()}` : t('contact_for_price'))
+        );
+
+  const isContactPrice = !price || rawPriceDisplay === t('contact_for_price') || (typeof rawPriceDisplay === 'string' && rawPriceDisplay.toLowerCase().includes('contact'));
+
   return (
     <>
       {/* Interactive Listing Card */}
@@ -247,37 +259,29 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
       >
         {getStatusOverlay()}
         
-        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
-          <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <span className={`badge ${getBadgeTypeClass(type)}`}>
+        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '6px' }}>
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'nowrap' }}>
+            <span className={`badge ${getBadgeTypeClass(type)}`} style={{ textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 700, padding: '4px 8px', borderRadius: '20px', fontSize: '0.66rem', whiteSpace: 'nowrap' }}>
               {getLabel(type)}
             </span>
             {listing.isOnSale && (
-              <span className="badge" style={{ background: '#ef4444', color: '#fff', fontSize: '0.7rem', padding: '2px 6px', fontWeight: 'bold', borderRadius: '4px' }}>SALE</span>
+              <span className="badge" style={{ background: '#ef4444', color: '#fff', fontSize: '0.64rem', padding: '3px 6px', fontWeight: 'bold', borderRadius: '20px', whiteSpace: 'nowrap' }}>SALE</span>
             )}
             {listing.isNewArrival && (
-              <span className="badge" style={{ background: 'var(--accent-primary)', color: '#000', fontSize: '0.7rem', padding: '2px 6px', fontWeight: 'bold', borderRadius: '4px' }}>NEW</span>
+              <span className="badge" style={{ background: '#c5a85a', color: '#000', fontSize: '0.64rem', padding: '3px 6px', fontWeight: 'bold', borderRadius: '20px', whiteSpace: 'nowrap' }}>NEW</span>
             )}
           </div>
-           {category && (
-             <div className="listing-categories-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' }}>
-               {category.split(',').map(s => s.trim()).filter(Boolean).map((catName, idx) => {
-                 const cleanKey = catName.toLowerCase().replace(/\s+/g, '_').replace(/&/g, 'slots').replace(/-/g, '_');
-                 const specKey = type === 'handyman_skill' ? 'specialty_' + cleanKey : cleanKey;
-                 return (
-                   <span key={idx} className="listing-category-text" style={{ fontSize: '0.72rem', padding: '2px 6px' }}>
-                     {t(specKey) || catName}
-                   </span>
-                 );
-               })}
-             </div>
-           )}
-         </div>
+          {category && (
+            <span className="listing-category-chip" style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: '12px', whiteSpace: 'nowrap', flexShrink: 0, maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {category.split(',')[0].trim()}
+            </span>
+          )}
+        </div>
 
-        <div className="card-body">
+        <div className="card-body" style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
           {images.length > 0 && (
-            <div className="card-carousel-container">
-              <div className="card-carousel-main">
+            <div className="card-carousel-container" style={{ marginBottom: '14px' }}>
+              <div className="card-carousel-main" style={{ height: '175px', borderRadius: '12px', overflow: 'hidden' }}>
                 <img src={images[activeImageIdx]} alt={`${title} image ${activeImageIdx + 1}`} className="card-carousel-img" />
               </div>
               {images.length > 1 && (
@@ -296,8 +300,8 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
               )}
             </div>
           )}
-          <h3 className="listing-title">{title}</h3>
-          <p className="listing-desc">{description}</p>
+          <h3 className="listing-title" style={{ fontSize: '1.12rem', fontWeight: 700, margin: '4px 0 6px 0', lineHeight: 1.35, color: 'var(--text-main)' }}>{title}</h3>
+          <p className="listing-desc" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: '12px' }}>{description}</p>
           
           {/* Render specific metadata details */}
           {type === 'job_opening' && metadata?.jobRequirements && metadata.jobRequirements.length > 0 && (
@@ -333,46 +337,47 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
             </div>
           )}
           
-          <div className="listing-price-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '0.82rem' }}>
-            <span className="price-label" style={{ color: 'var(--text-muted)' }}>
-              {type === 'job_opening' ? t('salary_offered') : (type === 'handyman_skill' ? t('hourly_rate') : t('price'))}
-            </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="price-value" style={{ color: listing.isOnSale ? '#ef4444' : 'var(--text-main)', fontWeight: 700 }}>
-                {type === 'job_opening' 
-                  ? formatSalary(price, metadata?.salaryRate) 
-                  : type === 'handyman_skill'
-                    ? (price ? `$${price.toLocaleString()}` : (metadata?.handymanRates || t('contact_for_price')))
-                    : (listing.isOnSale && listing.salePrice 
-                        ? `$${listing.salePrice.toLocaleString()}` 
-                        : (price ? `$${price.toLocaleString()}` : t('contact_for_price'))
-                      )
-                }
+          {/* Price Container */}
+          {isContactPrice ? (
+            <div className="listing-price-container contact-price-box" style={{ margin: '8px 0 10px 0', padding: '8px 12px', background: 'rgba(197, 168, 90, 0.08)', borderRadius: '8px', border: '1px solid rgba(197, 168, 90, 0.25)', textAlign: 'center' }}>
+              <span style={{ color: '#c5a85a', fontWeight: 800, fontSize: '0.88rem', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <span>📞</span> {rawPriceDisplay}
               </span>
-              {listing.isOnSale && price && (
-                <span style={{ textDecoration: 'line-through', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  {`$${price.toLocaleString()}`}
-                </span>
-              )}
             </div>
-          </div>
+          ) : (
+            <div className="listing-price-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '8px 0 10px 0', padding: '8px 0', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)', fontSize: '0.82rem' }}>
+              <span className="price-label" style={{ color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.04em', fontWeight: 600 }}>
+                {type === 'job_opening' ? t('salary_offered') : (type === 'handyman_skill' ? t('hourly_rate') : t('price'))}
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="price-value" style={{ color: listing.isOnSale ? '#ef4444' : '#c5a85a', fontWeight: 800, fontSize: '1.15rem' }}>
+                  {rawPriceDisplay}
+                </span>
+                {listing.isOnSale && price && (
+                  <span style={{ textDecoration: 'line-through', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    {`$${price.toLocaleString()}`}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Average Rating Display */}
-          <div className="listing-rating-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', fontSize: '0.82rem' }}>
-            <span className="price-label" style={{ color: 'var(--text-muted)' }}>{t('rating_label') || 'Rating'}</span>
-            <span style={{ color: 'var(--accent-warning)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div className="listing-rating-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', fontSize: '0.82rem' }}>
+            <span className="price-label" style={{ color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.04em', fontWeight: 600 }}>{t('rating_label') || 'Rating'}</span>
+            <span style={{ color: '#d4af37', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem' }}>
               ★ {avgRating ? `${avgRating} (${ratingsCount} ${ratingsCount === 1 ? t('review') : t('reviews')})` : t('new_status')}
             </span>
           </div>
 
-          <div className="listing-owner-details">
-            <div className="owner-row">
-              <span className="owner-name">
+          <div className="listing-owner-details" style={{ marginBottom: '14px' }}>
+            <div className="owner-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="owner-name" style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                 {ownerId?.role === 'business' ? `${ownerId.storeName || ownerName}` : 
                  ownerId?.role === 'handyman' ? `Handyman Provider` : `Individual Seller`}
               </span>
               {isVerified && (
-                <span className="verified-badge-inline" title="Verified by Platform Admin">
+                <span className="verified-badge-inline" title="Verified by Platform Admin" style={{ fontSize: '0.7rem', fontWeight: 700, color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
                   ✓ {t('verified')}
                 </span>
               )}
@@ -386,7 +391,7 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
             <Link 
               to={`/store/${(ownerId.storeName || ownerName || '').toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')}`} 
               className="btn btn-secondary store-nav-btn"
-              style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+              style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: '8px', padding: '8px', fontSize: '0.85rem', fontWeight: 600 }}
               onClick={(e) => e.stopPropagation()}
             >
               {t('visit_store')}
@@ -398,19 +403,41 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
               <>
                 <a 
                   href={`tel:${ownerPhone}`} 
-                  className="btn btn-success flex-grow-1 action-btn d-flex align-items-center justify-content-center gap-2"
-                  style={{ width: '50%' }}
+                  className="btn flex-grow-1 action-btn d-flex align-items-center justify-content-center gap-2"
+                  style={{ 
+                    width: '50%', 
+                    background: 'linear-gradient(135deg, #c5a85a 0%, #d4af37 100%)', 
+                    color: '#000000', 
+                    fontWeight: 700, 
+                    border: 'none', 
+                    borderRadius: '8px', 
+                    padding: '9px 12px', 
+                    fontSize: '0.85rem',
+                    boxShadow: '0 4px 12px rgba(197, 168, 90, 0.3)',
+                    transition: 'all 0.2s ease'
+                  }}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <Phone size={16} /> {t('call')}
+                  <Phone size={15} /> {t('call')}
                 </a>
                 <a 
                   href={`sms:${ownerPhone}?body=${encodeURIComponent(smsMessage)}`} 
-                  className="btn btn-primary flex-grow-1 action-btn d-flex align-items-center justify-content-center gap-2"
-                  style={{ width: '50%' }}
+                  className="btn flex-grow-1 action-btn d-flex align-items-center justify-content-center gap-2"
+                  style={{ 
+                    width: '50%', 
+                    background: '#000000', 
+                    color: '#ffffff', 
+                    fontWeight: 700, 
+                    border: '1px solid #000000', 
+                    borderRadius: '8px', 
+                    padding: '9px 12px', 
+                    fontSize: '0.85rem',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    transition: 'all 0.2s ease'
+                  }}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <MessageCircle size={16} /> {t('sms')}
+                  <MessageCircle size={15} /> {t('sms')}
                 </a>
               </>
             ) : (
@@ -447,7 +474,7 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                     />
                   ) : (
                     <div className="flex-center" style={{ width: '100%', height: '280px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-glass)', borderRadius: 'var(--radius-md)' }}>
-                      <img src="/logo.png" alt="Ethiozone Logo" style={{ maxWidth: '80%', maxHeight: '80%', objectFit: 'contain' }} />
+                      <img src={logoImg} alt="EthiZone Logo" style={{ maxWidth: '80%', maxHeight: '80%', objectFit: 'contain' }} />
                     </div>
                   )}
                   {images.length > 1 && (

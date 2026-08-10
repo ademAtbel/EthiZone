@@ -39,11 +39,7 @@ export default function RegistrationPage() {
               .replace(/-+$/, '');
           };
           const slug = authUser.storeSlug || (authUser.storeName ? slugify(authUser.storeName) : slugify(authUser.name) + "-store");
-          if (authUser.isFirstLogin) {
-            navigate(`/seller/${slug}/hub`);
-          } else {
-            navigate(`/seller/${slug}/sellerdashboard`);
-          }
+          navigate(`/store/${slug}/dashboard`);
         } catch (e) {
           console.error("Error parsing authUser in RegistrationPage redirect", e);
         }

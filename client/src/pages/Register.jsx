@@ -1,6 +1,5 @@
-// Ultimate Master Marketplace - Register Page (Optimized for High Scale)
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { validateEmail, validatePhone } from '../utils/validation';
 import { User, Wrench, Store, ShoppingBag, Briefcase, Building2, Home as HomeIcon, Car, Tag, Calendar } from 'lucide-react';
 import { useApp } from '../context/AppContext';
@@ -21,6 +20,10 @@ const getSubcategories = (cat) => {
 
 const Register = () => {
   const { t } = useApp();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Component State Hooks (Must all be declared unconditionally at top level)
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -37,7 +40,94 @@ const Register = () => {
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Post-Registration Verification States
+  const [pendingVerification, setPendingVerification] = useState(location.state?.pendingVerification || false);
+  const [verificationEmail, setVerificationEmail] = useState(location.state?.email || '');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [verificationError, setVerificationError] = useState('');
+  const [verificationSuccess, setVerificationSuccess] = useState('');
+  const [verificationLoading, setVerificationLoading] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
+
+  // Resend Countdown Timer
+  useEffect(() => {
+    let timerInterval;
+    if (resendTimer > 0) {
+      timerInterval = setInterval(() => {
+        setResendTimer(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timerInterval);
+  }, [resendTimer]);
+
+  const handleVerifySubmit = async (e) => {
+    e.preventDefault();
+    setVerificationError('');
+    setVerificationSuccess('');
+    setVerificationLoading(true);
+
+    try {
+      const response = await fetch('/api/auth/verify-registration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: verificationEmail, code: verificationCode })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Verification failed.');
+      }
+
+      setVerificationSuccess('Account verified successfully! Redirecting to your dashboard...');
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      window.dispatchEvent(new Event('authChange'));
+
+      setTimeout(() => {
+        const u = data.user;
+        if (u?.role === 'super_admin') {
+          navigate('/super-admin');
+        } else if (u?.role === 'business') {
+          const storeSlug = u.storeSlug || (u.storeName ? u.storeName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '') : 'seller');
+          navigate(`/store/${storeSlug}/dashboard`);
+        } else {
+          navigate('/dashboard');
+        }
+      }, 800);
+    } catch (err) {
+      setVerificationError(err.message);
+    } finally {
+      setVerificationLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    setVerificationError('');
+    setVerificationSuccess('');
+    setVerificationLoading(true);
+
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: verificationEmail })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to resend confirmation code.');
+      }
+
+      setVerificationSuccess(data.message || 'New confirmation code sent to your email.');
+      setResendTimer(60);
+    } catch (err) {
+      setVerificationError(err.message);
+    } finally {
+      setVerificationLoading(false);
+    }
+  };
 
   // Load platform categories dynamically based on Business Type
   useEffect(() => {
@@ -50,7 +140,6 @@ const Register = () => {
           setCategories(data);
           setFormData(prev => ({ ...prev, category: data[0].name }));
         } else {
-          // Fallback static categories by type if database is empty
           const fallbacks = {
             store: [
               { name: 'Boutique' }, { name: 'Pharmacy' }, { name: 'Liquor Store' },
@@ -184,16 +273,32 @@ const Register = () => {
       try {
         data = text ? JSON.parse(text) : {};
       } catch (err) {
-        data = { message: 'Unable to connect to the backend server. Please make sure the backend server is running on port 5001.' };
+        data = { message: 'Unable to connect to backend server.' };
       }
 
       if (!response.ok) {
         throw new Error(data.message || 'Registration failed.');
       }
 
+      if (data.requiresVerification) {
+        setVerificationEmail(data.email || email);
+        setPendingVerification(true);
+        setResendTimer(60);
+        return;
+      }
+
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      navigate('/dashboard');
+      
+      const u = data.user;
+      if (u?.role === 'super_admin') {
+        navigate('/super-admin');
+      } else if (u?.role === 'business') {
+        const storeSlug = u.storeSlug || (u.storeName ? u.storeName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '') : 'seller');
+        navigate(`/store/${storeSlug}/dashboard`);
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -201,11 +306,107 @@ const Register = () => {
     }
   };
 
-  // Password Visibility Toggle
-  const [showPassword, setShowPassword] = useState(false);
-
   return (
-    <div className="register-page container flex-center">
+    <div className="register-page container flex-center" style={{ position: 'relative' }}>
+      {/* 6-Digit Email & Phone Confirmation Modal Overlay */}
+      {pendingVerification && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 9999,
+            backgroundColor: 'rgba(15, 23, 42, 0.8)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.5rem'
+          }}
+        >
+          <div className="glass-panel auth-card" style={{ maxWidth: '480px', width: '100%', padding: '2.5rem 2rem', background: '#ffffff', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.35)' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.25rem' }}>
+              <AnimatedLogo size="lg" />
+            </div>
+            
+            <h2 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: '0.5rem', color: '#0f172a', textAlign: 'center' }}>
+              ✉️ Confirm Your Account
+            </h2>
+            <p className="auth-subtitle" style={{ fontSize: '0.95rem', color: '#475569', marginBottom: '1.5rem', textAlign: 'center' }}>
+              We sent a 6-digit confirmation code to <strong style={{ color: '#0d5c3a' }}>{verificationEmail}</strong>. Enter your code below to activate your account.
+            </p>
+
+            {verificationError && (
+              <div className="alert alert-danger mb-3 p-3 rounded-3" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#dc2626', border: '1px solid rgba(239, 68, 68, 0.3)', fontSize: '0.9rem' }}>
+                ⚠️ {verificationError}
+              </div>
+            )}
+
+            {verificationSuccess && (
+              <div className="alert alert-success mb-3 p-3 rounded-3" style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#15803d', border: '1px solid rgba(34, 197, 94, 0.3)', fontSize: '0.9rem' }}>
+                ✅ {verificationSuccess}
+              </div>
+            )}
+
+            <form onSubmit={handleVerifySubmit}>
+              <div className="form-group mb-4">
+                <input
+                  type="text"
+                  maxLength="6"
+                  className="form-control text-center fw-bold"
+                  style={{
+                    fontSize: '2.2rem',
+                    letterSpacing: '12px',
+                    padding: '0.75rem',
+                    borderRadius: '12px',
+                    border: '2px solid #0d5c3a',
+                    background: '#f8fafc',
+                    color: '#0f172a'
+                  }}
+                  placeholder="123456"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
+                  required
+                  autoFocus
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="btn btn-primary w-100 py-3 rounded-3 fw-bold mb-3"
+                style={{ background: 'linear-gradient(135deg, #0d5c3a 0%, #15803d 100%)', border: 'none', fontSize: '1rem', color: '#ffffff' }}
+                disabled={verificationLoading || verificationCode.length !== 6}
+              >
+                {verificationLoading ? 'Verifying...' : 'Verify & Go to Dashboard'}
+              </button>
+            </form>
+
+            <div className="d-flex justify-content-between align-items-center mt-3 pt-3" style={{ borderTop: '1px solid rgba(226, 232, 240, 0.8)' }}>
+              <button
+                type="button"
+                className="btn btn-link text-decoration-none p-0"
+                style={{ color: resendTimer > 0 ? '#94a3b8' : '#0d5c3a', fontSize: '0.88rem', fontWeight: 600 }}
+                onClick={handleResendCode}
+                disabled={resendTimer > 0 || verificationLoading}
+              >
+                {resendTimer > 0 ? `Resend code in ${resendTimer}s` : 'Resend Code'}
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-link text-decoration-none p-0"
+                style={{ color: '#64748b', fontSize: '0.88rem' }}
+                onClick={() => setPendingVerification(false)}
+              >
+                Cancel / Edit Registration
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="glass-panel auth-card">
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
           <AnimatedLogo size="lg" />

@@ -34,11 +34,7 @@ export default function PhoneEntryModal() {
               .replace(/-+$/, '');
           };
           const slug = authUser.storeSlug || (authUser.storeName ? slugify(authUser.storeName) : slugify(authUser.name) + "-store");
-          if (authUser.isFirstLogin) {
-            navigate(`/seller/${slug}/hub`);
-          } else {
-            navigate(`/seller/${slug}/sellerdashboard`);
-          }
+        navigate(`/store/${slug}/dashboard`);
         } catch (e) {
           console.error("Error parsing authUser in PhoneEntryModal redirect", e);
         }
@@ -135,11 +131,7 @@ export default function PhoneEntryModal() {
             .replace(/-+$/, '');
         };
         const slug = loggedInUser.storeSlug || (loggedInUser.storeName ? slugify(loggedInUser.storeName) : slugify(loggedInUser.name) + "-store");
-        if (loggedInUser.isFirstLogin) {
-          navigate(`/seller/${slug}/hub`);
-        } else {
-          navigate(`/seller/${slug}/sellerdashboard`);
-        }
+        navigate(`/store/${slug}/dashboard`);
       } else {
         navigate("/home");
       }

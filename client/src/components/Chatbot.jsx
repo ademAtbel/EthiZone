@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import logoImg from '../assets/logo.png';
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
       sender: 'ai',
-      text: "👋 Hello! I am your Ethiozone AI Assistant. I can help you search for jobs, find handymen (Hire Me), browse real estate (Houses), or guide you through creating listings. How can I assist you today?"
+      text: "👋 Hello! I am your EthiZone AI Assistant. I can help you search for jobs, find handymen (Hire Me), browse real estate (Houses), or guide you through creating listings. How can I assist you today?"
     }
   ]);
   const [input, setInput] = useState('');
@@ -68,7 +69,7 @@ const Chatbot = () => {
         aria-label="Toggle AI Assistant"
         style={{ padding: isOpen ? '0' : '10px' }}
       >
-        {isOpen ? '✕' : <img src="/logo.png" alt="Logo" className="chatbot-logo-img" />}
+        {isOpen ? '✕' : <img src={logoImg} alt="Logo" className="chatbot-logo-img" />}
       </button>
 
       {/* Chat Window Panel */}
@@ -77,10 +78,10 @@ const Chatbot = () => {
           {/* Header */}
           <div className="chatbot-header">
             <span className="avatar" style={{ display: 'flex', alignItems: 'center', width: '30px', height: '30px' }}>
-              <img src="/logo.png" alt="Logo" className="chatbot-logo-img" />
+              <img src={logoImg} alt="Logo" className="chatbot-logo-img" />
             </span>
             <div className="header-info">
-              <h4>Ethiozone AI</h4>
+              <h4>EthiZone AI</h4>
               <span className="status"><span className="status-dot"></span> Online Guide</span>
             </div>
             <button className="btn-close-chat" onClick={() => setIsOpen(false)}>&times;</button>
@@ -92,7 +93,7 @@ const Chatbot = () => {
               <div key={index} className={`message-row ${msg.sender}`}>
                 {msg.sender === 'ai' && (
                   <span className="msg-avatar" style={{ display: 'flex', marginTop: '4px', width: '20px', height: '20px' }}>
-                    <img src="/logo.png" alt="Logo" className="chatbot-logo-img" />
+                    <img src={logoImg} alt="Logo" className="chatbot-logo-img" />
                   </span>
                 )}
                 <div className="message-bubble">
@@ -107,7 +108,7 @@ const Chatbot = () => {
             {isTyping && (
               <div className="message-row ai">
                 <span className="msg-avatar" style={{ display: 'flex', marginTop: '4px', width: '20px', height: '20px' }}>
-                  <img src="/logo.png" alt="Logo" className="chatbot-logo-img" />
+                  <img src={logoImg} alt="Logo" className="chatbot-logo-img" />
                 </span>
                 <div className="message-bubble typing-bubble">
                   <span className="dot"></span>
@@ -164,16 +165,17 @@ const Chatbot = () => {
           width: 56px;
           height: 56px;
           border-radius: 50%;
-          background: #c5a85a;
-          border: 1px solid #c5a85a;
-          color: #ffffff;
+          background: #ffffff;
+          border: 2px solid #c5a85a;
+          color: #000000;
           font-size: 1.8rem;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 8px 32px rgba(197, 168, 90, 0.3);
+          box-shadow: 0 8px 32px rgba(197, 168, 90, 0.4);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          padding: 8px;
         }
 
         .chatbot-toggle-btn:hover {
@@ -428,7 +430,7 @@ const Chatbot = () => {
         }
 
         .chatbot-logo-img {
-          filter: invert(1) drop-shadow(0 0 10px rgba(0, 0, 0, 0.1));
+          filter: drop-shadow(0 2px 6px rgba(197, 168, 90, 0.3));
           width: 100%;
           height: 100%;
           object-fit: contain;

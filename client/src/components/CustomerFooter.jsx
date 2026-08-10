@@ -18,7 +18,7 @@ export default function CustomerFooter() {
       alignItems: 'center',
       gap: '12px'
     }}>
-      <AnimatedLogo size="sm" showMotto mottoText="Direct-Connect Marketplace" />
+      <AnimatedLogo size="md" />
       <p style={{ margin: 0 }}>{t ? t('footer_copy') : '© 2026 EthiZone. All Rights Reserved.'}</p>
     </footer>
   );

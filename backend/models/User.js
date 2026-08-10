@@ -20,6 +20,13 @@ const UserSchema = new mongoose.Schema({
   isOnline: { type: Boolean, default: true }, // For Handyman availability toggle
   verificationBadge: { type: Boolean, default: false }, // Approved status by Super Admin
   
+  // Real Email & Phone Verification Tracking
+  isVerified: { type: Boolean, default: false },
+  emailVerified: { type: Boolean, default: false },
+  phoneVerified: { type: Boolean, default: false },
+  verificationCode: { type: String },
+  verificationExpires: { type: Date },
+  
   // Store / Business / Org specific attributes
   storeName: { type: String }, // e.g., "Main Street Boutique"
   storeSlug: { type: String },

@@ -1,4 +1,4 @@
-/* EthiZone Animated Logo Styles */
+/* EthiZone Official Animated Logo Styles */
 
 .ethizone-logo-wrapper {
   display: inline-flex;
@@ -6,83 +6,65 @@
   align-items: flex-start;
   user-select: none;
   text-decoration: none;
-  font-family: var(--font-heading, 'Inter', system-ui, sans-serif);
+  font-family: var(--font-heading, 'Outfit', 'Inter', system-ui, sans-serif);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.ethizone-logo-main {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.ethizone-logo-image-box {
   position: relative;
-}
-
-.ethizone-orbit-container {
-  position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
 }
 
-.ethizone-orbit-svg {
-  width: 100%;
+.ethizone-official-logo {
   height: 100%;
-  transform-origin: center center;
-  animation: ethizoneOrbitSpin 6s linear infinite;
-  filter: drop-shadow(0 0 4px rgba(197, 168, 90, 0.4));
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(197, 168, 90, 0.25));
+  transition: filter 0.3s ease, transform 0.3s ease;
+  animation: ethizoneLogoFloat 4s ease-in-out infinite;
 }
 
-@keyframes ethizoneOrbitSpin {
-  0% {
-    transform: rotate(0deg);
+.ethizone-logo-wrapper:hover .ethizone-official-logo {
+  filter: drop-shadow(0 4px 16px rgba(197, 168, 90, 0.5));
+  transform: scale(1.02);
+}
+
+@keyframes ethizoneLogoFloat {
+  0%, 100% {
+    transform: translateY(0px);
   }
-  100% {
-    transform: rotate(360deg);
+  50% {
+    transform: translateY(-2px);
   }
-}
-
-.ethizone-logo-text-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  line-height: 1;
-}
-
-.ethizone-logo-text-fixed {
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: var(--text-main, #ffffff);
-  text-transform: none;
-}
-
-.ethizone-text-accent {
-  background: linear-gradient(135deg, #C5A85A 0%, #F5E5A3 50%, #9E8139 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .ethizone-logo-subtitle {
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-secondary, #a0aec0);
+  letter-spacing: 0.12em;
+  color: var(--text-secondary, #64748b);
   margin-top: 2px;
 }
 
 .ethizone-logo-motto {
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-style: italic;
-  font-weight: 500;
-  color: var(--accent-secondary, #C5A85A);
+  font-weight: 600;
+  background: linear-gradient(135deg, #C5A85A 0%, #E5C365 50%, #9E8139 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   letter-spacing: 0.02em;
   margin-top: 2px;
 }
 
 /* Reduced Motion Override for Accessibility */
 @media (prefers-reduced-motion: reduce) {
-  .ethizone-orbit-svg {
+  .ethizone-official-logo {
     animation: none;
   }
 }
+

@@ -52,3 +52,69 @@ This log documents every architectural issue, routing bug, hardcoded URL, securi
 - **Files Verified**:
   - `backend/server.js`
 - **Fix**: Validated active NoSQL query sanitizer, custom HTTP security headers (`X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`), and tier-based rate limiters (`apiLimiter` & `authLimiter`).
+
+---
+
+## 6. Missing Storefront & Review API Endpoints (`/api/stores` & `/api/reviews`)
+- **Issue**: Frontend calls from `SellerHubPage.jsx`, `ProductDetailPage.jsx`, `ManageStoresPage.jsx`, `StoreListPage.jsx`, and `ManageFeedbackPage.jsx` were failing with 404 API Route Not Found errors due to missing routes in backend.
+- **Files Added & Modified**:
+  - `backend/models/Review.js` [NEW]
+  - `backend/routes/reviews.js` [NEW]
+  - `backend/routes/stores.js` [NEW]
+  - `backend/server.js`
+- **Fix**: Created `Review` Mongoose schema, implemented `/api/reviews` (GET, POST, DELETE) and `/api/stores` (GET, PUT, PATCH status) routes, and mounted them in `server.js`.
+
+---
+
+## 7. Rating Schema Relaxation & Cloud Logging Hardening
+- **Issue**: Ratings submitted directly for target service providers without a specific product `listingId` failed validation. Additionally, synchronous `fs.appendFileSync` in admin routes blocked I/O and crashed in serverless runtimes.
+- **Files Modified**:
+  - `backend/models/Rating.js`
+  - `backend/models/RatingVerification.js`
+  - `backend/routes/ratings.js`
+  - `backend/routes/admin.js`
+- **Fix**: Made `listingId` optional across `Rating` and `RatingVerification` schemas and routes. Replaced synchronous file logging in `admin.js` with structured non-blocking console logging.
+
+---
+
+## 8. Brand Logo Uniformity & Permanent Gold Color Fix
+- **Issue**: Logo presentation was inconsistent; `.logo img` CSS in `Navbar.jsx` used `filter: invert(1)` which caused the top-left navbar logo to display as blue by default and only turn gold on hover. Additionally, `Chatbot.jsx` inverted logo colors into a dark blue blob.
+- **Files Modified**:
+  - `client/src/components/Navbar.jsx`
+  - `client/src/components/Chatbot.jsx`
+  - `client/src/components/CustomerFooter.jsx`
+  - `client/src/components/SellerSidebar.jsx`
+- **Fix**: Removed `filter: invert(1)` from `.logo img` in `Navbar.jsx` and `Chatbot.jsx`, replacing it with a rich golden drop-shadow filter (`drop-shadow(0 2px 8px rgba(197, 168, 90, 0.3))`). The logo now remains constantly gold in its natural state without shifting from blue to gold on hover.
+
+---
+
+## 9. Sidebar Grid Separation & Premium Listing Card Aesthetic Overhaul
+- **Issue**: The Filters sidebar and the marketplace listing cards were touching/overlapping with 0px gap due to missing grid gutters. Additionally, listing cards suffered from broken badge text wrapping, cramped price labels, and plain button styling.
+- **Files Modified**:
+  - `client/src/pages/Home.jsx`
+  - `client/src/pages/customer/MarketplacePage.jsx`
+  - `client/src/components/ListingCard.jsx`
+- **Fix**: Replaced Bootstrap grid layout on the directory container with a dedicated Flexbox architecture (`directory-layout-flex` with `gap: 36px`). The sidebar (`directory-sidebar-col`) is locked to `275px` width and the main listings column (`directory-main-col`) occupies `flex: 1`, guaranteeing an un-collapsible **36px gap** of empty space with **zero visual overlap**. Redesigned `ListingCard` with single-line header chips and a sleek centered `📞 Contact for Price` gold badge container for unpriced items.
+
+---
+
+## 10. Logged-In Navbar Filters & Public Footer Removal
+- **Issue**: When logged in (or on dashboard routes), the top navbar still rendered the public center category filter badges bar, and the page rendered the public marketplace footer at the bottom.
+- **Files Modified**:
+  - `client/src/components/Navbar.jsx`
+  - `client/src/App.jsx`
+- **Fix**: Updated `Navbar.jsx` to hide the center category filter badges (`navbar-center-filters`) when a user is logged in or on dashboard routes. Updated `App.jsx` to hide the public `landing-footer` when logged in or on dashboard pages.
+
+---
+
+## 11. CORS Origin Security Hardening
+- **Issue**: Backend CORS configuration was using generic wildcard origin without credentials support.
+- **Files Modified**:
+  - `backend/server.js`
+- **Fix**: Configured `cors` middleware to dynamically handle `process.env.CLIENT_URL` (supporting single or comma-separated origins) with `credentials: true`.
+
+
+
+
+
+

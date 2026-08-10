@@ -45,6 +45,10 @@ const Login = () => {
 
       const data = await response.json();
       if (!response.ok) {
+        if (data.requiresVerification) {
+          navigate('/register', { state: { pendingVerification: true, email: data.email || email } });
+          return;
+        }
         throw new Error(data.message || 'Login failed.');
       }
 
@@ -168,7 +172,7 @@ const Login = () => {
                 className="form-control py-2 px-3"
                 placeholder="name@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); setError(''); }}
                 required
               />
             </div>
@@ -191,7 +195,7 @@ const Login = () => {
                 className="form-control py-2 px-3"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); setError(''); }}
                 required
               />
             </div>

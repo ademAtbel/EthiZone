@@ -152,7 +152,7 @@ export default function AddServicePage() {
     const updated = [newService, ...currentServices];
     localStorage.setItem("mock_services", JSON.stringify(updated));
 
-    alert("Service Listing published successfully!");
+    alert("🎉 Congratulations on posting your service in EthiZone! We are proud to have you as our partner. Let's make our world simple! ✨");
     navigate("/services");
   };
 

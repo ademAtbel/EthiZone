@@ -47,7 +47,7 @@ router.get('/stats', verifySuperAdmin, async (req, res) => {
       }
     });
   } catch (error) {
-    require('fs').appendFileSync(require('path').join(__dirname, '../error.log'), `[STATS] ${error.stack}\n`);
+    console.error('[STATS]', error.stack);
     res.status(500).json({ message: 'Error fetching admin stats', error: error.message });
   }
 });
@@ -73,7 +73,7 @@ router.get('/users', verifySuperAdmin, async (req, res) => {
 
     res.json(users);
   } catch (error) {
-    require('fs').appendFileSync(require('path').join(__dirname, '../error.log'), `[USERS] ${error.stack}\n`);
+    console.error('[USERS]', error.stack);
     res.status(500).json({ message: 'Error fetching users', error: error.message });
   }
 });
@@ -208,7 +208,7 @@ router.get('/listings', verifySuperAdmin, async (req, res) => {
 
     res.json(listings);
   } catch (error) {
-    require('fs').appendFileSync(require('path').join(__dirname, '../error.log'), `[LISTINGS] ${error.stack}\n`);
+    console.error('[LISTINGS]', error.stack);
     res.status(500).json({ message: 'Error fetching listings', error: error.message });
   }
 });

@@ -55,8 +55,28 @@ const translations = {
     my_listings: 'My Marketplace Postings',
     references_feedback: 'Provider Reference Log & Feedback',
     no_listings_yet: 'You haven\'t posted any items yet.',
-    no_refs_yet: 'No customer references logged yet.',
     verified_reviews_desc: 'Below are authenticated client records & star reviews left by visitors who completed service transactions with your business.',
+
+    // Seller Portal Keys
+    dashboardOverview: 'Dashboard Overview',
+    goodMorning: 'Good morning',
+    addProduct: 'Add Product',
+    viewShop: 'View Shop',
+    totalSales: 'Total Sales',
+    orders: 'Orders',
+    visits: 'Visits',
+    pendingTasks: 'Pending Tasks',
+    allCaughtUp: 'All caught up!',
+    noPendingTasks: 'No pending tasks or actions required.',
+    sellerHub: 'Seller Hub',
+    manageProducts: 'Manage Products',
+    manageOrders: 'Manage Orders',
+    shippingRules: 'Shipping Rules',
+    messages: 'Messages',
+    supportChat: 'Support Chat',
+    backToStorefront: 'Back to Storefront',
+    logoutSignOut: 'Sign Out',
+    myMarketplacePostings: 'My Marketplace Postings',
     
     // Static Pages (User can update these later)
     about_us_content: 'EthiZone is a multi-category marketplace designed to connect people who want to buy, sell, rent, offer services, find work, hire talent, and grow businesses through one simple platform. A person may buy today and sell tomorrow. EthiZone brings these opportunities into one organized platform.',
@@ -1298,7 +1318,9 @@ export const AppProvider = ({ children }) => {
     if (translations.en && translations.en[key] !== undefined) {
       return translations.en[key];
     }
-    return key.replace(/^[a-zA-Z0-9_]+\./, '').replace(/_/g, ' ');
+    const cleanKey = key.replace(/^[a-zA-Z0-9_]+\./, '').replace(/_/g, ' ');
+    const words = cleanKey.replace(/([A-Z])/g, ' $1').trim();
+    return words.charAt(0).toUpperCase() + words.slice(1);
   };
 
   return (
