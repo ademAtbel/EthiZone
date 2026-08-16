@@ -900,37 +900,104 @@ body:not(.light-theme) .reusable-theme-toggle-btn:hover {
 }
 
 /* ========================================================
-   SCROLL REVEAL SLIDING ANIMATIONS (Excludes Nav & Tabbar)
+   VERY VISIBLE BIDIRECTIONAL SCROLL REVEAL ANIMATIONS (ALL PAGES)
    ======================================================== */
-.scroll-reveal-init {
-  opacity: 0;
-  transform: translateY(35px) scale(0.98);
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
+
+/* Soft Page Transition Fade & Slide on Navigation */
+.app-main-content {
+  animation: pageFadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Stagger animation delays for grid elements */
-.horizontal-scroll-row .scroll-reveal-init:nth-child(1) { transition-delay: 0.05s; }
-.horizontal-scroll-row .scroll-reveal-init:nth-child(2) { transition-delay: 0.12s; }
-.horizontal-scroll-row .scroll-reveal-init:nth-child(3) { transition-delay: 0.19s; }
-.horizontal-scroll-row .scroll-reveal-init:nth-child(4) { transition-delay: 0.26s; }
+@keyframes pageFadeIn {
+  from {
+    opacity: 0.75;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Base scroll reveal element initial state */
+.scroll-reveal-init {
+  opacity: 0;
+  will-change: opacity, transform, filter;
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  filter: blur(4px);
+}
+
+/* Entering from BOTTOM (when scrolling DOWN) */
+.scroll-reveal-init.scroll-from-bottom:not(.scroll-animated) {
+  opacity: 0;
+  transform: translateY(55px) scale(0.94);
+  filter: blur(6px);
+}
+
+/* Entering from TOP (when scrolling UP) */
+.scroll-reveal-init.scroll-from-top:not(.scroll-animated) {
+  opacity: 0;
+  transform: translateY(-55px) scale(0.94);
+  filter: blur(6px);
+}
+
+/* Default un-animated fallback position */
+.scroll-reveal-init:not(.scroll-animated) {
+  opacity: 0;
+  transform: translateY(50px) scale(0.94);
+  filter: blur(5px);
+}
+
+/* Active animated state when element enters viewport */
+.scroll-reveal-init.scroll-animated {
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+  filter: none !important;
+}
+
+/* Stagger animation delays for grid items, rows, and cards */
+.row > .scroll-reveal-init:nth-child(1),
+.grid > .scroll-reveal-init:nth-child(1),
+.horizontal-scroll-row .scroll-reveal-init:nth-child(1) { transition-delay: 0.04s; }
+
+.row > .scroll-reveal-init:nth-child(2),
+.grid > .scroll-reveal-init:nth-child(2),
+.horizontal-scroll-row .scroll-reveal-init:nth-child(2) { transition-delay: 0.1s; }
+
+.row > .scroll-reveal-init:nth-child(3),
+.grid > .scroll-reveal-init:nth-child(3),
+.horizontal-scroll-row .scroll-reveal-init:nth-child(3) { transition-delay: 0.16s; }
+
+.row > .scroll-reveal-init:nth-child(4),
+.grid > .scroll-reveal-init:nth-child(4),
+.horizontal-scroll-row .scroll-reveal-init:nth-child(4) { transition-delay: 0.22s; }
+
+.row > .scroll-reveal-init:nth-child(5),
+.grid > .scroll-reveal-init:nth-child(5) { transition-delay: 0.28s; }
+
+.row > .scroll-reveal-init:nth-child(6),
+.grid > .scroll-reveal-init:nth-child(6) { transition-delay: 0.34s; }
 
 .steps-row .scroll-reveal-init:nth-child(1) { transition-delay: 0.05s; }
 .steps-row .scroll-reveal-init:nth-child(2) { transition-delay: 0.15s; }
 .steps-row .scroll-reveal-init:nth-child(3) { transition-delay: 0.25s; }
 
-.scroll-animated {
-  opacity: 1 !important;
-  transform: translateY(0) scale(1) !important;
-}
-
-/* Navbar and Mobile Bottom Tabbar MUST stay static & sticky */
+/* Navbar, Mobile Tabbar, Modals, Toasts MUST remain static and visible */
 nav.navbar,
 .navbar,
 .mobile-bottom-tabbar,
-.mobile-bottom-tabbar * {
+.mobile-bottom-tabbar *,
+.modal,
+.modal *,
+.modal-backdrop,
+.dropdown-menu,
+.toast,
+.tooltip {
   transform: none !important;
   opacity: 1 !important;
+  filter: none !important;
   will-change: auto !important;
 }
 

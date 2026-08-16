@@ -12,6 +12,7 @@ const translations = {
     real_estate: 'Houses',
     automotive: 'Automotive',
     used_items: 'Used Items',
+    events: 'Events',
     be_partner: 'Be Our Partner',
     login: 'Login',
     logout: 'Logout',
@@ -80,7 +81,7 @@ const translations = {
     
     // Static Pages (User can update these later)
     about_us_content: 'EthiZone is a multi-category marketplace designed to connect people who want to buy, sell, rent, offer services, find work, hire talent, and grow businesses through one simple platform. A person may buy today and sell tomorrow. EthiZone brings these opportunities into one organized platform.',
-    contact_tab_content: 'We are here to help users, sellers, service providers, store owners, professionals, and customers use EthiZone safely and effectively. Support Email: support@ethizone.com | Business and Partnership Email: partners@ethizone.com | Safety and Report Email: safety@ethizone.com. Response Time: We aim to respond as soon as possible.',
+    contact_tab_content: 'We are here to help users, sellers, service providers, store owners, professionals, and customers use EthiZone safely and effectively. Official Support Email: ethizone1@gmail.com. Response Time: We aim to respond as soon as possible.',
     privacy_policy_content: 'EthiZone respects user privacy and is committed to protecting personal information. This Privacy Policy explains how information may be collected and used when users access EthiZone, create an account, register a business or profile, publish listings, communicate with others, or use marketplace services.',
     terms_of_service_content: 'By accessing or using EthiZone, users agree to follow these Terms of Service. If a user does not agree, they should not use the platform. EthiZone is a digital marketplace and technology platform. Unless EthiZone clearly provides a separate written service or guarantee, EthiZone is not the seller, buyer, broker, landlord, tenant, employer, employee, delivery provider, payment guarantor, legal advisor, or agent in user transactions.',
     legal_disclaimer_title: '⚠️ Important Legal Disclaimer',
@@ -737,7 +738,7 @@ const translations = {
     
     // Static Pages (User can update these later)
     about_us_content: 'EthiZone ግለሰቦች፣ ሱቆች፣ አገልግሎት ሰጪዎች፣ ባለሙያዎች እና የንግድ ድርጅቶች በአንድ የታመነ ዲጂታል የገበያ ቦታ ላይ እንዲገናኙ የሚረዳ መድረክ ነው። ሁሉም ገዢዎች ሻጮች ናቸው በሚለው ሃሳብ ዙሪያ የተገነባ ነው።',
-    contact_tab_content: 'እገዛ ይፈልጋሉ፣ ጥያቄ አለዎት ወይስ ችግርን ሪፖርት ማድረግ ይፈልጋሉ? የEthiZone የድጋፍ ቡድንን ያነጋግሩ። የድጋፍ ኢሜይል፡ support@ethizone.com | የንግድ እና አጋርነት ኢሜይል፡ partners@ethizone.com | ደህንነት እና ሪፖርት፡ safety@ethizone.com። የድጋፍ ምላሽ ጊዜ፡ በተቻለ ፍጥነት ምላሽ ለመስጠት እንጥራለን።',
+    contact_tab_content: 'እገዛ ይፈልጋሉ፣ ጥያቄ አለዎት ወይስ ችግርን ሪፖርት ማድረግ ይፈልጋሉ? የEthiZone የድጋፍ ቡድንን ያነጋግሩ። የድጋፍ ኢሜይል፡ ethizone1@gmail.com። የድጋፍ ምላሽ ጊዜ፡ በተቻለ ፍጥነት ምላሽ ለመስጠት እንጥራለን።',
     privacy_policy_content: 'EthiZone የተጠቃሚዎችን ግላዊነት ያከብራል እንዲሁም የግል መረጃዎችን ለመጠበቅ ቁርጠኛ ነው። ይህ የግላዊነት ፖሊሲ ተጠቃሚዎች EthiZoneን ሲጎበኙ መረጃ እንዴት እንደሚሰበሰብ እና ጥቅም ላይ እንደሚውል ያብራራል።',
     terms_of_service_content: 'EthiZoneን በመጠቀም በአገልግሎት ውሎቻችን ለመገዛት ተስማምተዋል። EthiZone ዲጂታል የገበያ ቦታ እና የቴክኖሎጂ መድረክ ነው። ሌላ የጽሁፍ ዋስትና በግልጽ ካልተሰጠ በስተቀር EthiZone በተጠቃሚዎች ግብይት ውስጥ ሻጭ፣ ገዢ፣ አከራይ፣ ተከራይ፣ ቀጣሪ ወይም ወኪል አይደለም።',
     legal_disclaimer_title: '⚠️ ጠቃሚ ህጋዊ ማሳሰቢያ',

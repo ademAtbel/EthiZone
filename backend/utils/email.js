@@ -100,7 +100,7 @@ const sendOtpEmail = async (email, code) => {
  */
 const sendContactInquiryEmail = async (inquiry) => {
   const User = require('../models/User');
-  let adminEmail = 'admin@ultimatemaster.com';
+  let adminEmail = 'ethizone1@gmail.com';
   
   try {
     const superAdmin = await User.findOne({ role: 'super_admin' });
@@ -189,14 +189,15 @@ const sendContactInquiryEmail = async (inquiry) => {
     const transporter = getTransporter(user, pass, host, port);
 
     const info = await transporter.sendMail({
-      from: `"EthiZone Contact System" <${user}>`,
-      to: adminEmail,
+      from: `"EthiZone Support Ticket" <${user || 'ethizone1@gmail.com'}>`,
+      to: 'ethizone1@gmail.com',
+      replyTo: inquiry.email,
       subject: mailSubject,
       text: mailText,
       html: mailHtml,
     });
 
-    console.log(`✉️ Support ticket email successfully forwarded to Super Admin at ${adminEmail}. Message ID: ${info.messageId}`);
+    console.log(`✉️ Support ticket email successfully sent to ethizone1@gmail.com. Message ID: ${info.messageId}`);
   } catch (error) {
     console.error(`❌ Error forwarding support ticket email to admin:`, error.message);
   }

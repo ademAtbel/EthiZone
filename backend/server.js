@@ -87,7 +87,7 @@ const runSeeding = async () => {
     const User = require('./models/User');
     const bcrypt = require('bcryptjs');
     
-    const adminEmail = process.env.INITIAL_ADMIN_EMAIL || 'admin@ethizone.com';
+    const adminEmail = process.env.INITIAL_ADMIN_EMAIL || 'ethizone1@gmail.com';
     const adminPass = process.env.INITIAL_ADMIN_PASSWORD || 'adminpassword123';
     const existingAdmin = await User.findOne({ email: adminEmail });
     if (!existingAdmin) {

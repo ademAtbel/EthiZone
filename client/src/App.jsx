@@ -58,57 +58,129 @@ const AppContent = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [location.pathname, location.search]);
 
-  // Scroll Reveal Animations Observer
+  // Scroll Reveal Animations Observer (Bidirectional Up & Down for All Pages)
   React.useEffect(() => {
     let observer;
+    let mutationObserver;
+    let lastScrollY = window.scrollY;
+    let scrollDirection = 'down';
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY + 5) {
+        scrollDirection = 'down';
+      } else if (currentScrollY < lastScrollY - 5) {
+        scrollDirection = 'up';
+      }
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
     const targetSelectors = [
-      '.home-featured-card',
-      '.cat-card-large',
-      '.cat-card-small',
-      '.featured-section',
-      '.how-it-works-section',
-      '.step-col',
-      '.glass-panel',
-      '.event-card',
-      '.listing-card',
-      '.section-header-row',
-      '.scroll-animate'
+      'main section',
+      'main article',
+      'main .card',
+      'main .glass-panel',
+      'main .home-featured-card',
+      'main .cat-card-large',
+      'main .cat-card-small',
+      'main .featured-section',
+      'main .how-it-works-section',
+      'main .step-col',
+      'main .event-card',
+      'main .listing-card',
+      'main .store-card',
+      'main .product-card',
+      'main .service-card',
+      'main .job-card',
+      'main .house-card',
+      'main .car-card',
+      'main .stat-card',
+      'main .dashboard-card',
+      'main .section-header-row',
+      'main .hero-section',
+      'main .hero-banner',
+      'main .auth-card',
+      'main .form-container',
+      'main .p-4.border',
+      'main .border.rounded-3',
+      'main .row > [class*="col-"]',
+      '.scroll-animate',
+      '.landing-footer .footer-col'
     ];
 
     const initObserver = () => {
       const elements = document.querySelectorAll(targetSelectors.join(','));
       if (!elements.length) return;
 
-      observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('scroll-animated');
-            } else {
-              // Re-animates when scrolling up or down back into view
-              entry.target.classList.remove('scroll-animated');
-            }
-          });
-        },
-        {
-          threshold: 0.1,
-          rootMargin: '0px 0px -40px 0px'
-        }
-      );
+      if (!observer) {
+        observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              const el = entry.target;
+              if (entry.isIntersecting) {
+                if (scrollDirection === 'up') {
+                  el.classList.remove('scroll-from-bottom');
+                  el.classList.add('scroll-from-top');
+                } else {
+                  el.classList.remove('scroll-from-top');
+                  el.classList.add('scroll-from-bottom');
+                }
+                el.classList.add('scroll-animated');
+              } else {
+                el.classList.remove('scroll-animated');
+                const rect = entry.boundingClientRect;
+                if (rect.top < 0) {
+                  el.classList.remove('scroll-from-bottom');
+                  el.classList.add('scroll-from-top');
+                } else {
+                  el.classList.remove('scroll-from-top');
+                  el.classList.add('scroll-from-bottom');
+                }
+              }
+            });
+          },
+          {
+            threshold: 0.08,
+            rootMargin: '0px 0px -20px 0px'
+          }
+        );
+      }
 
       elements.forEach((el) => {
+        if (el.closest('.navbar') || el.closest('.mobile-bottom-tabbar') || el.closest('.modal')) {
+          return;
+        }
         if (!el.classList.contains('scroll-reveal-init')) {
           el.classList.add('scroll-reveal-init');
+          const rect = el.getBoundingClientRect();
+          if (rect.top < window.innerHeight / 2) {
+            el.classList.add('scroll-from-top');
+          } else {
+            el.classList.add('scroll-from-bottom');
+          }
         }
         observer.observe(el);
       });
     };
 
-    const timer = setTimeout(initObserver, 200);
+    const timer1 = setTimeout(initObserver, 100);
+    const timer2 = setTimeout(initObserver, 400);
+
+    mutationObserver = new MutationObserver(() => {
+      initObserver();
+    });
+
+    const mainContainer = document.querySelector('main.app-main-content') || document.body;
+    mutationObserver.observe(mainContainer, { childList: true, subtree: true });
 
     return () => {
-      clearTimeout(timer);
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(timer1);
+      clearTimeout(timer2);
       if (observer) observer.disconnect();
+      if (mutationObserver) mutationObserver.disconnect();
     };
   }, [location.pathname, location.search]);
 
@@ -165,20 +237,22 @@ const AppContent = () => {
               </div>
               <p>{t('footer_brand_desc')}</p>
               <div className="social-links">
-                <span onClick={handleUnderConstruction} style={{ cursor: 'pointer' }}><Globe size={20} /></span>
-                <span onClick={handleUnderConstruction} style={{ cursor: 'pointer' }}><Mail size={20} /></span>
-                <span onClick={handleUnderConstruction} style={{ cursor: 'pointer' }}><Phone size={20} /></span>
+                <Link to="/contact" title="Contact Us" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'inherit' }}>
+                  <Mail size={20} />
+                </Link>
               </div>
             </div>
             <div className="footer-col">
               <h5>{t('marketplace')}</h5>
               <ul>
                 <li><Link to="/stores" className="footer-link-btn">{t('stores')}</Link></li>
+                <li><Link to="/?type=handyman_skill" className="footer-link-btn">{t('handymen') || 'Hire Me'}</Link></li>
                 <li><Link to="/?type=service" className="footer-link-btn">{t('services')}</Link></li>
-                <li><Link to="/?type=house" className="footer-link-btn">{t('real_estate')}</Link></li>
+                <li><Link to="/?type=job_opening" className="footer-link-btn">{t('organizations') || 'Jobs'}</Link></li>
+                <li><Link to="/?type=house" className="footer-link-btn">{t('real_estate') || 'Houses'}</Link></li>
                 <li><Link to="/cars" className="footer-link-btn">{t('automotive')}</Link></li>
-                <li><Link to="/?type=job_opening" className="footer-link-btn">{t('organizations')}</Link></li>
-                <li><Link to="/?type=handyman_skill" className="footer-link-btn">{t('handymen')}</Link></li>
+                <li><Link to="/?type=personal_item" className="footer-link-btn">{t('used_items') || 'Used Items'}</Link></li>
+                <li><Link to="/events" className="footer-link-btn">{t('events') || 'Events'}</Link></li>
               </ul>
             </div>
             <div className="footer-col">

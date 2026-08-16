@@ -126,10 +126,8 @@ const StaticPage = () => {
         </p>
 
         <div className="p-4 border rounded-3 mb-4" style={{ backgroundColor: 'rgba(var(--text-main-rgb, 0), 0.02)', borderColor: 'rgba(var(--text-main-rgb, 0), 0.08)' }}>
-          <h3 className="fw-bold h6 mb-3 text-uppercase" style={{ color: 'var(--text-main)', letterSpacing: '0.05em' }}>EthiZone Support Lines</h3>
-          <p className="mb-2 text-secondary">📧 Support Email: <a href="mailto:support@ethizone.com" className="fw-semibold text-decoration-none" style={{ color: 'var(--accent-primary)' }}>support@ethizone.com</a></p>
-          <p className="mb-2 text-secondary">📧 Business: <a href="mailto:partners@ethizone.com" className="fw-semibold text-decoration-none" style={{ color: 'var(--accent-primary)' }}>partners@ethizone.com</a></p>
-          <p className="mb-0 text-secondary">📧 Trust & Safety: <a href="mailto:safety@ethizone.com" className="fw-semibold text-decoration-none" style={{ color: 'var(--accent-primary)' }}>safety@ethizone.com</a></p>
+          <h3 className="fw-bold h6 mb-3 text-uppercase" style={{ color: 'var(--text-main)', letterSpacing: '0.05em' }}>EthiZone Official Support Email</h3>
+          <p className="mb-0 text-secondary">📧 Support Email: <a href="mailto:ethizone1@gmail.com" className="fw-semibold text-decoration-none" style={{ color: 'var(--accent-primary)' }}>ethizone1@gmail.com</a></p>
         </div>
 
         <div className="p-4 border rounded-3 mb-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.02)', borderColor: 'rgba(var(--text-main-rgb, 0), 0.08)', color: 'var(--text-secondary)' }}>
@@ -294,7 +292,7 @@ const StaticPage = () => {
 
       <div className="border-t border-gray-150 pt-4 mt-5">
         <p className="text-secondary small">
-          For questions, reach out to: <a href="mailto:privacy@ethizone.com" className="text-decoration-none" style={{ color: 'var(--accent-primary)' }}>privacy@ethizone.com</a>
+          For questions, reach out to: <a href="mailto:ethizone1@gmail.com" className="text-decoration-none" style={{ color: 'var(--accent-primary)' }}>ethizone1@gmail.com</a>
         </p>
       </div>
     </div>
@@ -333,7 +331,7 @@ const StaticPage = () => {
 
       <div className="border-t border-gray-150 pt-4 mt-5">
         <p className="text-secondary small">
-          For legal inquiries, contact: <a href="mailto:legal@ethizone.com" className="text-decoration-none" style={{ color: 'var(--accent-primary)' }}>legal@ethizone.com</a>
+          For legal inquiries, contact: <a href="mailto:ethizone1@gmail.com" className="text-decoration-none" style={{ color: 'var(--accent-primary)' }}>ethizone1@gmail.com</a>
         </p>
       </div>
     </div>
