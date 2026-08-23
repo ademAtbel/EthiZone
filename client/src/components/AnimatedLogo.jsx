@@ -22,10 +22,10 @@ export default function AnimatedLogo({
   className = '' 
 }) {
   const heightMap = {
-    sm: '36px',
-    md: '48px',
-    lg: '68px',
-    xl: '96px'
+    sm: '32px',
+    md: '42px',
+    lg: '60px',
+    xl: '84px'
   };
 
   const logoHeight = heightMap[size] || heightMap.md;

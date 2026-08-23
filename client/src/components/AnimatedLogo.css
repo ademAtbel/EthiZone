@@ -21,23 +21,12 @@
   height: 100%;
   width: auto;
   object-fit: contain;
-  filter: drop-shadow(0 2px 8px rgba(197, 168, 90, 0.25));
-  transition: filter 0.3s ease, transform 0.3s ease;
-  animation: ethizoneLogoFloat 4s ease-in-out infinite;
+  filter: none;
+  transition: transform 0.2s ease;
 }
 
 .ethizone-logo-wrapper:hover .ethizone-official-logo {
-  filter: drop-shadow(0 4px 16px rgba(197, 168, 90, 0.5));
-  transform: scale(1.02);
-}
-
-@keyframes ethizoneLogoFloat {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-2px);
-  }
+  transform: scale(1.03);
 }
 
 .ethizone-logo-subtitle {

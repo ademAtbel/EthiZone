@@ -1698,7 +1698,7 @@ const Dashboard = () => {
                     <label style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Store Gallery Photos (Max 10)</label>
                     
                     {profileForm.galleryPhotos && profileForm.galleryPhotos.length > 0 && (
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px', marginBottom: '10px' }}>
+                      <div className="row row-cols-2 row-cols-sm-3 row-cols-md-5 g-2 mb-2">
                         {profileForm.galleryPhotos.map((photo, idx) => (
                           <div key={idx} style={{ position: 'relative', aspectRatio: '1', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--border-glass)' }}>
                             <img 
@@ -1910,22 +1910,22 @@ const Dashboard = () => {
                       alert(err.message || ((user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? 'Failed to add doctor' : 'Failed to add attorney'));
                     }
                   }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                      <div className="form-group">
+                    <div className="row g-3">
+                      <div className="col-12 col-md-6 form-group">
                         <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>
                           {(user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? 'Doctor Name *' : 'Attorney Name *'}
                         </label>
                         <input type="text" name="attName" className="form-control" placeholder={(user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? 'e.g. Dr. Abraham Belaye' : 'e.g. Dr. Abraham Atbel'} required />
                       </div>
-                      <div className="form-group">
+                      <div className="col-12 col-md-6 form-group">
                         <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Role / Title *</label>
                         <input type="text" name="attRole" className="form-control" placeholder={(user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? 'e.g. Medical Director' : 'e.g. Senior Managing Partner'} required />
                       </div>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                      <div className="form-group">
+                    <div className="row g-3">
+                      <div className="col-12 col-md-6 form-group">
                         <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Specialties / Areas of Care *</label>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', padding: '12px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-glass)', borderRadius: '8px', minHeight: '100px' }}>
+                        <div className="row row-cols-1 row-cols-sm-2 g-2 p-2" style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-glass)', borderRadius: '8px', minHeight: '100px' }}>
                           {((user?.category === 'Clinic' || user?.category === 'Dental Clinic') ? [
                             { key: 'GENERAL_CHECKUP', label: 'GENERAL CHECKUP', value: 'General Checkup' },
                             { key: 'LABORATORY', label: 'LABORATORY', value: 'Laboratory' },

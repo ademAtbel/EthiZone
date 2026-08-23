@@ -156,7 +156,7 @@ const Inbox = () => {
         <div className="row glass-panel" style={{ minHeight: '600px', padding: 0, overflow: 'hidden' }}>
           
           {/* Sidebar - Conversations */}
-          <div className="col-md-4" style={{ borderRight: '1px solid var(--border-glass)', padding: 0, backgroundColor: 'rgba(255,255,255,0.02)' }}>
+          <div className={`col-12 col-md-4 ${activeContact ? 'd-none d-md-block' : 'd-block'}`} style={{ borderRight: '1px solid var(--border-glass)', padding: 0, backgroundColor: 'rgba(255,255,255,0.02)' }}>
             <div className="p-3" style={{ borderBottom: '1px solid var(--border-glass)' }}>
               <h5 className="mb-0">Conversations</h5>
             </div>
@@ -203,17 +203,24 @@ const Inbox = () => {
           </div>
 
           {/* Main - Chat Area */}
-          <div className="col-md-8 d-flex flex-column" style={{ padding: 0 }}>
+          <div className={`col-12 col-md-8 flex-column ${!activeContact ? 'd-none d-md-flex' : 'd-flex'}`} style={{ padding: 0 }}>
             {activeContact ? (
               <>
                 {/* Chat Header */}
-                <div className="p-3 d-flex align-items-center" style={{ borderBottom: '1px solid var(--border-glass)', backgroundColor: 'rgba(255,255,255,0.03)' }}>
+                <div className="p-3 d-flex align-items-center justify-content-between" style={{ borderBottom: '1px solid var(--border-glass)', backgroundColor: 'rgba(255,255,255,0.03)' }}>
                   <div>
                     <h5 className="mb-0" style={{ color: 'var(--accent-secondary)' }}>
                       {activeContact.storeName || activeContact.username}
                     </h5>
                     <small className="text-muted">{activeContact.role}</small>
                   </div>
+                  <button 
+                    type="button" 
+                    className="btn btn-sm btn-outline-secondary d-md-none"
+                    onClick={() => setActiveContact(null)}
+                  >
+                    ← Back
+                  </button>
                 </div>
 
                 {/* Messages List */}

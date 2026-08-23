@@ -618,7 +618,6 @@ const translations = {
     internship: 'Internship',
     onsite: 'On-site',
     remote: 'Remote',
-    hourly_rate: 'Hourly Rate',
     fixed_price: 'Fixed Price per Project',
     contact_quote: 'Contact for Quote',
     avail_today: 'Available Today',
@@ -630,7 +629,6 @@ const translations = {
     independent_maker: 'Independent Maker',
 
     // Events Page Translations
-    events: 'Events',
     events_explore_title: 'Explore Events Nearby',
     events_explore_subtitle: 'Find concerts, workshops, community gatherings, sports tournaments, and other events hosted near you.',
     events_search_placeholder: 'Search event title, description or keywords...',
@@ -1276,7 +1274,6 @@ const translations = {
     internship: 'ልምምድ',
     onsite: 'በቦታው የሚሰራ',
     remote: 'ከቤት የሚሰራ',
-    hourly_rate: 'በሰዓት',
     fixed_price: 'በአንድ ፕሮጀክት ቋሚ ዋጋ',
     contact_quote: 'ለዋጋው ያነጋግሩ',
     avail_today: 'ዛሬ የሚገኝ',

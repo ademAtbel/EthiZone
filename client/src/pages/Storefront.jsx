@@ -1599,23 +1599,23 @@ const Storefront = () => {
                 alert(err.message || 'Failed to submit appointment request.');
               }
             }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div className="form-group">
+              <div className="row g-3">
+                <div className="col-12 col-md-6 form-group">
                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Your Name *</label>
                   <input type="text" name="clientName" className="form-control" placeholder="e.g. Abraham" required style={{ background: 'var(--bg-app)', color: 'var(--text-main)', border: '1px solid var(--border-glass)' }} />
                 </div>
-                <div className="form-group">
+                <div className="col-12 col-md-6 form-group">
                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Your Email *</label>
                   <input type="email" name="clientEmail" className="form-control" placeholder="e.g. john@example.com" required style={{ background: 'var(--bg-app)', color: 'var(--text-main)', border: '1px solid var(--border-glass)' }} />
                 </div>
               </div>
               
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div className="form-group">
+              <div className="row g-3">
+                <div className="col-12 col-md-6 form-group">
                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Your Phone Number *</label>
                   <input type="tel" name="clientPhone" className="form-control" placeholder="e.g. +251..." required style={{ background: 'var(--bg-app)', color: 'var(--text-main)', border: '1px solid var(--border-glass)' }} />
                 </div>
-                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', justifycontent: 'flex-end' }}>
+                <div className="col-12 col-md-6 form-group d-flex flex-column justify-content-end">
                   <button
                     type="button"
                     onClick={async (e) => {
@@ -1679,8 +1679,8 @@ const Storefront = () => {
                 </div>
               )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div className="form-group">
+              <div className="row g-3">
+                <div className="col-12 col-md-6 form-group">
                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>Preferred Date *</label>
                   <input type="date" name="appointmentDate" className="form-control" required style={{ background: 'var(--bg-app)', color: 'var(--text-main)', border: '1px solid var(--border-glass)' }} />
                 </div>

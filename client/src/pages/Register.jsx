@@ -477,108 +477,120 @@ const Register = () => {
             />
           </div>
 
-          <div className="form-group">
+          <div className="form-group mb-3">
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: '500', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('reg_account_type')}</label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginTop: '4px' }}>
-              <button
-                type="button"
-                className={`role-select-btn ${formData.role === 'individual' ? 'active' : ''}`}
-                onClick={() => setFormData(prev => ({ ...prev, role: 'individual' }))}
-                style={{
-                  background: formData.role === 'individual' ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
-                  border: formData.role === 'individual' ? '2px solid #c5a85a' : '1px solid #e5e7eb',
-                  borderRadius: '10px',
-                  padding: '14px 10px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '8px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  outline: 'none'
-                }}
-              >
-                <User size={28} style={{ color: formData.role === 'individual' ? '#c5a85a' : '#000000' }} />
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: '700', color: formData.role === 'individual' ? '#c5a85a' : '#000000', fontFamily: 'var(--font-heading)' }}>{t('reg_individual')}</span>
-                  <span style={{ fontSize: '0.65rem', color: formData.role === 'individual' ? '#c5a85a' : '#6b7280', marginTop: '2px', textAlign: 'center', lineHeight: '1.2' }}>{t('reg_sell_personal')}</span>
-                </div>
-              </button>
+            <div className="row g-2 mt-1">
+              <div className="col-12 col-sm-6 col-md-3">
+                <button
+                  type="button"
+                  className={`role-select-btn w-100 h-100 ${formData.role === 'individual' ? 'active' : ''}`}
+                  onClick={() => setFormData(prev => ({ ...prev, role: 'individual' }))}
+                  style={{
+                    background: formData.role === 'individual' ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
+                    border: formData.role === 'individual' ? '2px solid #c5a85a' : '1px solid #e5e7eb',
+                    borderRadius: '10px',
+                    padding: '12px 8px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    outline: 'none'
+                  }}
+                >
+                  <User size={24} style={{ color: formData.role === 'individual' ? '#c5a85a' : '#000000' }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: '700', color: formData.role === 'individual' ? '#c5a85a' : '#000000', fontFamily: 'var(--font-heading)', textAlign: 'center' }}>{t('reg_individual')}</span>
+                    <span style={{ fontSize: '0.62rem', color: formData.role === 'individual' ? '#c5a85a' : '#6b7280', marginTop: '2px', textAlign: 'center', lineHeight: '1.2' }}>{t('reg_sell_personal')}</span>
+                  </div>
+                </button>
+              </div>
 
-              <button
-                type="button"
-                className={`role-select-btn ${formData.role === 'handyman' ? 'active' : ''}`}
-                onClick={() => setFormData(prev => ({ ...prev, role: 'handyman' }))}
-                style={{
-                  background: formData.role === 'handyman' ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
-                  border: formData.role === 'handyman' ? '2px solid #c5a85a' : '1px solid #e5e7eb',
-                  borderRadius: '10px',
-                  padding: '14px 10px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '8px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  outline: 'none'
-                }}
-              >
-                <Wrench size={28} style={{ color: formData.role === 'handyman' ? '#c5a85a' : '#000000' }} />
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: '700', color: formData.role === 'handyman' ? '#c5a85a' : '#000000', fontFamily: 'var(--font-heading)' }}>{t('reg_handyman')}</span>
-                  <span style={{ fontSize: '0.65rem', color: formData.role === 'handyman' ? '#c5a85a' : '#6b7280', marginTop: '2px', textAlign: 'center', lineHeight: '1.2' }}>{t('reg_list_skills')}</span>
-                </div>
-              </button>
+              <div className="col-12 col-sm-6 col-md-3">
+                <button
+                  type="button"
+                  className={`role-select-btn w-100 h-100 ${formData.role === 'handyman' ? 'active' : ''}`}
+                  onClick={() => setFormData(prev => ({ ...prev, role: 'handyman' }))}
+                  style={{
+                    background: formData.role === 'handyman' ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
+                    border: formData.role === 'handyman' ? '2px solid #c5a85a' : '1px solid #e5e7eb',
+                    borderRadius: '10px',
+                    padding: '12px 8px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    outline: 'none'
+                  }}
+                >
+                  <Wrench size={24} style={{ color: formData.role === 'handyman' ? '#c5a85a' : '#000000' }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: '700', color: formData.role === 'handyman' ? '#c5a85a' : '#000000', fontFamily: 'var(--font-heading)', textAlign: 'center' }}>{t('reg_handyman')}</span>
+                    <span style={{ fontSize: '0.62rem', color: formData.role === 'handyman' ? '#c5a85a' : '#6b7280', marginTop: '2px', textAlign: 'center', lineHeight: '1.2' }}>{t('reg_list_skills')}</span>
+                  </div>
+                </button>
+              </div>
 
-              <button
-                type="button"
-                className={`role-select-btn ${formData.role === 'business' && formData.businessType !== 'event' ? 'active' : ''}`}
-                onClick={() => setFormData(prev => ({ ...prev, role: 'business', businessType: 'store' }))}
-                style={{
-                  background: formData.role === 'business' && formData.businessType !== 'event' ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
-                  border: formData.role === 'business' && formData.businessType !== 'event' ? '2px solid #c5a85a' : '1px solid #e5e7eb',
-                  borderRadius: '10px',
-                  padding: '14px 10px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '8px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  outline: 'none'
-                }}
-              >
-                <Store size={28} style={{ color: formData.role === 'business' && formData.businessType !== 'event' ? '#c5a85a' : '#000000' }} />
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: '700', color: formData.role === 'business' && formData.businessType !== 'event' ? '#c5a85a' : '#000000', fontFamily: 'var(--font-heading)' }}>{t('reg_business')}</span>
-                  <span style={{ fontSize: '0.65rem', color: formData.role === 'business' && formData.businessType !== 'event' ? '#c5a85a' : '#6b7280', marginTop: '2px', textAlign: 'center', lineHeight: '1.2' }}>{t('reg_stores_agencies')}</span>
-                </div>
-              </button>
+              <div className="col-12 col-sm-6 col-md-3">
+                <button
+                  type="button"
+                  className={`role-select-btn w-100 h-100 ${formData.role === 'business' && formData.businessType !== 'event' ? 'active' : ''}`}
+                  onClick={() => setFormData(prev => ({ ...prev, role: 'business', businessType: 'store' }))}
+                  style={{
+                    background: formData.role === 'business' && formData.businessType !== 'event' ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
+                    border: formData.role === 'business' && formData.businessType !== 'event' ? '2px solid #c5a85a' : '1px solid #e5e7eb',
+                    borderRadius: '10px',
+                    padding: '12px 8px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    outline: 'none'
+                  }}
+                >
+                  <Store size={24} style={{ color: formData.role === 'business' && formData.businessType !== 'event' ? '#c5a85a' : '#000000' }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: '700', color: formData.role === 'business' && formData.businessType !== 'event' ? '#c5a85a' : '#000000', fontFamily: 'var(--font-heading)', textAlign: 'center' }}>{t('reg_business')}</span>
+                    <span style={{ fontSize: '0.62rem', color: formData.role === 'business' && formData.businessType !== 'event' ? '#c5a85a' : '#6b7280', marginTop: '2px', textAlign: 'center', lineHeight: '1.2' }}>{t('reg_stores_agencies')}</span>
+                  </div>
+                </button>
+              </div>
 
-              <button
-                type="button"
-                className={`role-select-btn ${formData.role === 'business' && formData.businessType === 'event' ? 'active' : ''}`}
-                onClick={() => setFormData(prev => ({ ...prev, role: 'business', businessType: 'event' }))}
-                style={{
-                  background: formData.role === 'business' && formData.businessType === 'event' ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
-                  border: formData.role === 'business' && formData.businessType === 'event' ? '2px solid #c5a85a' : '1px solid #e5e7eb',
-                  borderRadius: '10px',
-                  padding: '14px 10px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '8px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  outline: 'none'
-                }}
-              >
-                <Calendar size={28} style={{ color: formData.role === 'business' && formData.businessType === 'event' ? '#c5a85a' : '#000000' }} />
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: '700', color: formData.role === 'business' && formData.businessType === 'event' ? '#c5a85a' : '#000000', fontFamily: 'var(--font-heading)' }}>{t('reg_event') || 'Events'}</span>
-                  <span style={{ fontSize: '0.65rem', color: formData.role === 'business' && formData.businessType === 'event' ? '#c5a85a' : '#6b7280', marginTop: '2px', textAlign: 'center', lineHeight: '1.2' }}>{t('reg_posts_events') || 'Host Events'}</span>
-                </div>
-              </button>
+              <div className="col-12 col-sm-6 col-md-3">
+                <button
+                  type="button"
+                  className={`role-select-btn w-100 h-100 ${formData.role === 'business' && formData.businessType === 'event' ? 'active' : ''}`}
+                  onClick={() => setFormData(prev => ({ ...prev, role: 'business', businessType: 'event' }))}
+                  style={{
+                    background: formData.role === 'business' && formData.businessType === 'event' ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
+                    border: formData.role === 'business' && formData.businessType === 'event' ? '2px solid #c5a85a' : '1px solid #e5e7eb',
+                    borderRadius: '10px',
+                    padding: '12px 8px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    outline: 'none'
+                  }}
+                >
+                  <Calendar size={24} style={{ color: formData.role === 'business' && formData.businessType === 'event' ? '#c5a85a' : '#000000' }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: '700', color: formData.role === 'business' && formData.businessType === 'event' ? '#c5a85a' : '#000000', fontFamily: 'var(--font-heading)', textAlign: 'center' }}>{t('reg_event') || 'Events'}</span>
+                    <span style={{ fontSize: '0.62rem', color: formData.role === 'business' && formData.businessType === 'event' ? '#c5a85a' : '#6b7280', marginTop: '2px', textAlign: 'center', lineHeight: '1.2' }}>{t('reg_posts_events') || 'Host Events'}</span>
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -588,128 +600,143 @@ const Register = () => {
               {formData.businessType !== 'event' && (
                 <div className="form-group">
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: '500', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('reg_business_type')}</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '4px' }}>
-                    <button
-                      type="button"
-                      className={`biz-type-btn ${formData.businessType === 'store' ? 'active' : ''}`}
-                      onClick={() => setFormData(prev => ({ ...prev, businessType: 'store' }))}
-                      style={{
-                        background: formData.businessType === 'store' ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
-                        border: formData.businessType === 'store' ? '2px solid #c5a85a' : '1px solid #e5e7eb',
-                        borderRadius: '10px',
-                        padding: '12px 6px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '6px',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        outline: 'none'
-                      }}
-                    >
-                      <ShoppingBag size={24} style={{ color: formData.businessType === 'store' ? '#c5a85a' : '#000000' }} />
-                      <span style={{ fontSize: '0.8rem', fontWeight: '700', color: formData.businessType === 'store' ? '#c5a85a' : '#000000', fontFamily: 'var(--font-heading)' }}>{t('reg_store')}</span>
-                      <span style={{ fontSize: '0.62rem', color: formData.businessType === 'store' ? '#c5a85a' : '#6b7280', textAlign: 'center' }}>{t('reg_sells_products')}</span>
-                    </button>
+                  <div className="row g-2 mt-1">
+                    <div className="col-12 col-sm-6 col-md-4">
+                      <button
+                        type="button"
+                        className={`biz-type-btn w-100 h-100 ${formData.businessType === 'store' ? 'active' : ''}`}
+                        onClick={() => setFormData(prev => ({ ...prev, businessType: 'store' }))}
+                        style={{
+                          background: formData.businessType === 'store' ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
+                          border: formData.businessType === 'store' ? '2px solid #c5a85a' : '1px solid #e5e7eb',
+                          borderRadius: '10px',
+                          padding: '10px 4px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          outline: 'none'
+                        }}
+                      >
+                        <ShoppingBag size={20} style={{ color: formData.businessType === 'store' ? '#c5a85a' : '#000000' }} />
+                        <span style={{ fontSize: '0.78rem', fontWeight: '700', color: formData.businessType === 'store' ? '#c5a85a' : '#000000', fontFamily: 'var(--font-heading)' }}>{t('reg_store')}</span>
+                        <span style={{ fontSize: '0.6rem', color: formData.businessType === 'store' ? '#c5a85a' : '#6b7280', textAlign: 'center' }}>{t('reg_sells_products')}</span>
+                      </button>
+                    </div>
 
-                    <button
-                      type="button"
-                      className={`biz-type-btn ${formData.businessType === 'service' ? 'active' : ''}`}
-                      onClick={() => setFormData(prev => ({ ...prev, businessType: 'service' }))}
-                      style={{
-                        background: formData.businessType === 'service' ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
-                        border: formData.businessType === 'service' ? '2px solid #c5a85a' : '1px solid #e5e7eb',
-                        borderRadius: '10px',
-                        padding: '12px 6px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '6px',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        outline: 'none'
-                      }}
-                    >
-                      <Briefcase size={24} style={{ color: formData.businessType === 'service' ? '#c5a85a' : '#000000' }} />
-                      <span style={{ fontSize: '0.8rem', fontWeight: '700', color: formData.businessType === 'service' ? '#c5a85a' : '#000000', fontFamily: 'var(--font-heading)' }}>{t('reg_service')}</span>
-                      <span style={{ fontSize: '0.62rem', color: formData.businessType === 'service' ? '#c5a85a' : '#6b7280', textAlign: 'center' }}>{t('reg_offers_services')}</span>
-                    </button>
+                    <div className="col-12 col-sm-6 col-md-4">
+                      <button
+                        type="button"
+                        className={`biz-type-btn w-100 h-100 ${formData.businessType === 'service' ? 'active' : ''}`}
+                        onClick={() => setFormData(prev => ({ ...prev, businessType: 'service' }))}
+                        style={{
+                          background: formData.businessType === 'service' ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
+                          border: formData.businessType === 'service' ? '2px solid #c5a85a' : '1px solid #e5e7eb',
+                          borderRadius: '10px',
+                          padding: '10px 4px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          outline: 'none'
+                        }}
+                      >
+                        <Briefcase size={20} style={{ color: formData.businessType === 'service' ? '#c5a85a' : '#000000' }} />
+                        <span style={{ fontSize: '0.78rem', fontWeight: '700', color: formData.businessType === 'service' ? '#c5a85a' : '#000000', fontFamily: 'var(--font-heading)' }}>{t('reg_service')}</span>
+                        <span style={{ fontSize: '0.6rem', color: formData.businessType === 'service' ? '#c5a85a' : '#6b7280', textAlign: 'center' }}>{t('reg_offers_services')}</span>
+                      </button>
+                    </div>
 
-                    <button
-                      type="button"
-                      className={`biz-type-btn ${formData.businessType === 'organization' ? 'active' : ''}`}
-                      onClick={() => setFormData(prev => ({ ...prev, businessType: 'organization' }))}
-                      style={{
-                        background: formData.businessType === 'organization' ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
-                        border: formData.businessType === 'organization' ? '2px solid #c5a85a' : '1px solid #e5e7eb',
-                        borderRadius: '10px',
-                        padding: '12px 6px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '6px',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        outline: 'none'
-                      }}
-                    >
-                      <Building2 size={24} style={{ color: formData.businessType === 'organization' ? '#c5a85a' : '#000000' }} />
-                      <span style={{ fontSize: '0.8rem', fontWeight: '700', color: formData.businessType === 'organization' ? '#c5a85a' : '#000000', fontFamily: 'var(--font-heading)' }}>{t('reg_organization')}</span>
-                      <span style={{ fontSize: '0.62rem', color: formData.businessType === 'organization' ? '#c5a85a' : '#6b7280', textAlign: 'center' }}>{t('reg_hiring_jobs')}</span>
-                    </button>
+                    <div className="col-12 col-sm-6 col-md-4">
+                      <button
+                        type="button"
+                        className={`biz-type-btn w-100 h-100 ${formData.businessType === 'organization' ? 'active' : ''}`}
+                        onClick={() => setFormData(prev => ({ ...prev, businessType: 'organization' }))}
+                        style={{
+                          background: formData.businessType === 'organization' ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
+                          border: formData.businessType === 'organization' ? '2px solid #c5a85a' : '1px solid #e5e7eb',
+                          borderRadius: '10px',
+                          padding: '10px 4px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          outline: 'none'
+                        }}
+                      >
+                        <Building2 size={20} style={{ color: formData.businessType === 'organization' ? '#c5a85a' : '#000000' }} />
+                        <span style={{ fontSize: '0.78rem', fontWeight: '700', color: formData.businessType === 'organization' ? '#c5a85a' : '#000000', fontFamily: 'var(--font-heading)' }}>{t('reg_organization')}</span>
+                        <span style={{ fontSize: '0.6rem', color: formData.businessType === 'organization' ? '#c5a85a' : '#6b7280', textAlign: 'center' }}>{t('reg_hiring_jobs')}</span>
+                      </button>
+                    </div>
 
-                    <button
-                      type="button"
-                      className={`biz-type-btn ${formData.businessType === 'real_estate' ? 'active' : ''}`}
-                      onClick={() => setFormData(prev => ({ ...prev, businessType: 'real_estate' }))}
-                      style={{
-                        background: formData.businessType === 'real_estate' ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
-                        border: formData.businessType === 'real_estate' ? '2px solid #c5a85a' : '1px solid #e5e7eb',
-                        borderRadius: '10px',
-                        padding: '12px 6px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '6px',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        outline: 'none'
-                      }}
-                    >
-                      <HomeIcon size={24} style={{ color: formData.businessType === 'real_estate' ? '#c5a85a' : '#000000' }} />
-                      <span style={{ fontSize: '0.8rem', fontWeight: '700', color: formData.businessType === 'real_estate' ? '#c5a85a' : '#000000', fontFamily: 'var(--font-heading)' }}>{t('reg_real_estate')}</span>
-                      <span style={{ fontSize: '0.62rem', color: formData.businessType === 'real_estate' ? '#c5a85a' : '#6b7280', textAlign: 'center' }}>{t('reg_housing_listings')}</span>
-                    </button>
+                    <div className="col-12 col-sm-6 col-md-4">
+                      <button
+                        type="button"
+                        className={`biz-type-btn w-100 h-100 ${formData.businessType === 'real_estate' ? 'active' : ''}`}
+                        onClick={() => setFormData(prev => ({ ...prev, businessType: 'real_estate' }))}
+                        style={{
+                          background: formData.businessType === 'real_estate' ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
+                          border: formData.businessType === 'real_estate' ? '2px solid #c5a85a' : '1px solid #e5e7eb',
+                          borderRadius: '10px',
+                          padding: '10px 4px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          outline: 'none'
+                        }}
+                      >
+                        <HomeIcon size={20} style={{ color: formData.businessType === 'real_estate' ? '#c5a85a' : '#000000' }} />
+                        <span style={{ fontSize: '0.78rem', fontWeight: '700', color: formData.businessType === 'real_estate' ? '#c5a85a' : '#000000', fontFamily: 'var(--font-heading)' }}>{t('reg_real_estate')}</span>
+                        <span style={{ fontSize: '0.6rem', color: formData.businessType === 'real_estate' ? '#c5a85a' : '#6b7280', textAlign: 'center' }}>{t('reg_housing_listings')}</span>
+                      </button>
+                    </div>
 
-                    <button
-                      type="button"
-                      className={`biz-type-btn ${formData.businessType === 'automotive' ? 'active' : ''}`}
-                      onClick={() => setFormData(prev => ({ ...prev, businessType: 'automotive' }))}
-                      style={{
-                        background: formData.businessType === 'automotive' ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
-                        border: formData.businessType === 'automotive' ? '2px solid #c5a85a' : '1px solid #e5e7eb',
-                        borderRadius: '10px',
-                        padding: '12px 6px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '6px',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        outline: 'none'
-                      }}
-                    >
-                      <Car size={24} style={{ color: formData.businessType === 'automotive' ? '#c5a85a' : '#000000' }} />
-                      <span style={{ fontSize: '0.8rem', fontWeight: '700', color: formData.businessType === 'automotive' ? '#c5a85a' : '#000000', fontFamily: 'var(--font-heading)' }}>{t('reg_automotive')}</span>
-                      <span style={{ fontSize: '0.62rem', color: formData.businessType === 'automotive' ? '#c5a85a' : '#6b7280', textAlign: 'center' }}>{t('reg_car_listings')}</span>
-                    </button>
+                    <div className="col-12 col-sm-6 col-md-4">
+                      <button
+                        type="button"
+                        className={`biz-type-btn w-100 h-100 ${formData.businessType === 'automotive' ? 'active' : ''}`}
+                        onClick={() => setFormData(prev => ({ ...prev, businessType: 'automotive' }))}
+                        style={{
+                          background: formData.businessType === 'automotive' ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
+                          border: formData.businessType === 'automotive' ? '2px solid #c5a85a' : '1px solid #e5e7eb',
+                          borderRadius: '10px',
+                          padding: '10px 4px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          outline: 'none'
+                        }}
+                      >
+                        <Car size={20} style={{ color: formData.businessType === 'automotive' ? '#c5a85a' : '#000000' }} />
+                        <span style={{ fontSize: '0.78rem', fontWeight: '700', color: formData.businessType === 'automotive' ? '#c5a85a' : '#000000', fontFamily: 'var(--font-heading)' }}>{t('reg_automotive')}</span>
+                        <span style={{ fontSize: '0.6rem', color: formData.businessType === 'automotive' ? '#c5a85a' : '#6b7280', textAlign: 'center' }}>{t('reg_car_listings')}</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
 
               <div className="form-group">
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: '500', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('reg_category_type')}</label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '4px' }}>
+                <div className="row g-2 mt-1">
                   {categories.map((cat, idx) => {
                     const isActive = formData.category === cat.name;
                     const cleanKey = cat.name.toLowerCase()
@@ -718,35 +745,37 @@ const Register = () => {
                       .replace(/-/g, '_');
 
                     return (
-                      <button
-                        key={idx}
-                        type="button"
-                        className={`cat-type-btn ${isActive ? 'active' : ''}`}
-                        onClick={() => {
-                          if (formData.businessType === 'event') {
-                            const subs = getSubcategories(cat.name);
-                            setFormData(prev => ({ ...prev, category: cat.name, subCategory: subs[0] || '' }));
-                          } else {
-                            setFormData(prev => ({ ...prev, category: cat.name }));
-                          }
-                        }}
-                        style={{
-                          background: isActive ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
-                          border: isActive ? '2px solid #c5a85a' : '1px solid #e5e7eb',
-                          borderRadius: '10px',
-                          padding: '12px 6px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: '6px',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          outline: 'none'
-                        }}
-                      >
-                        <Tag size={20} style={{ color: isActive ? '#c5a85a' : '#000000' }} />
-                        <span style={{ fontSize: '0.8rem', fontWeight: '700', color: isActive ? '#c5a85a' : '#000000', textAlign: 'center', fontFamily: 'var(--font-heading)' }}>{t(cleanKey) || cat.name}</span>
-                      </button>
+                      <div className="col-12 col-sm-6 col-md-4" key={idx}>
+                        <button
+                          type="button"
+                          className={`cat-type-btn w-100 h-100 ${isActive ? 'active' : ''}`}
+                          onClick={() => {
+                            if (formData.businessType === 'event') {
+                              const subs = getSubcategories(cat.name);
+                              setFormData(prev => ({ ...prev, category: cat.name, subCategory: subs[0] || '' }));
+                            } else {
+                              setFormData(prev => ({ ...prev, category: cat.name }));
+                            }
+                          }}
+                          style={{
+                            background: isActive ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
+                            border: isActive ? '2px solid #c5a85a' : '1px solid #e5e7eb',
+                            borderRadius: '10px',
+                            padding: '10px 4px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            outline: 'none'
+                          }}
+                        >
+                          <Tag size={18} style={{ color: isActive ? '#c5a85a' : '#000000' }} />
+                          <span style={{ fontSize: '0.75rem', fontWeight: '700', color: isActive ? '#c5a85a' : '#000000', textAlign: 'center', fontFamily: 'var(--font-heading)' }}>{t(cleanKey) || cat.name}</span>
+                        </button>
+                      </div>
                     );
                   })}
                 </div>
@@ -755,32 +784,34 @@ const Register = () => {
               {formData.businessType === 'event' && formData.category && (
                 <div className="form-group mt-3">
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: '500', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Event Sub-Category</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '4px' }}>
+                  <div className="row g-2 mt-1">
                     {getSubcategories(formData.category).map((sub, idx) => {
                       const isActive = formData.subCategory === sub;
                       return (
-                        <button
-                          key={idx}
-                          type="button"
-                          className={`cat-type-btn ${isActive ? 'active' : ''}`}
-                          onClick={() => setFormData(prev => ({ ...prev, subCategory: sub }))}
-                          style={{
-                            background: isActive ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
-                            border: isActive ? '2px solid #c5a85a' : '1px solid #e5e7eb',
-                            borderRadius: '10px',
-                            padding: '12px 6px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '6px',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            outline: 'none'
-                          }}
-                        >
-                          <Tag size={16} style={{ color: isActive ? '#c5a85a' : '#000000' }} />
-                          <span style={{ fontSize: '0.8rem', fontWeight: '700', color: isActive ? '#c5a85a' : '#000000', textAlign: 'center', fontFamily: 'var(--font-heading)' }}>{sub}</span>
-                        </button>
+                        <div className="col-12 col-sm-6 col-md-4" key={idx}>
+                          <button
+                            type="button"
+                            className={`cat-type-btn w-100 h-100 ${isActive ? 'active' : ''}`}
+                            onClick={() => setFormData(prev => ({ ...prev, subCategory: sub }))}
+                            style={{
+                              background: isActive ? 'rgba(197, 168, 90, 0.08)' : '#ffffff',
+                              border: isActive ? '2px solid #c5a85a' : '1px solid #e5e7eb',
+                              borderRadius: '10px',
+                              padding: '10px 4px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              outline: 'none'
+                            }}
+                          >
+                            <Tag size={16} style={{ color: isActive ? '#c5a85a' : '#000000' }} />
+                            <span style={{ fontSize: '0.75rem', fontWeight: '700', color: isActive ? '#c5a85a' : '#000000', textAlign: 'center', fontFamily: 'var(--font-heading)' }}>{sub}</span>
+                          </button>
+                        </div>
                       );
                     })}
                   </div>

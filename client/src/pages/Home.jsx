@@ -1038,7 +1038,7 @@ const Home = () => {
               {/* Right 4-card Grid */}
               <div className="col-12 col-lg-6">
                 <div className="row g-3">
-                  <div className="col-6">
+                  <div className="col-12 col-sm-6">
                     <div className="cat-card-small" onClick={() => handleTypeSelect('car')} style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', height: '140px' }}>
                       <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=400&q=80" alt="Automotive" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       <div className="cat-overlay-small" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)', display: 'flex', alignItems: 'flex-end', padding: '14px', zIndex: 2 }}>
@@ -1046,7 +1046,7 @@ const Home = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="col-6">
+                  <div className="col-12 col-sm-6">
                     <div className="cat-card-small" onClick={() => handleTypeSelect('house')} style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', height: '140px' }}>
                       <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80" alt="Real Estate" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       <div className="cat-overlay-small" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)', display: 'flex', alignItems: 'flex-end', padding: '14px', zIndex: 2 }}>
@@ -1054,7 +1054,7 @@ const Home = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="col-6">
+                  <div className="col-12 col-sm-6">
                     <div className="cat-card-small" onClick={() => handleTypeSelect('job_opening')} style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', height: '140px' }}>
                       <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=400&q=80" alt="Jobs" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       <div className="cat-overlay-small" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)', display: 'flex', alignItems: 'flex-end', padding: '14px', zIndex: 2 }}>
@@ -1062,7 +1062,7 @@ const Home = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="col-6">
+                  <div className="col-12 col-sm-6">
                     <div className="cat-card-small" onClick={() => handleTypeSelect('service')} style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', height: '140px' }}>
                       <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80" alt="Services" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       <div className="cat-overlay-small" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)', display: 'flex', alignItems: 'flex-end', padding: '14px', zIndex: 2 }}>
@@ -2924,22 +2924,10 @@ const Home = () => {
           width: 100%;
         }
         .horizontal-scroll-row::-webkit-scrollbar {
-          height: 6px;
-        }
-        .horizontal-scroll-row::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.02);
-          border-radius: 4px;
-        }
-        .horizontal-scroll-row::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.15);
-          border-radius: 4px;
-          transition: background 0.2s;
-        }
-        body.light-theme .horizontal-scroll-row::-webkit-scrollbar-thumb {
-          background: rgba(0, 0, 0, 0.15);
-        }
-        .horizontal-scroll-row::-webkit-scrollbar-thumb:hover {
-          background: var(--accent-primary);
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+          background: transparent !important;
         }
         .scroll-card-col {
           flex: 0 0 280px; /* fixed card width so it scrolls */
@@ -3067,22 +3055,10 @@ const Home = () => {
           }
         }
         .professionals-row::-webkit-scrollbar {
-          height: 6px;
-        }
-        .professionals-row::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.02);
-          border-radius: 4px;
-        }
-        .professionals-row::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.15);
-          border-radius: 4px;
-          transition: background 0.2s;
-        }
-        body.light-theme .professionals-row::-webkit-scrollbar-thumb {
-          background: rgba(0, 0, 0, 0.15);
-        }
-        .professionals-row::-webkit-scrollbar-thumb:hover {
-          background: var(--accent-primary);
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+          background: transparent !important;
         }
         .prof-card-mock {
           flex: 0 0 240px; /* fixed card width so it scrolls */
