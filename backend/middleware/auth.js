@@ -12,7 +12,7 @@ const verifyToken = (req, res, next) => {
   if (!secret) {
     console.error('CRITICAL SECURITY WARNING: JWT_SECRET environment variable is missing.');
     if (process.env.NODE_ENV === 'production') {
-      return res.status(500).json({ message: 'Server Security Configuration Error' });
+      return res.status(500).json({ message: 'Server Security Configuration Error: Missing JWT Secret' });
     }
   }
 

@@ -121,7 +121,7 @@ const Register = () => {
       }
 
       setVerificationSuccess(data.message || 'New confirmation code sent to your email.');
-      setResendTimer(60);
+      setResendTimer(90);
     } catch (err) {
       setVerificationError(err.message);
     } finally {
@@ -283,7 +283,7 @@ const Register = () => {
       if (data.requiresVerification) {
         setVerificationEmail(data.email || email);
         setPendingVerification(true);
-        setResendTimer(60);
+        setResendTimer(90);
         return;
       }
 

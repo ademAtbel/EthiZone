@@ -528,7 +528,15 @@ const Storefront = () => {
       return new Date(b.createdAt) - new Date(a.createdAt); // newest first
     });
 
-  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  let currentUser = {};
+  try {
+    const rawUser = localStorage.getItem('user');
+    if (rawUser && rawUser !== 'undefined' && rawUser !== 'null') {
+      currentUser = JSON.parse(rawUser);
+    }
+  } catch (e) {
+    currentUser = {};
+  }
   const isOwner = store && (currentUser.id === store._id || currentUser.role === 'super_admin');
 
   const fetchStoreData = async () => {
@@ -678,8 +686,32 @@ const Storefront = () => {
                   <span className="contact-label">{t('direct_line')}</span>
                   <span className="contact-number">{store.phone}</span>
                   <div className="contact-cta-row">
-                    <a href={`tel:${store.phone}`} className="btn btn-success d-flex align-items-center justify-content-center gap-2"><Phone size={18} /> {t('call')}</a>
-                    <a href={`sms:${store.phone}?body=Hi! I am interested in inquiring about your store services.`} className="btn btn-primary d-flex align-items-center justify-content-center gap-2"><MessageCircle size={18} /> {t('sms')}</a>
+                    <a 
+                      href={`tel:${store.phone}`} 
+                      className="btn btn-success d-flex align-items-center justify-content-center gap-2"
+                      title={`Call: ${store.phone || 'N/A'}`}
+                      onMouseEnter={(e) => {
+                        if (store.phone) e.currentTarget.lastChild.textContent = ` Call: ${store.phone}`;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.lastChild.textContent = ` ${t('call')}`;
+                      }}
+                    >
+                      <Phone size={18} /> {t('call')}
+                    </a>
+                    <a 
+                      href={`sms:${store.phone}?body=Hi! I am interested in inquiring about your store services.`} 
+                      className="btn btn-primary d-flex align-items-center justify-content-center gap-2"
+                      title={`SMS: ${store.phone || 'N/A'}`}
+                      onMouseEnter={(e) => {
+                        if (store.phone) e.currentTarget.lastChild.textContent = ` SMS: ${store.phone}`;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.lastChild.textContent = ` ${t('sms')}`;
+                      }}
+                    >
+                      <MessageCircle size={18} /> {t('sms')}
+                    </a>
                   </div>
                   {store.socialLinks && store.socialLinks.length > 0 && (
                     <div className="social-links-header-row" style={{ display: 'flex', gap: '10px', marginTop: '12px', justifyContent: 'center' }}>
@@ -1445,8 +1477,34 @@ const Storefront = () => {
               <span style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-secondary)', display: 'block', marginBottom: '20px' }}>{store.phone}</span>
               
               <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                <a href={`tel:${store.phone}`} className="btn btn-success" style={{ padding: '12px 28px', fontSize: '1rem' }}>{t('call_now')}</a>
-                <a href={`sms:${store.phone}?body=Hi! I saw your store on EthiZone and want to inquire.`} className="btn btn-primary" style={{ padding: '12px 28px', fontSize: '1rem' }}>{t('send_sms')}</a>
+                <a 
+                  href={`tel:${store.phone}`} 
+                  className="btn btn-success" 
+                  style={{ padding: '12px 28px', fontSize: '1rem' }}
+                  title={`Call: ${store.phone || 'N/A'}`}
+                  onMouseEnter={(e) => {
+                    if (store.phone) e.currentTarget.textContent = `Call: ${store.phone}`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.textContent = t('call_now');
+                  }}
+                >
+                  {t('call_now')}
+                </a>
+                <a 
+                  href={`sms:${store.phone}?body=Hi! I saw your store on EthiZone and want to inquire.`} 
+                  className="btn btn-primary" 
+                  style={{ padding: '12px 28px', fontSize: '1rem' }}
+                  title={`SMS: ${store.phone || 'N/A'}`}
+                  onMouseEnter={(e) => {
+                    if (store.phone) e.currentTarget.textContent = `SMS: ${store.phone}`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.textContent = t('send_sms');
+                  }}
+                >
+                  {t('send_sms')}
+                </a>
                 <button 
                   onClick={() => setInquiryModalOpen(true)} 
                   className="btn btn-secondary" 

@@ -26,12 +26,12 @@ This document details all safe, fake test accounts created and used for end-to-e
 | **Vehicle Seller/Renter** | AutoConnect Motors | `vehicle1@example.com` | Used Cars & Vehicle Rentals Portal |
 | **Freelancer / HireMe** | Pro Handyman | `freelance1@example.com` | Skill Showcase, Direct Hire Portfolio |
 | **Employer / Job Poster** | Horizon Tech Corp | `employer1@example.com` | Job Posting & Talent Hiring Portal |
-| **Super Admin** | Super Admin | `admin@ultimatemaster.com` | Super Admin Governance & Store Moderation |
+| **Super Admin** | Super Admin | `ethizone1@gmail.com` | Super Admin Governance & Store Moderation |
 
 ---
 
 ## Verification & Password Guidelines
 
-- **Default Test Password**: `TestPassword123!` (or seeded super admin: `adminpassword123`)
+- **Default Test Password**: `TestPassword123!` (or seeded super admin: `Ethizone@Ethiopia.2019`)
 - **Email Verification**: Test accounts use dummy SMTP pass-through or test OTPs.
 - **Production Warning**: Do NOT deploy these fake accounts into live production databases. Seed production environments cleanly using `npm run seed`.

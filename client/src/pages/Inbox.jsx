@@ -27,7 +27,14 @@ const Inbox = () => {
       return;
     }
     
-    const user = JSON.parse(userStr);
+    let user = {};
+    try {
+      if (userStr && userStr !== 'undefined' && userStr !== 'null') {
+        user = JSON.parse(userStr);
+      }
+    } catch (e) {
+      user = {};
+    }
     setCurrentUser(user);
 
     const socketUrl = import.meta.env.VITE_SOCKET_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5001' : window.location.origin);

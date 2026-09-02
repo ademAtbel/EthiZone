@@ -422,17 +422,37 @@ const EventsPage = () => {
 
               <div className="border-top pt-4">
                 <h5 className="fw-bold mb-2">{t('events_hosted_by') || 'Organizer Contact Details'}</h5>
-                <p className="text-secondary small mb-3">Posted by: <strong>{selectedEvent.ownerName}</strong></p>
+                {(selectedEvent.organizerName || (selectedEvent.ownerName && selectedEvent.ownerName !== 'Super Admin')) && (
+                  <p className="text-secondary small mb-3">
+                    Organized by: <strong>{selectedEvent.organizerName || selectedEvent.ownerName}</strong>
+                  </p>
+                )}
                 <div className="d-flex gap-2">
                   <a 
-                    href={`tel:${selectedEvent.ownerPhone}`} 
+                    href={`tel:${selectedEvent.organizerPhone || selectedEvent.ownerPhone}`} 
                     className="btn btn-success flex-grow-1 d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold"
+                    title={`Call: ${selectedEvent.organizerPhone || selectedEvent.ownerPhone}`}
+                    onMouseEnter={(e) => {
+                      const p = selectedEvent.organizerPhone || selectedEvent.ownerPhone;
+                      if (p) e.currentTarget.lastChild.textContent = ` Call: ${p}`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.lastChild.textContent = ` ${t('events_call') || 'Call Organizer'}`;
+                    }}
                   >
                     <Phone size={16} /> {t('events_call') || 'Call Organizer'}
                   </a>
                   <a 
-                    href={`sms:${selectedEvent.ownerPhone}?body=Hi, I am interested in your event: ${selectedEvent.title}`} 
+                    href={`sms:${selectedEvent.organizerPhone || selectedEvent.ownerPhone}?body=Hi, I am interested in your event: ${selectedEvent.title}`} 
                     className="btn btn-primary flex-grow-1 d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold"
+                    title={`SMS: ${selectedEvent.organizerPhone || selectedEvent.ownerPhone}`}
+                    onMouseEnter={(e) => {
+                      const p = selectedEvent.organizerPhone || selectedEvent.ownerPhone;
+                      if (p) e.currentTarget.lastChild.textContent = ` SMS: ${p}`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.lastChild.textContent = ` ${t('events_sms') || 'SMS Host'}`;
+                    }}
                   >
                     <MessageCircle size={16} /> {t('events_sms') || 'SMS Host'}
                   </a>

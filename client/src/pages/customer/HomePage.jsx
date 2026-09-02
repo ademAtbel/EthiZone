@@ -9,6 +9,15 @@ export default function HomePage() {
 
   const [popularProducts, setPopularProducts] = useState([]);
   const [featuredStores, setFeaturedStores] = useState([]);
+  const [events, setEvents] = useState([]);
+  const eventsScrollRef = React.useRef(null);
+
+  const scrollEvents = (direction) => {
+    if (eventsScrollRef.current) {
+      const scrollAmount = direction === 'left' ? -360 : 360;
+      eventsScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     // 1. Fetch popular products
@@ -57,6 +66,17 @@ export default function HomePage() {
           "Backend API unreachable for featured stores:",
           err.message,
         ),
+      );
+    // 3. Fetch events for home page carousel
+    fetch("/api/events")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setEvents(data);
+        }
+      })
+      .catch((err) =>
+        console.error("Error fetching events for carousel:", err.message)
       );
   }, []);
 
@@ -143,15 +163,6 @@ export default function HomePage() {
                   {t("categories")}
                 </Link>
                 <Link
-                  to="/cars"
-                  className="bg-surface-container-lowest border-2 border-outline-variant hover:border-primary text-on-surface hover:text-primary px-xl py-md rounded-xl font-label-lg transition-all shadow-sm hover:shadow-md flex items-center gap-sm group"
-                >
-                  <span className="material-symbols-outlined text-[24px] group-hover:scale-110 transition-transform">
-                    directions_car
-                  </span>{" "}
-                  {t("cars")}
-                </Link>
-                <Link
                   to="/houses"
                   className="bg-surface-container-lowest border-2 border-outline-variant hover:border-primary text-on-surface hover:text-primary px-xl py-md rounded-xl font-label-lg transition-all shadow-sm hover:shadow-md flex items-center gap-sm group"
                 >
@@ -196,6 +207,136 @@ export default function HomePage() {
                   </span>{" "}
                   {t("services")}
                 </Link>
+              </div>
+            </div>
+          </section>
+
+          {/* Upcoming Events & Cultural Festivals Carousel */}
+          <section className="py-xxl bg-surface-container-lowest border-b border-outline-variant relative overflow-hidden">
+            <div className="max-w-[1440px] mx-auto px-margin-desktop">
+              <div className="flex justify-between items-end mb-xl">
+                <div>
+                  <div className="flex items-center gap-xs text-[#D4AF37] font-semibold text-label-sm uppercase tracking-wider mb-xs">
+                    <span className="material-symbols-outlined text-[18px]">event</span>
+                    <span>Live Entertainment & Gathering</span>
+                  </div>
+                  <h2 className="text-h2-mobile md:text-h2 font-h2 text-on-surface">
+                    Upcoming Events & Cultural Shows
+                  </h2>
+                </div>
+                {/* CAROUSEL CONTROLS */}
+                <div className="flex gap-xs">
+                  <button
+                    onClick={() => scrollEvents('left')}
+                    className="w-10 h-10 rounded-full bg-surface border border-outline-variant text-on-surface hover:border-primary hover:text-primary flex items-center justify-center transition-all shadow-sm active:scale-95 cursor-pointer"
+                    title="Previous Events"
+                  >
+                    <span className="material-symbols-outlined">chevron_left</span>
+                  </button>
+                  <button
+                    onClick={() => scrollEvents('right')}
+                    className="w-10 h-10 rounded-full bg-surface border border-outline-variant text-on-surface hover:border-primary hover:text-primary flex items-center justify-center transition-all shadow-sm active:scale-95 cursor-pointer"
+                    title="Next Events"
+                  >
+                    <span className="material-symbols-outlined">chevron_right</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* HORIZONTAL CAROUSEL CONTAINER */}
+              <div
+                ref={eventsScrollRef}
+                className="flex gap-lg overflow-x-auto scroll-smooth pb-md scrollbar-none"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {(events.length > 0 ? events : [
+                  {
+                    _id: 'sample-1',
+                    title: 'Ethiopian New Year Festival 2026',
+                    category: 'Arts & Culture',
+                    subCategory: 'Festival Concert',
+                    eventDate: '2026-09-11',
+                    eventTime: '18:00',
+                    location: 'Silver Spring, MD',
+                    price: 25,
+                    images: ['https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80']
+                  },
+                  {
+                    _id: 'sample-2',
+                    title: 'Cultural Music & Dance Night',
+                    category: 'Entertainment',
+                    subCategory: 'Concerts',
+                    eventDate: '2026-09-15',
+                    eventTime: '20:00',
+                    location: 'Addis Ababa',
+                    price: 0,
+                    images: ['https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=800&q=80']
+                  },
+                  {
+                    _id: 'sample-3',
+                    title: 'Tech & Business Expo 2026',
+                    category: 'Educational',
+                    subCategory: 'Conference Expo',
+                    eventDate: '2026-10-01',
+                    eventTime: '10:00',
+                    location: 'Washington, DC',
+                    price: 50,
+                    images: ['https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80']
+                  }
+                ]).map((ev) => (
+                  <div
+                    key={ev._id}
+                    className="min-w-[300px] md:min-w-[340px] max-w-[340px] shrink-0 group bg-surface rounded-2xl border border-outline-variant overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between"
+                  >
+                    {/* Event Cover Image */}
+                    <div className="relative h-[200px] overflow-hidden bg-black">
+                      <img
+                        src={ev.images && ev.images.length > 0 ? ev.images[0] : 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80'}
+                        alt={ev.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => {
+                          e.target.src = 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80';
+                        }}
+                      />
+                      <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md text-[#FFD700] px-3 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase border border-[#D4AF37]/40">
+                        {ev.category}
+                      </div>
+                      <div className="absolute bottom-3 right-3 bg-[#D4AF37] text-black px-3 py-1 rounded-full text-[12px] font-extrabold shadow-md">
+                        {ev.price > 0 ? `$${ev.price}` : 'Free Entry'}
+                      </div>
+                    </div>
+
+                    {/* Event Card Content */}
+                    <div className="p-lg flex flex-col justify-between flex-1">
+                      <div>
+                        <div className="flex items-center gap-xs text-primary font-semibold text-[12px] mb-xs">
+                          <span className="material-symbols-outlined text-[16px]">calendar_month</span>
+                          <span>{ev.eventDate ? new Date(ev.eventDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Upcoming'} • {ev.eventTime || 'TBD'}</span>
+                        </div>
+                        <h3 className="text-h4 font-h4 text-on-surface line-clamp-2 leading-tight mb-sm group-hover:text-primary transition-colors">
+                          {ev.title}
+                        </h3>
+                        <p className="text-label-sm font-label-sm text-on-surface-variant flex items-center gap-xs">
+                          <span className="material-symbols-outlined text-[16px] text-tertiary">location_on</span>
+                          <span className="truncate">{ev.location}</span>
+                        </p>
+                      </div>
+
+                      <div className="pt-md border-t border-outline-variant/50 flex items-center justify-between mt-md">
+                        <span className="text-[11px] font-medium text-on-surface-variant">
+                          {ev.subCategory ? `↳ ${ev.subCategory}` : 'Event'}
+                        </span>
+                        <Link
+                          to="/categories"
+                          className="text-primary font-label-md text-label-md hover:underline flex items-center gap-xs font-semibold"
+                        >
+                          View Details
+                          <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </section>

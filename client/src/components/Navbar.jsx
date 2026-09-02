@@ -5,13 +5,21 @@ import Breadcrumbs from './Breadcrumbs';
 import QrModal from './QrModal';
 import ThemeToggle from './ThemeToggle';
 import AnimatedLogo from './AnimatedLogo';
-import { Printer, User, Key, LayoutDashboard, Store, LogOut, Menu, X, Globe, Mail, Phone, Lock, Eye, EyeOff } from 'lucide-react';
+import { Printer, User, Key, LayoutDashboard, Store, LogOut, Menu, X, Globe, Mail, Phone, Lock, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const token = localStorage.getItem('token');
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  let user = {};
+  try {
+    const rawUser = localStorage.getItem('user');
+    if (rawUser && rawUser !== 'undefined' && rawUser !== 'null') {
+      user = JSON.parse(rawUser);
+    }
+  } catch (e) {
+    user = {};
+  }
   const [qrOpen, setQrOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [navbarInquiries, setNavbarInquiries] = useState([]);
@@ -363,6 +371,9 @@ const Navbar = () => {
                         </button>
                         <Link to={getDashboardLink()} onClick={() => setUserMenuOpen(false)} className="dropdown-item d-flex align-items-center gap-2" style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 18px', background: 'none', border: 'none', color: 'var(--text-secondary, #334155)', fontSize: '0.88rem', fontWeight: 500, textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', textDecoration: 'none', whiteSpace: 'nowrap' }}>
                           <LayoutDashboard size={16} /> Dashboard
+                        </Link>
+                        <Link to="/private-events" onClick={() => setUserMenuOpen(false)} className="dropdown-item d-flex align-items-center gap-2" style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 18px', background: 'none', border: 'none', color: 'var(--text-secondary, #334155)', fontSize: '0.88rem', fontWeight: 500, textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                          <ShieldCheck size={16} /> Private Events
                         </Link>
                         <a 
                           href={getStorefrontLink()}

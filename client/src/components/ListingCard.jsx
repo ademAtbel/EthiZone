@@ -416,6 +416,13 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                     boxShadow: '0 4px 12px rgba(197, 168, 90, 0.3)',
                     transition: 'all 0.2s ease'
                   }}
+                  title={`Call: ${ownerPhone || 'N/A'}`}
+                  onMouseEnter={(e) => {
+                    if (ownerPhone) e.currentTarget.lastChild.textContent = ` Call: ${ownerPhone}`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.lastChild.textContent = ` ${t('call')}`;
+                  }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Phone size={15} /> {t('call')}
@@ -434,6 +441,13 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                     fontSize: '0.85rem',
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                     transition: 'all 0.2s ease'
+                  }}
+                  title={`SMS: ${ownerPhone || 'N/A'}`}
+                  onMouseEnter={(e) => {
+                    if (ownerPhone) e.currentTarget.lastChild.textContent = ` SMS: ${ownerPhone}`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.lastChild.textContent = ` ${t('sms')}`;
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -728,8 +742,34 @@ const ListingCard = ({ listing, showStoreLink = true, onDeleted }) => {
                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                       {isInteractive ? (
                         <>
-                          <a href={`tel:${ownerPhone}`} className="btn btn-success flex-grow-1" style={{ padding: '12px', minWidth: '100px' }}>{t('call')}</a>
-                          <a href={`sms:${ownerPhone}?body=${encodeURIComponent(smsMessage)}`} className="btn btn-primary flex-grow-1" style={{ padding: '12px', minWidth: '100px' }}>{t('sms')}</a>
+                          <a 
+                            href={`tel:${ownerPhone}`} 
+                            className="btn btn-success flex-grow-1" 
+                            style={{ padding: '12px', minWidth: '100px' }}
+                            title={`Call: ${ownerPhone || 'N/A'}`}
+                            onMouseEnter={(e) => {
+                              if (ownerPhone) e.currentTarget.textContent = `Call: ${ownerPhone}`;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.textContent = t('call');
+                            }}
+                          >
+                            {t('call')}
+                          </a>
+                          <a 
+                            href={`sms:${ownerPhone}?body=${encodeURIComponent(smsMessage)}`} 
+                            className="btn btn-primary flex-grow-1" 
+                            style={{ padding: '12px', minWidth: '100px' }}
+                            title={`SMS: ${ownerPhone || 'N/A'}`}
+                            onMouseEnter={(e) => {
+                              if (ownerPhone) e.currentTarget.textContent = `SMS: ${ownerPhone}`;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.textContent = t('sms');
+                            }}
+                          >
+                            {t('sms')}
+                          </a>
                           <button 
                             onClick={() => setInquiryModalOpen(true)}
                             className="btn btn-secondary flex-grow-1" 

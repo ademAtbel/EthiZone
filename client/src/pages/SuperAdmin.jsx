@@ -1,17 +1,19 @@
-// Ultimate Master Marketplace - SuperAdmin Page (Optimized for High Scale)
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import SuperAdminCreateModal from './super_admin/SuperAdminCreateModal';
 
 const SuperAdmin = () => {
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [listings, setListings] = useState([]);
+  const [events, setEvents] = useState([]);
   const [categories, setCategories] = useState([]);
   const [newCatName, setNewCatName] = useState('');
   const [newCatDesc, setNewCatDesc] = useState('');
   const [newCatType, setNewCatType] = useState('store');
   const [editingCategory, setEditingCategory] = useState(null);
-  const [activeTab, setActiveTab] = useState('categories');
+  const [activeTab, setActiveTab] = useState('overview');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Pagination states for SuperAdmin Management
   const [usersPage, setUsersPage] = useState(1);
@@ -104,9 +106,49 @@ const SuperAdmin = () => {
     }
   };
 
+  const fetchEvents = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const headers = { 'Authorization': `Bearer ${token}` };
+      const res = await fetch('/api/admin/events', { headers });
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setEvents(data);
+      }
+    } catch (err) {
+      console.error('Error fetching events', err);
+    }
+  };
+
+  const handleDeleteEvent = async (eventId) => {
+    if (!window.confirm('Are you sure you want to delete this event?')) return;
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`/api/admin/events/${eventId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        fetchEvents();
+        fetchStats();
+      }
+    } catch (err) {
+      console.error('Error deleting event', err);
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    let user = {};
+    try {
+      const rawUser = localStorage.getItem('user');
+      if (rawUser && rawUser !== 'undefined' && rawUser !== 'null') {
+        user = JSON.parse(rawUser);
+      }
+    } catch (e) {
+      user = {};
+    }
     
     if (!token || user.role !== 'super_admin') {
       navigate('/login');
@@ -134,6 +176,9 @@ const SuperAdmin = () => {
 
         // Fetch Listings (page 1)
         await fetchListings(1);
+
+        // Fetch Events
+        await fetchEvents();
 
       } catch (err) {
         setError(err.message || 'Error loading administrative panel data');
@@ -320,48 +365,211 @@ const SuperAdmin = () => {
   return (
     <div className="admin-layout" style={{ display: 'flex', minHeight: 'calc(100vh - 70px)' }}>
       {/* SIDEBAR NAVIGATION */}
-      <aside className="admin-sidebar glass-panel" style={{ width: '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', padding: '32px 20px', borderRight: '1px solid var(--border-glass)', borderRadius: 0, minHeight: '100%', position: 'sticky', top: '70px', alignSelf: 'flex-start', zIndex: 10 }}>
-        <div style={{ marginBottom: '40px', paddingLeft: '8px' }}>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '4px', color: '#fff', letterSpacing: '0.5px' }}>Super Admin</h2>
-          <p style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', margin: 0, fontWeight: 500 }}>Platform Governance</p>
+      <aside className="admin-sidebar" style={{ 
+        width: '280px', 
+        flexShrink: 0, 
+        display: 'flex', 
+        flexDirection: 'column', 
+        padding: '32px 20px', 
+        backgroundColor: '#050505',
+        borderRight: '1px solid rgba(212, 175, 55, 0.3)', 
+        borderRadius: 0, 
+        minHeight: '100%', 
+        position: 'sticky', 
+        top: '70px', 
+        alignSelf: 'flex-start', 
+        zIndex: 10 
+      }}>
+        <div style={{ marginBottom: '28px', paddingLeft: '8px', borderBottom: '1px solid rgba(212, 175, 55, 0.25)', paddingBottom: '16px' }}>
+          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '4px', color: '#D4AF37', letterSpacing: '0.5px' }}>
+            👑 Super Admin
+          </h2>
+          <p style={{ fontSize: '0.8rem', color: '#ffffff', margin: 0, fontWeight: 600 }}>
+            Platform Governance Hub
+          </p>
         </div>
         
-        <div className="sidebar-nav-links" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <button 
-            onClick={() => setActiveTab('categories')} 
-            className="nav-btn"
-            style={{ textAlign: 'left', padding: '14px 16px', borderRadius: '8px', background: activeTab === 'categories' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'categories' ? '#fff' : 'var(--text-secondary)', border: 'none', cursor: 'pointer', transition: 'all 0.2s', fontWeight: activeTab === 'categories' ? 600 : 400, display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.95rem' }}
-          >
-            <span style={{ fontSize: '1.2rem' }}>🗂️</span> Categories Directory
-          </button>
-          <button 
-            onClick={() => setActiveTab('stores')} 
-            className="nav-btn"
-            style={{ textAlign: 'left', padding: '14px 16px', borderRadius: '8px', background: activeTab === 'stores' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'stores' ? '#fff' : 'var(--text-secondary)', border: 'none', cursor: 'pointer', transition: 'all 0.2s', fontWeight: activeTab === 'stores' ? 600 : 400, display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.95rem' }}
-          >
-            <span style={{ fontSize: '1.2rem' }}>🏬</span> Stores ({stores.length})
-          </button>
-          <button 
-            onClick={() => setActiveTab('handymen')} 
-            className="nav-btn"
-            style={{ textAlign: 'left', padding: '14px 16px', borderRadius: '8px', background: activeTab === 'handymen' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'handymen' ? '#fff' : 'var(--text-secondary)', border: 'none', cursor: 'pointer', transition: 'all 0.2s', fontWeight: activeTab === 'handymen' ? 600 : 400, display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.95rem' }}
-          >
-            <span style={{ fontSize: '1.2rem' }}>🛠️</span> Handymen ({handymen.length})
-          </button>
-          <button 
-            onClick={() => setActiveTab('individuals')} 
-            className="nav-btn"
-            style={{ textAlign: 'left', padding: '14px 16px', borderRadius: '8px', background: activeTab === 'individuals' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'individuals' ? '#fff' : 'var(--text-secondary)', border: 'none', cursor: 'pointer', transition: 'all 0.2s', fontWeight: activeTab === 'individuals' ? 600 : 400, display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.95rem' }}
-          >
-            <span style={{ fontSize: '1.2rem' }}>👤</span> Regular Users ({individuals.length})
-          </button>
-          <button 
-            onClick={() => setActiveTab('listings')} 
-            className="nav-btn"
-            style={{ textAlign: 'left', padding: '14px 16px', borderRadius: '8px', background: activeTab === 'listings' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'listings' ? '#fff' : 'var(--text-secondary)', border: 'none', cursor: 'pointer', transition: 'all 0.2s', fontWeight: activeTab === 'listings' ? 600 : 400, display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.95rem' }}
-          >
-            <span style={{ fontSize: '1.2rem' }}>🗑️</span> Moderation ({listings.length})
-          </button>
+        <div className="sidebar-nav-links" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          
+          {/* EXECUTIVE OVERVIEW */}
+          <div>
+            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#FFD700', letterSpacing: '1px', marginBottom: '8px', paddingLeft: '8px', textTransform: 'uppercase' }}>
+              Executive Overview
+            </div>
+            <button 
+              onClick={() => setActiveTab('overview')} 
+              style={{
+                textAlign: 'left',
+                width: '100%',
+                padding: '12px 14px',
+                borderRadius: '8px',
+                background: activeTab === 'overview' ? '#D4AF37' : 'transparent',
+                color: activeTab === 'overview' ? '#000000' : '#ffffff',
+                border: activeTab === 'overview' ? '1px solid #FFD700' : '1px solid transparent',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                fontWeight: activeTab === 'overview' ? 700 : 500,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                fontSize: '0.9rem',
+                boxShadow: activeTab === 'overview' ? '0 4px 14px rgba(212, 175, 55, 0.35)' : 'none'
+              }}
+            >
+              <span style={{ fontSize: '1.1rem' }}>📊</span> Overview & Health
+            </button>
+          </div>
+
+          {/* USER & ROLE MANAGEMENT */}
+          <div>
+            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#FFD700', letterSpacing: '1px', marginBottom: '8px', paddingLeft: '8px', textTransform: 'uppercase' }}>
+              User Management
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <button 
+                onClick={() => setActiveTab('stores')} 
+                style={{
+                  textAlign: 'left',
+                  width: '100%',
+                  padding: '12px 14px',
+                  borderRadius: '8px',
+                  background: activeTab === 'stores' ? '#D4AF37' : 'transparent',
+                  color: activeTab === 'stores' ? '#000000' : '#ffffff',
+                  border: activeTab === 'stores' ? '1px solid #FFD700' : '1px solid transparent',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontWeight: activeTab === 'stores' ? 700 : 500,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  fontSize: '0.9rem',
+                  boxShadow: activeTab === 'stores' ? '0 4px 14px rgba(212, 175, 55, 0.35)' : 'none'
+                }}
+              >
+                <span style={{ fontSize: '1.1rem' }}>🏬</span> Stores & Retail ({stores.length})
+              </button>
+              <button 
+                onClick={() => setActiveTab('handymen')} 
+                style={{
+                  textAlign: 'left',
+                  width: '100%',
+                  padding: '12px 14px',
+                  borderRadius: '8px',
+                  background: activeTab === 'handymen' ? '#D4AF37' : 'transparent',
+                  color: activeTab === 'handymen' ? '#000000' : '#ffffff',
+                  border: activeTab === 'handymen' ? '1px solid #FFD700' : '1px solid transparent',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontWeight: activeTab === 'handymen' ? 700 : 500,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  fontSize: '0.9rem',
+                  boxShadow: activeTab === 'handymen' ? '0 4px 14px rgba(212, 175, 55, 0.35)' : 'none'
+                }}
+              >
+                <span style={{ fontSize: '1.1rem' }}>🛠️</span> Service Providers ({handymen.length})
+              </button>
+              <button 
+                onClick={() => setActiveTab('individuals')} 
+                style={{
+                  textAlign: 'left',
+                  width: '100%',
+                  padding: '12px 14px',
+                  borderRadius: '8px',
+                  background: activeTab === 'individuals' ? '#D4AF37' : 'transparent',
+                  color: activeTab === 'individuals' ? '#000000' : '#ffffff',
+                  border: activeTab === 'individuals' ? '1px solid #FFD700' : '1px solid transparent',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontWeight: activeTab === 'individuals' ? 700 : 500,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  fontSize: '0.9rem',
+                  boxShadow: activeTab === 'individuals' ? '0 4px 14px rgba(212, 175, 55, 0.35)' : 'none'
+                }}
+              >
+                <span style={{ fontSize: '1.1rem' }}>👤</span> Regular Users ({individuals.length})
+              </button>
+            </div>
+          </div>
+
+          {/* MARKETPLACE & DIRECTORIES */}
+          <div>
+            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#FFD700', letterSpacing: '1px', marginBottom: '8px', paddingLeft: '8px', textTransform: 'uppercase' }}>
+              Marketplace & Directories
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <button 
+                onClick={() => setActiveTab('events')} 
+                style={{
+                  textAlign: 'left',
+                  width: '100%',
+                  padding: '12px 14px',
+                  borderRadius: '8px',
+                  background: activeTab === 'events' ? '#D4AF37' : 'transparent',
+                  color: activeTab === 'events' ? '#000000' : '#ffffff',
+                  border: activeTab === 'events' ? '1px solid #FFD700' : '1px solid transparent',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontWeight: activeTab === 'events' ? 700 : 500,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  fontSize: '0.9rem',
+                  boxShadow: activeTab === 'events' ? '0 4px 14px rgba(212, 175, 55, 0.35)' : 'none'
+                }}
+              >
+                <span style={{ fontSize: '1.1rem' }}>🎉</span> Events Directory ({events.length})
+              </button>
+              <button 
+                onClick={() => setActiveTab('listings')} 
+                style={{
+                  textAlign: 'left',
+                  width: '100%',
+                  padding: '12px 14px',
+                  borderRadius: '8px',
+                  background: activeTab === 'listings' ? '#D4AF37' : 'transparent',
+                  color: activeTab === 'listings' ? '#000000' : '#ffffff',
+                  border: activeTab === 'listings' ? '1px solid #FFD700' : '1px solid transparent',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontWeight: activeTab === 'listings' ? 700 : 500,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  fontSize: '0.9rem',
+                  boxShadow: activeTab === 'listings' ? '0 4px 14px rgba(212, 175, 55, 0.35)' : 'none'
+                }}
+              >
+                <span style={{ fontSize: '1.1rem' }}>🛍️</span> Listings Moderation ({listings.length})
+              </button>
+              <button 
+                onClick={() => setActiveTab('categories')} 
+                style={{
+                  textAlign: 'left',
+                  width: '100%',
+                  padding: '12px 14px',
+                  borderRadius: '8px',
+                  background: activeTab === 'categories' ? '#D4AF37' : 'transparent',
+                  color: activeTab === 'categories' ? '#000000' : '#ffffff',
+                  border: activeTab === 'categories' ? '1px solid #FFD700' : '1px solid transparent',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontWeight: activeTab === 'categories' ? 700 : 500,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  fontSize: '0.9rem',
+                  boxShadow: activeTab === 'categories' ? '0 4px 14px rgba(212, 175, 55, 0.35)' : 'none'
+                }}
+              >
+                <span style={{ fontSize: '1.1rem' }}>🗂️</span> Platform Categories ({categories.length})
+              </button>
+            </div>
+          </div>
+
         </div>
       </aside>
 
@@ -378,6 +586,25 @@ const SuperAdmin = () => {
             </div>
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <button 
+              className="btn btn-primary" 
+              onClick={() => setIsCreateModalOpen(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                backgroundColor: '#D4AF37',
+                color: '#000000',
+                border: '1px solid #FFD700',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 4px 15px rgba(212, 175, 55, 0.4)'
+              }}
+            >
+              <span>➕</span> Add New Entity
+            </button>
             <button className="btn btn-secondary" onClick={() => window.location.reload()} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span>🔄</span> Refresh Data
             </button>
@@ -408,11 +635,86 @@ const SuperAdmin = () => {
               <h4>Verified References</h4>
               <span className="stat-number amber">{stats.totalRatings}</span>
             </div>
+            <div className="glass-panel stat-card">
+              <h4>Total Events</h4>
+              <span className="stat-number emerald">{stats.totalEvents || events.length}</span>
+            </div>
           </div>
         )}
 
         {/* Tab Content Window */}
         <div className="admin-content-window">
+        
+        {/* OVERVIEW TAB */}
+        {activeTab === 'overview' && (
+          <div className="admin-tab-content glass-panel" style={{ padding: '30px' }}>
+            <h3 style={{ margin: '0 0 20px', color: '#D4AF37', fontSize: '1.4rem' }}>📊 Platform System Overview & Quick Control</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+              <div style={{ padding: '20px', borderRadius: '12px', background: '#0a0a0a', border: '1px solid rgba(212, 175, 55, 0.4)' }}>
+                <h4 style={{ margin: 0, color: '#ffffff', fontSize: '1.1rem' }}>🏬 Stores & Retail</h4>
+                <p style={{ fontSize: '2rem', fontWeight: 800, color: '#FFD700', margin: '8px 0' }}>{stores.length}</p>
+                <button onClick={() => setActiveTab('stores')} style={{ background: 'transparent', border: 'none', color: '#D4AF37', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, padding: 0 }}>
+                  Manage Stores →
+                </button>
+              </div>
+              <div style={{ padding: '20px', borderRadius: '12px', background: '#0a0a0a', border: '1px solid rgba(212, 175, 55, 0.4)' }}>
+                <h4 style={{ margin: 0, color: '#ffffff', fontSize: '1.1rem' }}>🛠️ Service Providers</h4>
+                <p style={{ fontSize: '2rem', fontWeight: 800, color: '#FFD700', margin: '8px 0' }}>{handymen.length}</p>
+                <button onClick={() => setActiveTab('handymen')} style={{ background: 'transparent', border: 'none', color: '#D4AF37', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, padding: 0 }}>
+                  Manage Service Providers →
+                </button>
+              </div>
+              <div style={{ padding: '20px', borderRadius: '12px', background: '#0a0a0a', border: '1px solid rgba(212, 175, 55, 0.4)' }}>
+                <h4 style={{ margin: 0, color: '#ffffff', fontSize: '1.1rem' }}>🎉 Events Published</h4>
+                <p style={{ fontSize: '2rem', fontWeight: 800, color: '#FFD700', margin: '8px 0' }}>{events.length}</p>
+                <button onClick={() => setActiveTab('events')} style={{ background: 'transparent', border: 'none', color: '#D4AF37', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, padding: 0 }}>
+                  Manage Events Directory →
+                </button>
+              </div>
+              <div style={{ padding: '20px', borderRadius: '12px', background: '#0a0a0a', border: '1px solid rgba(212, 175, 55, 0.4)' }}>
+                <h4 style={{ margin: 0, color: '#ffffff', fontSize: '1.1rem' }}>🛍️ Marketplace Postings</h4>
+                <p style={{ fontSize: '2rem', fontWeight: 800, color: '#FFD700', margin: '8px 0' }}>{listings.length}</p>
+                <button onClick={() => setActiveTab('listings')} style={{ background: 'transparent', border: 'none', color: '#D4AF37', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, padding: 0 }}>
+                  Moderate Listings →
+                </button>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+              <button 
+                onClick={() => setIsCreateModalOpen(true)}
+                style={{
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  border: '1px solid #FFD700',
+                  background: '#D4AF37',
+                  color: '#000000',
+                  fontWeight: 700,
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(212, 175, 55, 0.4)'
+                }}
+              >
+                ➕ Add New Entity (Store, Service, Event, Item)
+              </button>
+              <button 
+                onClick={() => setActiveTab('categories')}
+                style={{
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  background: '#000000',
+                  color: '#ffffff',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  cursor: 'pointer'
+                }}
+              >
+                🗂️ Manage Platform Categories
+              </button>
+            </div>
+          </div>
+        )}
         
         {/* CATEGORIES TAB */}
         {activeTab === 'categories' && (
@@ -888,6 +1190,103 @@ const SuperAdmin = () => {
           </div>
         )}
 
+        {/* EVENTS TAB */}
+        {activeTab === 'events' && (
+          <div className="admin-tab-content glass-panel">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0 }}>🎉 Events Directory ({events.length})</h3>
+              <button className="btn btn-secondary btn-sm" onClick={fetchEvents}>
+                🔄 Refresh Events
+              </button>
+            </div>
+
+            {events.length === 0 ? (
+              <p className="no-data">No published events found in database.</p>
+            ) : (
+              <div className="table-responsive">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Image</th>
+                      <th>Event Details</th>
+                      <th>Category & Subcategory</th>
+                      <th>Date & Time</th>
+                      <th>Location / Venue</th>
+                      <th>Price</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {events.map((ev) => (
+                      <tr key={ev._id}>
+                        <td>
+                          {ev.images && ev.images.length > 0 ? (
+                            <img
+                              src={ev.images[0]}
+                              alt={ev.title}
+                              style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--accent-primary)' }}
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                          ) : (
+                            <span style={{ fontSize: '1.5rem' }}>🎉</span>
+                          )}
+                        </td>
+                        <td>
+                          <strong style={{ color: '#fff', fontSize: '0.95rem' }}>{ev.title}</strong>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                            {ev.description?.substring(0, 50)}...
+                          </div>
+                          <div style={{ fontSize: '0.7rem', color: '#D4AF37', marginTop: '2px' }}>
+                            Posted by: {ev.ownerName || 'Admin'}
+                          </div>
+                        </td>
+                        <td>
+                          <span className="badge" style={{ backgroundColor: 'rgba(212, 175, 55, 0.15)', color: '#FFD700', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 600 }}>
+                            {ev.category}
+                          </span>
+                          {ev.subCategory && (
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                              ↳ {ev.subCategory}
+                            </div>
+                          )}
+                        </td>
+                        <td>
+                          <div style={{ fontSize: '0.85rem', color: '#fff' }}>
+                            📅 {ev.eventDate ? new Date(ev.eventDate).toLocaleDateString() : 'N/A'}
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                            ⏰ {ev.eventTime || 'TBD'}
+                          </div>
+                        </td>
+                        <td>
+                          <div style={{ fontSize: '0.85rem', color: '#fff' }}>📍 {ev.location}</div>
+                          {ev.address && (
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{ev.address}</div>
+                          )}
+                        </td>
+                        <td>
+                          <span style={{ fontWeight: 700, color: ev.price > 0 ? '#10b981' : '#FFD700' }}>
+                            {ev.price > 0 ? `$${ev.price}` : 'Free Event'}
+                          </span>
+                        </td>
+                        <td>
+                          <button
+                            onClick={() => handleDeleteEvent(ev._id)}
+                            className="btn btn-danger btn-sm"
+                            style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem' }}
+                          >
+                            🗑️ Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
 
       <style>{`
@@ -1075,6 +1474,20 @@ const SuperAdmin = () => {
       `}</style>
       
       </main>
+
+      {/* Super Admin Quick Creation Modal */}
+      <SuperAdminCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={() => {
+          fetchUsers(1);
+          fetchListings(1);
+          fetchEvents();
+          fetchCategories();
+          fetchStats();
+        }}
+        categories={categories}
+      />
     </div>
   );
 };

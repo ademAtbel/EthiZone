@@ -3,11 +3,12 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const PendingUser = require('../models/PendingUser');
 const { verifyToken } = require('../middleware/auth');
 const { sendOtpEmail, sendRegistrationConfirmationEmail } = require('../utils/email');
 const { validateEmail, validatePhone } = require('../utils/validation');
 
-// REGISTER USER (Requires 6-Digit Email Confirmation)
+// REGISTER USER (Stores temporary PendingUser until 6-Digit Email Confirmation)
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password, phone, role, businessType, category, subCategory, storeName, description, address } = req.body;
@@ -24,11 +25,14 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: phoneCheck.reason });
     }
 
-    // Check if user already exists
-    let user = await User.findOne({ email });
-    if (user) {
+    // Check if user is ALREADY registered in User collection
+    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+    if (existingUser) {
       return res.status(400).json({ message: 'An account with this email address already exists.' });
     }
+
+    // Clear any previous unconfirmed pending registration attempt for this email
+    await PendingUser.deleteMany({ email: email.toLowerCase().trim() });
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
@@ -38,16 +42,13 @@ router.post('/register', async (req, res) => {
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     const verificationExpires = new Date(Date.now() + 15 * 60 * 1000);
 
-    // Create unverified user account
-    user = new User({
+    // Save to temporary PendingUser collection (NOT registered in main User collection yet!)
+    const pendingUser = new PendingUser({
       username,
-      email,
+      email: email.toLowerCase().trim(),
       password: hashedPassword,
       phone,
       role: role || 'individual',
-      isVerified: false,
-      emailVerified: false,
-      phoneVerified: false,
       verificationCode,
       verificationExpires,
       businessType: role === 'business' ? businessType : undefined,
@@ -55,21 +56,20 @@ router.post('/register', async (req, res) => {
       subCategory: role === 'business' ? subCategory : undefined,
       storeName: role === 'business' ? (storeName || username) : undefined,
       description: (role === 'business' || role === 'handyman') ? description : undefined,
-      address: role === 'business' ? address : undefined,
-      customNavbarLinks: []
+      address: role === 'business' ? address : undefined
     });
 
-    await user.save();
+    await pendingUser.save();
 
     // Send registration confirmation email
-    sendRegistrationConfirmationEmail(user.email, verificationCode, user.username).catch(err => {
+    sendRegistrationConfirmationEmail(pendingUser.email, verificationCode, pendingUser.username).catch(err => {
       console.error('Background confirmation email error:', err.message);
     });
 
     res.status(201).json({
       requiresVerification: true,
-      message: 'Account registered successfully! A 6-digit confirmation code has been sent to your email address.',
-      email: user.email
+      message: 'Registration details received! A 6-digit confirmation code has been sent to your email address.',
+      email: pendingUser.email
     });
 
   } catch (error) {
@@ -77,7 +77,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// VERIFY REGISTRATION CODE (ACTIVATES ACCOUNT & ISSUES TOKEN)
+// VERIFY REGISTRATION CODE (CONFIRMS CODE -> CREATES MONGO DB USER -> ISSUES TOKEN)
 router.post('/verify-registration', async (req, res) => {
   try {
     const { email, code } = req.body;
@@ -86,60 +86,80 @@ router.post('/verify-registration', async (req, res) => {
       return res.status(400).json({ message: 'Email address and 6-digit verification code are required.' });
     }
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'User account not found.' });
-    }
+    const cleanEmail = email.toLowerCase().trim();
+    const pending = await PendingUser.findOne({ email: cleanEmail });
 
-    if (user.isVerified) {
-      const token = jwt.sign(
-        { id: user._id, role: user.role, username: user.username },
-        process.env.JWT_SECRET || 'secretkey123',
-        { expiresIn: '7d' }
-      );
-      return res.json({ message: 'Account is already verified.', token, user });
+    if (!pending) {
+      // Check if user is already verified and saved
+      const existingUser = await User.findOne({ email: cleanEmail });
+      if (existingUser && existingUser.isVerified) {
+        const token = jwt.sign(
+          { id: existingUser._id, role: existingUser.role, username: existingUser.username },
+          process.env.JWT_SECRET || 'secretkey123',
+          { expiresIn: '7d' }
+        );
+        return res.json({ message: 'Account is already verified.', token, user: existingUser });
+      }
+      return res.status(404).json({ message: 'Pending registration record not found or expired. Please register again.' });
     }
 
     // Check code and expiration
-    if (!user.verificationCode || user.verificationCode !== code.toString().trim() || Date.now() > new Date(user.verificationExpires).getTime()) {
+    if (!pending.verificationCode || pending.verificationCode !== code.toString().trim() || Date.now() > new Date(pending.verificationExpires).getTime()) {
       return res.status(400).json({ message: 'Invalid or expired confirmation code. Please request a new code.' });
     }
 
-    // Mark account as verified
-    user.isVerified = true;
-    user.emailVerified = true;
-    user.verificationCode = undefined;
-    user.verificationExpires = undefined;
-    await user.save();
+    // CODE IS CONFIRMED! NOW REGISTER USER IN MONGO DB!
+    const newUser = new User({
+      username: pending.username,
+      email: pending.email,
+      password: pending.password,
+      phone: pending.phone,
+      role: pending.role || 'individual',
+      isVerified: true,
+      emailVerified: true,
+      phoneVerified: true,
+      businessType: pending.businessType,
+      category: pending.category,
+      subCategory: pending.subCategory,
+      storeName: pending.storeName,
+      description: pending.description,
+      address: pending.address,
+      customNavbarLinks: []
+    });
+
+    await newUser.save();
+
+    // Delete temporary pending registration record
+    await PendingUser.deleteOne({ _id: pending._id });
 
     // Issue session JWT token
     const token = jwt.sign(
-      { id: user._id, role: user.role, username: user.username },
+      { id: newUser._id, role: newUser.role, username: newUser.username },
       process.env.JWT_SECRET || 'secretkey123',
       { expiresIn: '7d' }
     );
 
     res.json({
-      message: 'Account verified successfully! Welcome to EthiZone.',
+      message: 'Account verified and registered successfully! Welcome to EthiZone.',
       token,
       user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        isVerified: user.isVerified,
-        businessType: user.businessType,
-        category: user.category,
-        subCategory: user.subCategory,
-        storeName: user.storeName,
-        description: user.description,
-        address: user.address,
-        socialLinks: user.socialLinks || [],
-        storeLogo: user.storeLogo || '',
-        storeImage: user.storeImage || '',
-        isOnline: user.isOnline,
-        verificationBadge: user.verificationBadge
+        id: newUser._id,
+        username: newUser.username,
+        email: newUser.email,
+        phone: newUser.phone,
+        role: newUser.role,
+        isVerified: newUser.isVerified,
+        businessType: newUser.businessType,
+        category: newUser.category,
+        subCategory: newUser.subCategory,
+        storeName: newUser.storeName,
+        description: newUser.description,
+        address: newUser.address,
+        socialLinks: newUser.socialLinks || [],
+        storeLogo: newUser.storeLogo || '',
+        storeImage: newUser.storeImage || '',
+        isOnline: newUser.isOnline,
+        verificationBadge: newUser.verificationBadge
       }
     });
 
@@ -156,23 +176,25 @@ router.post('/resend-verification', async (req, res) => {
       return res.status(400).json({ message: 'Email address is required.' });
     }
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'Account not found.' });
-    }
+    const cleanEmail = email.toLowerCase().trim();
+    const pending = await PendingUser.findOne({ email: cleanEmail });
 
-    if (user.isVerified) {
-      return res.status(400).json({ message: 'This account is already verified.' });
+    if (!pending) {
+      const existingUser = await User.findOne({ email: cleanEmail });
+      if (existingUser && existingUser.isVerified) {
+        return res.status(400).json({ message: 'This account is already verified.' });
+      }
+      return res.status(404).json({ message: 'Pending registration record not found. Please register again.' });
     }
 
     // Generate new code and set 15 min expiry
     const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-    user.verificationCode = newCode;
-    user.verificationExpires = new Date(Date.now() + 15 * 60 * 1000);
-    await user.save();
+    pending.verificationCode = newCode;
+    pending.verificationExpires = new Date(Date.now() + 15 * 60 * 1000);
+    await pending.save();
 
     // Send code
-    sendRegistrationConfirmationEmail(user.email, newCode, user.username).catch(err => {
+    sendRegistrationConfirmationEmail(pending.email, newCode, pending.username).catch(err => {
       console.error('Background confirmation resend error:', err.message);
     });
 
@@ -186,8 +208,12 @@ router.post('/resend-verification', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email address and password are required.' });
+    }
 
-    const user = await User.findOne({ email });
+    const cleanEmail = email.toLowerCase().trim();
+    const user = await User.findOne({ email: cleanEmail }) || await User.findOne({ email: { $regex: new RegExp('^' + cleanEmail + '$', 'i') } });
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
@@ -252,7 +278,8 @@ router.post('/request-otp', async (req, res) => {
       return res.status(400).json({ message: 'Email address is required.' });
     }
 
-    const user = await User.findOne({ email });
+    const cleanEmail = email.toLowerCase().trim();
+    const user = await User.findOne({ email: cleanEmail }) || await User.findOne({ email: { $regex: new RegExp('^' + cleanEmail + '$', 'i') } });
     if (!user) {
       return res.status(404).json({ message: 'No account registered with this email address.' });
     }
@@ -287,7 +314,8 @@ router.post('/login-with-otp', async (req, res) => {
       return res.status(400).json({ message: 'Email and verification code are required.' });
     }
 
-    const user = await User.findOne({ email });
+    const cleanEmail = email.toLowerCase().trim();
+    const user = await User.findOne({ email: cleanEmail }) || await User.findOne({ email: { $regex: new RegExp('^' + cleanEmail + '$', 'i') } });
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }

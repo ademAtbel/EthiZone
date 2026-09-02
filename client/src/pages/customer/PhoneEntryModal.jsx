@@ -224,7 +224,7 @@ export default function PhoneEntryModal() {
           id: "admin-001",
           _id: "admin-001",
           name: "Super Admin",
-          email: "admin@ethizone.com",
+          email: "ethizone1@gmail.com",
           phone: "+251900000000",
           role: "super_admin",
         },
@@ -557,8 +557,8 @@ export default function PhoneEntryModal() {
                         <button
                           type="button"
                           onClick={() => {
-                            setEmail("admin@ethizone.com");
-                            setPassword("password123");
+                            setEmail("ethizone1@gmail.com");
+                            setPassword("Ethizone@Ethiopia.2019");
                           }}
                           className="px-xs py-1.5 text-xs bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-all font-medium"
                         >

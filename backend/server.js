@@ -88,7 +88,7 @@ const runSeeding = async () => {
     const bcrypt = require('bcryptjs');
     
     const adminEmail = process.env.INITIAL_ADMIN_EMAIL || 'ethizone1@gmail.com';
-    const adminPass = process.env.INITIAL_ADMIN_PASSWORD || 'adminpassword123';
+    const adminPass = process.env.INITIAL_ADMIN_PASSWORD || 'Ethizone@Ethiopia.2019';
     const existingAdmin = await User.findOne({ email: adminEmail });
     if (!existingAdmin) {
       const salt = await bcrypt.genSalt(10);
@@ -107,6 +107,15 @@ const runSeeding = async () => {
       await superAdmin.save();
       console.log('======================================================');
       console.log('👑 DEFAULT SUPER ADMIN ACCOUNT INITIALIZED');
+      console.log(`📧 Email: ${adminEmail}`);
+      console.log('======================================================');
+    } else {
+      const salt = await bcrypt.genSalt(10);
+      existingAdmin.password = await bcrypt.hash(adminPass, salt);
+      existingAdmin.role = 'super_admin';
+      await existingAdmin.save();
+      console.log('======================================================');
+      console.log('👑 SUPER ADMIN ACCOUNT UPDATED & SYNCHRONIZED');
       console.log(`📧 Email: ${adminEmail}`);
       console.log('======================================================');
     }
@@ -192,6 +201,7 @@ if (isClustered && cluster.isMaster) {
   const eventRoutes = require('./routes/events');
   const storesRoutes = require('./routes/stores');
   const reviewsRoutes = require('./routes/reviews');
+  const privateEventsRoutes = require('./routes/privateEvents');
 
   // Pre-load all Mongoose discriminators to register them
   require('./models/BoutiqueListing');
@@ -254,7 +264,7 @@ if (isClustered && cluster.isMaster) {
   const isLocalDev = (req) => {
     if (process.env.NODE_ENV !== 'production') return true;
     const ip = req.ip || req.connection?.remoteAddress || '';
-    return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+    return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1' || ip.includes('127.0.0.1');
   };
 
   // Global API Rate Limiter (Distributed Rate Limiting via Redis with Memory Fallback)
@@ -279,9 +289,11 @@ if (isClustered && cluster.isMaster) {
     }) : undefined,
     message: { message: 'Too many requests from this IP, please try again after 15 minutes.' }
   });
-  // All Rate Limiters completely disabled for testing as requested
-  // app.use('/api/', apiLimiter);
-  // app.use('/api/auth', authLimiter);
+  
+  // Rate Limiter active in production
+  if (process.env.NODE_ENV === 'production') {
+    app.use('/api/', apiLimiter);
+  }
 
   // Production Uptime & Health Check Endpoint for ethizone.com
   const healthHandler = (req, res) => {
@@ -312,6 +324,7 @@ if (isClustered && cluster.isMaster) {
   app.use('/api/events', eventRoutes);
   app.use('/api/stores', storesRoutes);
   app.use('/api/reviews', reviewsRoutes);
+  app.use('/api/private-events', privateEventsRoutes);
 
 
 

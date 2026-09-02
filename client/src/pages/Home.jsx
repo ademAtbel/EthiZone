@@ -2382,17 +2382,37 @@ const Home = () => {
 
               <div className="border-top pt-4">
                 <h5 className="fw-bold mb-2">Organizer Contact Details</h5>
-                <p className="text-secondary small mb-3">Posted by: <strong>{selectedWidgetEvent.ownerName}</strong></p>
+                {(selectedWidgetEvent.organizerName || (selectedWidgetEvent.ownerName && selectedWidgetEvent.ownerName !== 'Super Admin')) && (
+                  <p className="text-secondary small mb-3">
+                    Organized by: <strong>{selectedWidgetEvent.organizerName || selectedWidgetEvent.ownerName}</strong>
+                  </p>
+                )}
                 <div className="d-flex gap-2">
                   <a 
-                    href={`tel:${selectedWidgetEvent.ownerPhone}`} 
+                    href={`tel:${selectedWidgetEvent.organizerPhone || selectedWidgetEvent.ownerPhone}`} 
                     className="btn btn-success flex-grow-1 d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold"
+                    title={`Call: ${selectedWidgetEvent.organizerPhone || selectedWidgetEvent.ownerPhone}`}
+                    onMouseEnter={(e) => {
+                      const p = selectedWidgetEvent.organizerPhone || selectedWidgetEvent.ownerPhone;
+                      if (p) e.currentTarget.lastChild.textContent = ` Call: ${p}`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.lastChild.textContent = ' Call Organizer';
+                    }}
                   >
                     <Phone size={16} /> Call Organizer
                   </a>
                   <a 
-                    href={`sms:${selectedWidgetEvent.ownerPhone}?body=Hi, I am interested in your event: ${selectedWidgetEvent.title}`} 
+                    href={`sms:${selectedWidgetEvent.organizerPhone || selectedWidgetEvent.ownerPhone}?body=Hi, I am interested in your event: ${selectedWidgetEvent.title}`} 
                     className="btn btn-primary flex-grow-1 d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold"
+                    title={`SMS: ${selectedWidgetEvent.organizerPhone || selectedWidgetEvent.ownerPhone}`}
+                    onMouseEnter={(e) => {
+                      const p = selectedWidgetEvent.organizerPhone || selectedWidgetEvent.ownerPhone;
+                      if (p) e.currentTarget.lastChild.textContent = ` SMS: ${p}`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.lastChild.textContent = ' Send SMS';
+                    }}
                   >
                     <MessageCircle size={16} /> Send SMS
                   </a>

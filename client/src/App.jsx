@@ -36,6 +36,11 @@ import PhoneEntryModal from './pages/customer/PhoneEntryModal';
 import SMSCodeModal from './pages/customer/SMSCodeModal';
 import CarsPage from './pages/customer/CarsPage';
 import StoreListPage from './pages/customer/StoreListPage';
+
+// Private Event Imports
+import PrivateEventsDashboard from './pages/private_events/PrivateEventsDashboard';
+import PrivateInvitationView from './pages/private_events/PrivateInvitationView';
+
 import { Globe, Mail, Phone, ArrowRight } from 'lucide-react';
 
 // Sub-wrapper component to handle global layout styling
@@ -185,7 +190,15 @@ const AppContent = () => {
   }, [location.pathname, location.search]);
 
   const token = localStorage.getItem('token');
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  let user = {};
+  try {
+    const rawUser = localStorage.getItem('user');
+    if (rawUser && rawUser !== 'undefined' && rawUser !== 'null') {
+      user = JSON.parse(rawUser);
+    }
+  } catch (e) {
+    user = {};
+  }
   const isLoggedIn = Boolean(token && user && user._id);
   const isDashboardRoute = location.pathname.includes('/dashboard') || location.pathname.startsWith('/seller/') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/super-admin');
   const isSellerPortal = location.pathname.startsWith('/seller/');
@@ -212,6 +225,10 @@ const AppContent = () => {
           <Route path="/partner-register" element={<RegistrationPage />} />
           <Route path="/phoneentrymodal" element={<PhoneEntryModal />} />
           <Route path="/smscodemodal" element={<SMSCodeModal />} />
+
+          {/* Private Events System & Invitation Security Routes */}
+          <Route path="/private-events" element={<PrivateEventsDashboard />} />
+          <Route path="/invitation/:token" element={<PrivateInvitationView />} />
 
           {/* Legacy seller template routes redirected to clean unified dashboard */}
           <Route path="/seller/:storeSlug/*" element={<Navigate to="/dashboard" replace />} />

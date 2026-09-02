@@ -43,7 +43,14 @@ const Login = () => {
         body: JSON.stringify({ email, password })
       });
 
-      const data = await response.json();
+      const resText = await response.text();
+      let data = {};
+      try {
+        data = resText ? JSON.parse(resText) : {};
+      } catch (err) {
+        data = { message: resText || `Server Error (${response.status})` };
+      }
+
       if (!response.ok) {
         if (data.requiresVerification) {
           navigate('/register', { state: { pendingVerification: true, email: data.email || email } });
@@ -88,7 +95,14 @@ const Login = () => {
         body: JSON.stringify({ email })
       });
 
-      const data = await response.json();
+      const resText = await response.text();
+      let data = {};
+      try {
+        data = resText ? JSON.parse(resText) : {};
+      } catch (err) {
+        data = { message: resText || `Server Error (${response.status})` };
+      }
+
       if (!response.ok) {
         throw new Error(data.message || 'Failed to send verification code.');
       }
@@ -122,7 +136,14 @@ const Login = () => {
         body: JSON.stringify({ email, code: otpCode })
       });
 
-      const data = await response.json();
+      const resText = await response.text();
+      let data = {};
+      try {
+        data = resText ? JSON.parse(resText) : {};
+      } catch (err) {
+        data = { message: resText || `Server Error (${response.status})` };
+      }
+
       if (!response.ok) {
         throw new Error(data.message || 'Invalid or expired code.');
       }

@@ -5,6 +5,9 @@ const EventSchema = new mongoose.Schema({
   ownerName: { type: String, required: true },
   ownerPhone: { type: String, required: true },
   ownerEmail: { type: String },
+  organizerName: { type: String },
+  organizerPhone: { type: String },
+  organizerEmail: { type: String },
   title: { type: String, required: true },
   description: { type: String, required: true },
   category: { 

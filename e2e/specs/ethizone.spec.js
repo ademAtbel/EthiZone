@@ -76,4 +76,29 @@ test.describe('EthiZone Marketplace End-to-End Test Suite', () => {
     }
   });
 
+  test('7. Private Events Management Portal Route', async ({ page }) => {
+    await page.goto('/private-events');
+    // Verify private events page header
+    const heading = page.locator('h2');
+    await expect(heading).toContainText(/Private Events/i);
+  });
+
+  test('8. Scenario G — Private Invitation Phone Access Security (Access Denied Check)', async ({ page }) => {
+    // Navigate to a random/uninvited invitation token
+    await page.goto('/invitation/invalid-test-token-123456');
+    
+    // Should prompt for phone verification or render Access Denied
+    const phoneInput = page.locator('input[placeholder*="5713429228"], input[type="text"]');
+    await expect(phoneInput.first()).toBeVisible();
+
+    // Enter uninvited phone number
+    await phoneInput.first().fill('9998887777');
+    await page.click('button:has-text("Verify Access")');
+
+    // Expect ACCESS DENIED alert error
+    const accessDeniedAlert = page.locator('.alert-danger');
+    await expect(accessDeniedAlert).toBeVisible();
+    await expect(accessDeniedAlert).toContainText(/ACCESS DENIED|Unauthorized/i);
+  });
+
 });
